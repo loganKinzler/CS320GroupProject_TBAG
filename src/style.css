@@ -1,0 +1,54 @@
+body {
+    margin: 0%;
+}
+
+
+/* Grid */
+div.grid-content {
+    width: 100vw;
+    height: 100vh;
+    
+    display: grid;
+    grid-template-columns: 7fr 3fr;
+    grid-template-rows: 8fr 2fr;
+    
+    position: relative;
+}
+
+
+/* Inner Grid Divs */
+div.grid-content > div {
+    width: 100%;
+    height: 100%;
+}
+
+#visuals {
+    background-color: aquamarine;
+}
+
+#found-commands {
+    background-color: azure;
+}
+
+#text-output {
+    background-color: darkslategray;
+}
+
+#command-input {
+    background-color: blue;
+}
+
+
+/* Paragraphs (For Testing) */
+p {
+    width: 100%;
+    height: 100%;
+
+    text-align: center;
+    vertical-align: middle;
+    font-size: 2vw;
+}
+
+.dark-background > p {
+    color: aliceblue;
+}

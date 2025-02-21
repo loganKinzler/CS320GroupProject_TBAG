@@ -1,54 +1,109 @@
-body {
-    margin: 0%;
+:root {
+	--console-background: #0c0f0c;
+	--console-text-color: #06b306;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body,html {
+	overflow: hidden;
+}
+.console-text {
+  font-family: "Doto", serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: normal;
+  font-variation-settings:
+    "ROND" 0;
 }
 
 
-/* Grid */
-div.grid-content {
-    width: 100vw;
-    height: 100vh;
-    
-    display: grid;
-    grid-template-columns: 7fr 3fr;
-    grid-template-rows: 8fr 2fr;
-    
-    position: relative;
+.window {
+	display: flex;
+	flex-direction: row;
+	width: 100vw;
+	height: 100vh;
+	background-color: gray;
+}
+.left-column {
+	width: 75%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+.right-column {
+	width: 25%;
+	height: 100%;
+}
+.display {
+	background-color: red;
+	width: 100%;
+	height: 70%;
+}
+.ui-parent {
+	width: 100%;
+	height: 30%;
+	display: flex;
+	flex-direction: row;
+}
+.found-commands {
+	background-color: green;
+	width: 75%;
+	height: 100%;
+}
+.map {
+	background-color: white;
+	width: 25%;
+	height: 100%;
 }
 
-
-/* Inner Grid Divs */
-div.grid-content > div {
-    width: 100%;
-    height: 100%;
+.console {
+	background-color: pink;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
-#visuals {
-    background-color: aquamarine;
+.output {
+	width: 100%;
+	height: 92%;
+	background-color: var(--console-background);
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+	align-items: start;
+	padding: 3%;
+	color: var(--console-text-color);
+	font-size: 1.5rem;
 }
-
-#found-commands {
-    background-color: azure;
+.input {
+	width: 100%;
+	height: 8%;
+	background-color: red;
+	background-color: var(--console-background);
 }
-
-#text-output {
-    background-color: darkslategray;
+.console-input {
+	width: 100%;
+	height: 100%;
+	background-color: var(--console-background);
+	border: none;
+	padding: 3%;
+	color: var(--console-text-color);
+	font-size: 1.5rem;
 }
-
-#command-input {
-    background-color: blue;
+.console-input:focus {
+	outline-width: 0;
 }
-
 
 /* Paragraphs (For Testing) */
-p {
+.debug_label {
     width: 100%;
     height: 100%;
 
     text-align: center;
     vertical-align: middle;
     font-size: 2vw;
-}
-
-.dark-background > p {
-    color: aliceblue;
 }

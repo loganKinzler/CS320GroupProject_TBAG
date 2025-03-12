@@ -33,7 +33,7 @@ public class EntityController {
 	public void AddHealth(double amount) {
 		this.model.setHealth(this.model.getHealth() + amount);
 	}
-	public void AddHealthModular(double amount) { //Needed if adding health that would exceed health bounds but just want to go up to the bound
+	public void AddHealthClamped(double amount) { //Needed if adding health that would exceed health bounds but just want to go up to the bound
 		//Clips amount to add within the bounds and then adds it to health
 		double finalHealth = this.model.getHealth() + amount;
 		if (finalHealth > this.model.getMaxHealth()) finalHealth = this.model.getMaxHealth();

@@ -30,17 +30,17 @@ public class EntityControllerTest {
 		
 	}
 	@Test
-	public void testAddHealthModular() {
+	public void testAddHealthClamped() {
 		setUp();
 		assertEquals(100, entity.getHealth(), .001);
 		
-		entity.AddHealthModular(-20);
+		entity.AddHealthClamped(-20);
 		assertEquals(80, entity.getHealth(), .001);
 		
-		entity.AddHealthModular(40);
+		entity.AddHealthClamped(40);
 		assertEquals(100, entity.getHealth(), .001);
 		
-		entity.AddHealthModular(-120);
+		entity.AddHealthClamped(-120);
 		assertEquals(0, entity.getHealth(), .001);
 	}
 }

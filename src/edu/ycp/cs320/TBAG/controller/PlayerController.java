@@ -4,8 +4,8 @@ import edu.ycp.cs320.TBAG.model.EntityModel;
 
 public class PlayerController extends EntityController {
 	
-	public PlayerController(EntityModel model, double maxHealth, int lives, int currentRoomIndex) {
-		super(model, maxHealth, lives, currentRoomIndex);
+	public PlayerController(EntityModel model) {
+		super(model);
 	}
 	public PlayerController() {
 		super();

@@ -15,10 +15,10 @@ public class EntityModel {
 	public double getHealth() {return health;}
 	public void setHealth(double health) {
 		if (health < 0) {
-//			System.out.println("health cannot be negative");
+			System.out.println("health cannot be negative");
 		}
 		else if (health > this.maxHealth) {
-//			System.out.println("health cannot exceed maxHealth (" + health + ", " + this.maxHealth + ")");
+			System.out.println("health cannot exceed maxHealth (" + health + ", " + this.maxHealth + ")");
 		}
 		else {
 			this.health = health;
@@ -29,12 +29,12 @@ public class EntityModel {
 	public double getMaxHealth() {return maxHealth;}
 	public void setMaxHealth(double maxHealth) {
 		if (maxHealth < 0) {
-//			System.out.println("maxHealth cannot be negative");
+			System.out.println("maxHealth cannot be negative");
 		}
 		else {
 			this.maxHealth = maxHealth;
 		}
 	}
-	public double getCurrentRoomIndex() {return currentRoomIndex;}
+	public int getCurrentRoomIndex() {return currentRoomIndex;}
 	public void setCurrentRoomIndex(double currentRoomIndex) {this.maxHealth = currentRoomIndex;}
 }

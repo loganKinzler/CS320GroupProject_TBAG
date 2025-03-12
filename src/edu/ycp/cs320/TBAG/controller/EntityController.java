@@ -7,27 +7,38 @@ public class EntityController {
 	private double maxHealth, health;
 	private int lives;
 	
-	public EntityController(EntityModel model, double maxHealth, int lives, int currentRoomIndex) {
+	public EntityController(EntityModel model) {
 			this.model = model;
-			
-			if (this.model != null) {
-				this.model.setLives(lives);
-				this.model.setMaxHealth(maxHealth);
-				this.model.setHealth(maxHealth);
-				this.model.setCurrentRoomIndex(currentRoomIndex);
-			}
 	}
 	
 	public EntityController() {
-		this(null, 100, 1, -1);
-	}
-	
-	public EntityModel getModel() {
-		return model;
+		this(null);
 	}
 
-	public void setModel(EntityModel model) {
-		this.model = model;
+	public void setModel(EntityModel model) {this.model = model;}
+	public EntityModel getModel() {return model;}
+	
+	public void setMaxHealth(double maxHealth) {this.model.setMaxHealth(maxHealth);}
+	public double getMaxHealth() {return this.model.getMaxHealth();}
+	
+	public void setHealth(double health) {this.model.setHealth(health);}
+	public double getHealth() {return this.model.getHealth();}
+	
+	public void setLives(int lives) {this.model.setLives(lives);}
+	public int getLives() {return this.model.getLives();}
+	
+	public void setCurrentRoomIndex(int currentRoomIndex) {this.model.setCurrentRoomIndex(currentRoomIndex);}
+	public int getCurrentRoomIndex() {return this.model.getCurrentRoomIndex();}
+	
+	public void AddHealth(double amount) {
+		this.model.setHealth(this.model.getHealth() + amount);
+	}
+	public void AddHealthModular(double amount) { //Needed if adding health that would exceed health bounds but just want to go up to the bound
+		//Clips amount to add within the bounds and then adds it to health
+		double finalHealth = this.model.getHealth() + amount;
+		if (finalHealth > this.model.getMaxHealth()) finalHealth = this.model.getMaxHealth();
+		if (finalHealth < 0) finalHealth = 0;
+		this.model.setHealth(finalHealth);
 	}
 
 	public void Attack(EntityController receiver) {

@@ -1,4 +1,4 @@
-package edu.ycp.cs320.tbag.model;
+package edu.ycp.cs320.TBAG.model;
 
 public class Weapon extends Item {
 	

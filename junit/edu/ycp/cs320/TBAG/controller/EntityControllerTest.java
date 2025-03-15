@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.controller.EntityController;
 
 public class EntityControllerTest {
 	private EntityController entity;

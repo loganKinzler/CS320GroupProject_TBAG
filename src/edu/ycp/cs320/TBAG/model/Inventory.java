@@ -1,26 +1,26 @@
 package edu.ycp.cs320.TBAG.model;
 
-import edu.ycp.cs320.TBAG.model.Item;
-
-import java.util.Map;
+import java.util.HashMap;
 import java.lang.Math;
 
 
 public class Inventory {
 	
 	// vars
-	protected Map<Item, Integer> items;
+	protected HashMap<Item, Integer> items;
 	
 	
 	// constructors
-	public Inventory() {}
+	public Inventory() {
+		this.items = new HashMap<Item, Integer>();
+	}
 	
-	public Inventory(Map<Item, Integer> items) {
+	public Inventory(HashMap<Item, Integer> items) {
 		this.items = items;
 	}
 	
 	// getters / setters
-	public Map<Item, Integer> GetItems() {return items;}
+	public HashMap<Item, Integer> GetItems() {return this.items;}
 	public Integer GetItemAmount(Item item) {return this.GetItemAmount(item);}
 	
 	public void AddItem(Item item) {

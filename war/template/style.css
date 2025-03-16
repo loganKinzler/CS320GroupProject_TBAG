@@ -1,109 +1,68 @@
-:root {
-	--console-background: #0c0f0c;
-	--console-text-color: #06b306;
-}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-body,html {
-	overflow: hidden;
-}
-.console-text {
-  font-family: "Doto", serif;
-  font-optical-sizing: auto;
-  font-weight: 100;
-  font-style: normal;
-  font-variation-settings:
-    "ROND" 0;
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
 }
 
-
-.window {
-	display: flex;
-	flex-direction: row;
-	width: 100vw;
-	height: 100vh;
-	background-color: gray;
-}
-.left-column {
-	width: 75%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-}
-.right-column {
-	width: 25%;
-	height: 100%;
-}
-.display {
-	background-color: red;
-	width: 100%;
-	height: 70%;
-}
-.ui-parent {
-	width: 100%;
-	height: 30%;
-	display: flex;
-	flex-direction: row;
-}
-.found-commands {
-	background-color: green;
-	width: 75%;
-	height: 100%;
-}
-.map {
-	background-color: white;
-	width: 25%;
-	height: 100%;
+.container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.console {
-	background-color: pink;
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
+/* History Box */
+.history-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
 }
 
-.output {
-	width: 100%;
-	height: 92%;
-	background-color: var(--console-background);
-	display: flex;
-	flex-direction: column;
-	justify-content: start;
-	align-items: start;
-	padding: 3%;
-	color: var(--console-text-color);
-	font-size: 1.5rem;
-}
-.input {
-	width: 100%;
-	height: 8%;
-	background-color: red;
-	background-color: var(--console-background);
-}
-.console-input {
-	width: 100%;
-	height: 100%;
-	background-color: var(--console-background);
-	border: none;
-	padding: 3%;
-	color: var(--console-text-color);
-	font-size: 1.5rem;
-}
-.console-input:focus {
-	outline-width: 0;
+.history-box h2 {
+  margin-top: 0;
 }
 
-/* Paragraphs (For Testing) */
-.debug_label {
-    width: 100%;
-    height: 100%;
+/* History Items */
+.history-item {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 4px;
+}
 
-    text-align: center;
-    vertical-align: middle;
-    font-size: 2vw;
+/* Input Box */
+.input-box {
+  margin-top: 20px;
+}
+
+#input-form {
+  display: flex;
+  gap: 10px;
+}
+
+#user-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
 }

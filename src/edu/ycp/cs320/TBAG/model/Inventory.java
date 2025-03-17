@@ -19,9 +19,13 @@ public class Inventory {
 		this.items = items;
 	}
 	
+	
 	// getters / setters
 	public HashMap<Item, Integer> GetItems() {return this.items;}
-	public Integer GetItemAmount(Item item) {return this.GetItemAmount(item);}
+	public Integer GetItemAmount(Item item) {
+		Integer quantity = this.items.get(item);
+		return quantity == null? 0 : quantity;
+	}
 	
 	public void AddItem(Item item) {
 		this.AddItems(item, 1);// this is equivalent to adding one item
@@ -32,20 +36,41 @@ public class Inventory {
 		this.items.put(item, this.GetItemAmount(item) + itemAmount);// add items amount to stack
 	}
 
-	public Integer RemoveItem(Item item) {
-		return this.RemoveItem(item, 1);// this is equivalent to removing one item
+	public Integer ExtractItem(Item item) {
+		return this.ExtractItems(item, 1);
 	}
 	
-	public Integer RemoveItem(Item item, Integer itemAmount) {
-		if (itemAmount < 0) return null;// user tries to remove a negative number of items
-		if (!this.items.containsKey(item)) return null;// item doesn't exist
+	public Integer ExtractItems(Item item, Integer itemAmount) {
+		if (itemAmount < 0) return 0;// user tries to remove a negative number of items
+		if (!this.items.containsKey(item)) return 0;// item doesn't exist
 		
-		if (this.GetItemAmount(item) < itemAmount) {
-			this.items.remove(item);// this is the last item in the stack
-			return Math.min(this.GetItemAmount(item), itemAmount);// tell the user that some of the items were received
+		if (this.GetItemAmount(item) <= itemAmount) {// extracting last item in the stack
+			Integer extractedCount = Math.min(this.GetItemAmount(item), itemAmount);// save amount before removing
+			this.items.remove(item);// remove the value entirely
+			return extractedCount;// tell the user that some/all of the items were received
 		}
 		
-		this.items.put(item, this.GetItemAmount(item) - itemAmount);// remove the amount of items that is being taken
+		this.items.put(item, this.GetItemAmount(item) - itemAmount);// remove all of items that are being taken
 		return itemAmount;// tell the user that all of the items were received
+	}
+	
+	public Boolean ContainsItem(Item item) {
+		return this.items.containsKey(item);
+	}
+	
+	public Boolean ContainsMoreThan(Item item, Integer itemAmount) {
+		if (!this.ContainsItem(item)) return false;// no items is equal to 0 items, always less than
+		return this.GetItemAmount(item) > itemAmount;
+	}
+	
+	public Boolean ContainsExactly(Item item, Integer itemAmount) {
+		if (!this.ContainsItem(item) && itemAmount == 0) return true;// no items is equal to 0 items
+		if (!this.ContainsItem(item)) return false;// items in inventory are not equal to 0 quantity
+		return this.GetItemAmount(item) == itemAmount;
+	}
+	
+	public Boolean ContainsLessThan(Item item, Integer itemAmount) {
+		if (!this.ContainsItem(item)) return true;// item must be in inventory
+		return this.GetItemAmount(item) < itemAmount;
 	}
 }

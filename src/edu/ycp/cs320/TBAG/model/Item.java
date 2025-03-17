@@ -19,4 +19,8 @@ class Item {
 	
 	public String GetDescription() {return this.description;}
 	public void SetDescription(String description) {this.description = description;}
+	
+	public Boolean equals(Item item) {
+		return this.name.equals(item.GetName()) && this.description.equals(item.GetDescription());
+	}
 }

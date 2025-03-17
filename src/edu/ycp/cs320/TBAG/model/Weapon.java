@@ -16,4 +16,8 @@ public class Weapon extends Item {
 	// getters / setters
 	public Double GetDamage() {return this.damage;}
 	public void SetDamage(Double damage) {this.damage = damage;}
+	
+	public Boolean equals(Weapon weapon) {
+		return super.equals(weapon) && this.damage == weapon.GetDamage();
+	}
 }

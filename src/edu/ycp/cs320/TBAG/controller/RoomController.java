@@ -1,10 +1,10 @@
-package edu.ycp.cs320.tbag.controller;
+package edu.ycp.cs320.TBAG.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.ycp.cs320.tbag.model.Room;
+import edu.ycp.cs320.TBAG.model.Room;
 
 public class RoomController {
 	private Room model;

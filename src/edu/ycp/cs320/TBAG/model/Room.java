@@ -1,4 +1,4 @@
-package edu.ycp.cs320.tbag.model;
+package edu.ycp.cs320.TBAG.model;
 
 import java.util.HashMap;
 import java.util.Map;

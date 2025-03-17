@@ -2,6 +2,11 @@
 
 package edu.ycp.cs320.TBAG.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import edu.ycp.cs320.TBAG.model.Action;
+
 public class ConsoleInterpreter {
 	public static final int NORTH = 1;
 	public static final int EAST  = 2;
@@ -12,8 +17,8 @@ public class ConsoleInterpreter {
 	private static final String PICKUP = "pickup";
 	private static final String ATTACK = "attack";
 	
-	public static final int INVALID_SYNTAX = -1;
-	public static final int INVALID_COMMAND = -2;
+	public static final Action INVALID_SYNTAX = new Action(false);
+	public static final Action INVALID_COMMAND = new Action(false);
 	
 	private static int countChar(char toCount, String str) {
 		int count = 0;
@@ -23,7 +28,7 @@ public class ConsoleInterpreter {
 		return count;
 	}
 	
-	public static int ReadConsoleInput(String input) {
+	public static Action ReadConsoleInput(String input) {
 		int parenthesisStart = input.indexOf('('); //Get index of first parenthesis to learn how long command string is
 		int parenthesisEnd = input.indexOf(')'); //Get index of first parenthesis to learn how long command string is
 
@@ -32,23 +37,23 @@ public class ConsoleInterpreter {
 		//Check for invalid syntax (individual cases for debugging)
 		if (parenthesisStart == -1) {
 			System.out.println("Syntax was invalid: Starting parenthesis");
-			return INVALID_SYNTAX;
+			return new Action(false);
 		}
 		if (parenthesisEnd == -1) {
 			System.out.println("Syntax was invalid: Ending parenthesis");
-			return INVALID_SYNTAX;
+			return new Action(false);
 		}
 		if (parenthesisEnd < parenthesisStart) {
 			System.out.println("Syntax was invalid: Unordered parenthesis");
-			return INVALID_SYNTAX;
+			return new Action(false);
 		}
 		if (parenthesisEnd < input.length() - 1) {
 			System.out.println("Syntax was invalid: Last parenthesis not at end");
-			return INVALID_SYNTAX;
+			return new Action(false);
 		}
 		if (countStartPar != 1 || countEndPar != 1) {
 			System.out.println("Syntax was invalid: Parenthesis count");
-			return INVALID_SYNTAX;
+			return new Action(false);
 		}
 
 		//Split up input into separate parts
@@ -57,19 +62,19 @@ public class ConsoleInterpreter {
 		
 		switch (command) {
 		case MOVE:
-			if (param.equals("north")) return NORTH;
-			else if (param.equals("east")) return EAST;
-			else if (param.equals("south")) return SOUTH;
-			else if (param.equals("west")) return WEST;
+			if (param.equals("north")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("north")));
+			else if (param.equals("east")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("east")));
+			else if (param.equals("south")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("south")));
+			else if (param.equals("west")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("west")));
 			else {
-				System.out.println("Invalid command: move");
-				return INVALID_COMMAND; //If no valid command is found, return
+				System.out.println("Invalid parameter for command: move");
+				return new Action(false); //If no valid command is found, return
 			}
 		case PICKUP:
 		case ATTACK:
 		default:
 			System.out.println("No valid command was entered");
-			return INVALID_COMMAND; //If no valid command is found, return
+			return new Action(false); //If no valid command is found, return
 		}
 	}
 }

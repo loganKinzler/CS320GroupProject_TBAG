@@ -22,7 +22,7 @@ public class ConsoleInterpreterTest {
 	public void testInterpreterSyntax() {
 		//Correct Syntax
 		Action test = ConsoleInterpreter.ReadConsoleInput("move(north)");
-		assertEquals(test.GetType(), "move");
+		assertEquals(test.GetType(), ConsoleInterpreter.MOVE);
 		
 		//First parenthesis
 		test = ConsoleInterpreter.ReadConsoleInput("movenorth)");
@@ -53,7 +53,7 @@ public class ConsoleInterpreterTest {
 	public void testInterpreterValidCommand() {
 		//Correct Syntax
 		Action test = ConsoleInterpreter.ReadConsoleInput("move(north)");
-		assertEquals(test.GetParams().get(0), "north");
+		assertEquals(test.GetParams().get(0), ConsoleInterpreter.NORTH);
 		
 		//Invalid command
 		test = ConsoleInterpreter.ReadConsoleInput("movee(north)");

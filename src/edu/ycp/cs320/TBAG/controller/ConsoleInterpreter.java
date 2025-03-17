@@ -8,14 +8,14 @@ import java.util.Arrays;
 import edu.ycp.cs320.TBAG.model.Action;
 
 public class ConsoleInterpreter {
-	public static final int NORTH = 1;
-	public static final int EAST  = 2;
-	public static final int SOUTH = 3;
-	public static final int WEST  = 4;
+	public static final String NORTH = "north";
+	public static final String EAST  = "east";
+	public static final String SOUTH = "south";
+	public static final String WEST  = "west";
 
-	private static final String MOVE   = "move";
-	private static final String PICKUP = "pickup";
-	private static final String ATTACK = "attack";
+	public static final String MOVE   = "move";
+	public static final String PICKUP = "pickup";
+	public static final String ATTACK = "attack";
 	
 	public static final Action INVALID_SYNTAX = new Action(false);
 	public static final Action INVALID_COMMAND = new Action(false);
@@ -62,12 +62,12 @@ public class ConsoleInterpreter {
 		
 		switch (command) {
 		case MOVE:
-			if (param.equals("north")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("north")));
-			else if (param.equals("east")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("east")));
-			else if (param.equals("south")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("south")));
-			else if (param.equals("west")) return new Action(true, "move", null, new ArrayList<>(Arrays.asList("west")));
+			if (param.equals("north")) return new Action(true, MOVE, null, new ArrayList<>(Arrays.asList(NORTH)));
+			else if (param.equals("east")) return new Action(true, MOVE, null, new ArrayList<>(Arrays.asList(EAST)));
+			else if (param.equals("south")) return new Action(true, MOVE, null, new ArrayList<>(Arrays.asList(SOUTH)));
+			else if (param.equals("west")) return new Action(true, MOVE, null, new ArrayList<>(Arrays.asList(WEST)));
 			else {
-				System.out.println("Invalid parameter for command: move");
+				System.out.println("Invalid parameter for command: " + MOVE);
 				return new Action(false); //If no valid command is found, return
 			}
 		case PICKUP:

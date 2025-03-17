@@ -52,12 +52,4 @@ public class Room {
 		this.description.set(room_id, description);
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-
 }

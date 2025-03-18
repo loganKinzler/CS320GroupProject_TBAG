@@ -8,17 +8,21 @@ public class Room {
 	//Fields
 	private Map<String, Integer> connections = new HashMap<>();
 	
-	private ArrayList<String> description;
+	private String long_description;
+	private String short_description;
 	
 	//TODO: Need an ArrayList of enemy in the rooms
 	//TODO: Need an Inventory for each of the rooms
-	//TODO: Rename input variables to direction for all of them?!
 	
 	
 	//Constructors
-	public Room(Map<String, Integer> connections) {
-		this.connections = connections;
+	public Room(String short_description, String long_description) {
+		this.short_description = short_description;
+		this.long_description = long_description;
 	}
+	
+	
+	
 	
 	/*This method will return true if there is a key with the same String as input.
 	If it is not it will return false*/
@@ -29,10 +33,15 @@ public class Room {
 	
 	
 	
-	//This will return the RoomDescription of a value of room_id
-	public String getRoomDescription(Integer room_id) {
-		return this.description.get(room_id);
+	//This will return the long room description of the room
+	public String getLongRoomDescription() {
+		return this.long_description;
 	}
+	
+	//This will return the short room description of the room
+		public String getShortRoomDescription() {
+			return this.short_description;
+		}
 	
 	//This will get the value attached to a key with the same String as direction
 	public Integer getConnectedRoom(String direction) {
@@ -47,9 +56,14 @@ public class Room {
 		this.connections.put(direction, new_room_id);
 	}
 	
-	//Set the description of a value of room_id
-	public void setRoomDescription(String description, Integer room_id) {
-		this.description.set(room_id, description);
+	//Set the long description equal to the String description
+	public void setLongRoomDescription(String description) {
+		this.long_description = description;
 	}
+	
+	//Set the short description equal to the String description
+		public void setShortRoomDescription(String description) {
+			this.short_description = description;
+		}
 	
 }

@@ -15,8 +15,7 @@ public class ActionTest {
 	
 	@Before
 	public void SetUp() {
-		this.model = new Action(true, "Movement", "move rooms",
-			new ArrayList<String>( Arrays.asList(new String[] {"right"}) ));
+		this.model = new Action("move", new ArrayList<String>( Arrays.asList(new String[] {"right"}) ));
 	}
 
 	@Test
@@ -26,9 +25,9 @@ public class ActionTest {
 	}
 	
 	@Test
-	public void TypeTest() {
-		this.model.SetType("Quit");
-		assertEquals(this.model.GetType(), "Quit");
+	public void ErrorMessageTest() {
+		this.model.SetErrorMessage("This wasn't a valid command.");
+		assertEquals(this.model.GetErrorMessage(), "This wasn't a valid command.");
 	}
 	
 	@Test

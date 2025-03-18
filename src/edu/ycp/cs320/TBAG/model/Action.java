@@ -6,18 +6,18 @@ public class Action {
 
 	// vars
 	private Boolean isValid;
-	private String type, method;
+	private String errorMessage, method;
 	private ArrayList<String> params;
 	
 	
 	// constructors
-	public Action(Boolean isValid) {
-		this.isValid = isValid;
+	public Action(String errorMessage) {
+		this.isValid = false;
+		this.errorMessage = errorMessage;
 	}
 	
-	public Action(Boolean isValid, String type, String method, ArrayList<String> params) {
-		this.isValid  = isValid;
-		this.type = type;
+	public Action(String method, ArrayList<String> params) {
+		this.isValid  = true;
 		this.method = method;
 		this.params = params;
 	}
@@ -27,8 +27,8 @@ public class Action {
 	public Boolean IsValid() {return this.isValid;}
 	public void SetValidity(Boolean isValid) {this.isValid = isValid;}
 
-	public String GetType() {return type;}	
-	public void SetType(String type) {this.type = type;}
+	public String GetErrorMessage() {return this.errorMessage;}	
+	public void SetErrorMessage(String type) {this.errorMessage = type;}
 
 	public String GetMethod() {return method;}
 	public void SetMethod(String method) {this.method = method;}

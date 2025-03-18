@@ -72,7 +72,7 @@ public class ConsoleInterpreter {
     			
     			// combine words between 'attack:' and 'with'
     			String target = inputWords.get(1);
-    			System.out.println(inputWords.get(1));
+
     			if (target.equals("with")) return new Action("No target was included.");// there is no target included
     			
     			if (inputWords.indexOf("with") > 2) {

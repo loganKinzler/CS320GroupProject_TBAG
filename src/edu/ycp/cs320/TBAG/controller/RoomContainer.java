@@ -18,6 +18,10 @@ public class RoomContainer {
 	private ArrayList<Room> rooms = new ArrayList<Room>();
 	
 	//Constructor
+	public RoomContainer() {
+		this.rooms = new ArrayList<Room>();
+	}
+	
 	public RoomContainer(ArrayList<Room> rooms) {
 		this.rooms = rooms;
 	}

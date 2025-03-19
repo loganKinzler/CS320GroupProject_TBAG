@@ -13,9 +13,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+// our imports
 import edu.ycp.cs320.TBAG.model.Action;
 import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
+
 import edu.ycp.cs320.TBAG.controller.RoomContainer;
+import edu.ycp.cs320.TBAG.model.Room;
+
+import edu.ycp.cs320.TBAG.controller.PlayerController;
+import edu.ycp.cs320.TBAG.model.PlayerModel;
 
 public class GameEngineServlet extends HttpServlet {
     @Override
@@ -50,6 +56,45 @@ public class GameEngineServlet extends HttpServlet {
     }
     */
     
+    private RoomContainer createRooms() {
+        RoomContainer rooms = new RoomContainer();
+        
+        Room yellow = new Room("Yellow Room", "This is the center room.");
+        yellow.setConnectedRoom("east", 1);// to orange
+        yellow.setConnectedRoom("north", 2);// to red
+        rooms.addRoom(yellow);
+        
+        Room orange = new Room("Orange Room", "This room connects to the center room.");
+        orange.setConnectedRoom("west", 0);// to yellow
+        orange.setConnectedRoom("east", 3);// to blue
+        rooms.addRoom(orange);
+        
+        Room red = new Room("Red Room", "This room connects to the Orange room.");
+        red.setConnectedRoom("south", 0);// to yellow
+        rooms.addRoom(red);
+        
+        Room blue = new Room("Blue Room", "This room leads to the Green room.");
+        blue.setConnectedRoom("west", 1);// to orange
+        blue.setConnectedRoom("north", 4);// to green
+        rooms.addRoom(blue);
+        
+        Room green = new Room("Green Room", "This room connects to 3 rooms.");
+        green.setConnectedRoom("south", 3);// to blue
+        green.setConnectedRoom("east", 5);// to purple
+        green.setConnectedRoom("north", 6);// to white
+        rooms.addRoom(green);
+        
+        Room purple = new Room("Purple Room", "This room connects to the Green room.");
+        purple.setConnectedRoom("west", 4);// to green
+        rooms.addRoom(purple);
+        
+        Room white = new Room("White Room", "This room is a dead end.");
+        white.setConnectedRoom("south", 4);// to green
+        rooms.addRoom(white);
+        
+        return rooms;
+    }
+    
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Get or create the session
@@ -65,6 +110,7 @@ public class GameEngineServlet extends HttpServlet {
 
         
         // hard code the rooms
+        RoomContainer rainbowRooms = createRooms();
         
         
         // Process user input

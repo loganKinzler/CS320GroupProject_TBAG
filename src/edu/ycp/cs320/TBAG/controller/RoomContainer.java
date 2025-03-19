@@ -34,6 +34,7 @@ public class RoomContainer {
 		this.rooms.add(r);
 	}
 	
+	
 	/*This method will return the Integer value in the key with the same String name as direction if it exist.
 	If the key does not exist in the current room, the player cannot move in that direction and the method return null*/
 	public Integer nextConnection(Integer current_room, String direction) {
@@ -64,10 +65,10 @@ public class RoomContainer {
 	}
 	
 	//Set the short room description in Room r equal to the String description
-		public void setShortRoomDescription(Room r, String description) {
-			int index = getRoomIndex(r);
-			this.rooms.get(index).setShortRoomDescription(description);
-		}
+	public void setShortRoomDescription(Room r, String description) {
+		int index = getRoomIndex(r);
+		this.rooms.get(index).setShortRoomDescription(description);
+	}
 		
 	
 	
@@ -85,29 +86,49 @@ public class RoomContainer {
 		return this.rooms.get(index).getLongRoomDescription();
 	}
 	
+	public String getLongRoomDescription(Integer index) {
+		return this.rooms.get(index).getLongRoomDescription();
+	}
+	
 	//Get the short room description of Room r
-		public String getShortRoomDescription(Room r) {
-			int index = getRoomIndex(r);
-			return this.rooms.get(index).getShortRoomDescription();
-		}
+	public String getShortRoomDescription(Room r) {
+		int index = getRoomIndex(r);
+		return this.rooms.get(index).getShortRoomDescription();
+	}
+	
+	public String getShortRoomDescription(Integer index) {
+		return this.rooms.get(index).getShortRoomDescription();
+	}
 		
 	//Get all the keys of Room r
-		public Set <String> getAllKeys(Room r){
-			int index = getRoomIndex(r);
-			return this.rooms.get(index).getAllKeys();
-		}
+	public Set <String> getAllKeys(Room r){
+		int index = getRoomIndex(r);
+		return this.rooms.get(index).getAllKeys();
+	}
+	
+	public Set <String> getAllKeys(Integer index){
+		return this.rooms.get(index).getAllKeys();
+	}
 		
 	//Get all of the connections for Room r
-		public List <String> getAllConnections(Room r){
-			int index = getRoomIndex(r);
-			return this.rooms.get(index).getAllConnections();
-		}
+	public List <String> getAllConnections(Room r){
+		int index = getRoomIndex(r);
+		return this.rooms.get(index).getAllConnections();
+	}
+	
+	public List <String> getAllConnections(Integer index){
+		return this.rooms.get(index).getAllConnections();
+	}
 		
 	//Get the entire HashMap of Room r
-		public Map<String, Integer> getHashMap(Room r){
-			int index = getRoomIndex(r);
-			return this.rooms.get(index).getHashMap();
-		}
+	public Map<String, Integer> getHashMap(Room r){
+		int index = getRoomIndex(r);
+		return this.rooms.get(index).getHashMap();
+	}
+	
+	public Map<String, Integer> getHashMap(Integer index){
+		return this.rooms.get(index).getHashMap();
+	}
 	
 	//Get the index of Room r in the ArrayList of rooms
 	public int getRoomIndex(Room r) {

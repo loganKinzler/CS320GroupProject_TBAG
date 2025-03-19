@@ -18,7 +18,7 @@ public class ConsoleInterpreter {
 	public ConsoleInterpreter() {}
 	
     public Action ValidateInput(String userInput) {
-    	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.split(" ") ));
+    	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
     	// no command given
     	if (inputWords.size() == 0) return new Action("No input given.");

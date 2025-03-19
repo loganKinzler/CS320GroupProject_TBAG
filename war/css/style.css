@@ -1,0 +1,86 @@
+@charset "UTF-8";
+
+:root {
+	 --console-background: #001701;
+	 --console-text-color: #07b60d;
+	 --caret-color: #019808;
+	 --submit-button-bg: #004103;
+	 --submit-button-hover: #004f04;
+	 --font-size: 2rem;
+}
+
+* {
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+.console {
+	height: 100vh;
+	width: 50vw;
+	
+	padding: 1%;
+	
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+	justify-content: end;
+	
+	background-color: var(--console-background);
+	color: var(--console-text-color);
+	
+	font-family: "VT323", monospace;
+	font-weight: 400;
+	font-style: normal;
+	font-size: var(--font-size);
+}
+
+.input-area {
+	height: 10%;
+	width: 100%;
+	
+	display: flex;
+	flex-direction: row;
+	justify-content: start;
+	align-items: center;
+}
+.input-area > input {
+	width: 80%;
+	border: none;
+	background-color: var(--console-background);
+	outline: none;
+    box-shadow: none;
+    caret-color: var(--caret-color);
+	
+	font-family: "VT323", monospace;
+	font-weight: 400;
+	font-style: normal;
+	font-size: var(--font-size);
+	color: var(--console-text-color);
+}
+.input-area > button {
+	width: 20%;
+	height: 70%;
+	border: none;
+	
+	font-family: "VT323", monospace;
+	font-weight: 400;
+	font-style: normal;
+	font-size: var(--font-size);
+	color: var(--console-text-color);
+	
+	background-color: var(--submit-button-bg);
+}
+
+.input-area > button:hover {
+	background-color: var(--submit-button-hover);
+}
+
+.history-box {
+	height: 90%;
+	width: 100%;
+	
+	overflow:auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}

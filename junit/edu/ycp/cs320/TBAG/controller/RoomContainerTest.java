@@ -2,8 +2,11 @@ package edu.ycp.cs320.TBAG.controller;
 
 import static org.junit.Assert.*;
 import java.util.Map;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,6 +54,36 @@ public class RoomContainerTest {
 		String description = "test";
 		container.setShortRoomDescription(r3, description);
 		assertTrue(description.equals(container.getShortRoomDescription(r3)));
+	}
+	
+	@Test
+	public void testgetAllKeys() {
+		container.setConnectedRoom(r1, "North", 2);
+		container.setConnectedRoom(r1, "South", 6);
+		Set <String> keys = this.container.getAllKeys(r1);
+		System.out.println(this.container.getAllKeys(r1));
+		
+		assertTrue(keys.equals(this.container.getAllKeys(r1)));
+	}
+	
+	@Test
+	public void testgetAllConnection() {
+		container.setConnectedRoom(r2, "North", 2);
+		container.setConnectedRoom(r2, "South", 6);
+		List <String> connect = this.container.getAllConnections(r2);
+		System.out.println(this.container.getAllConnections(r2));
+		
+		assertTrue(connect.equals(this.container.getAllConnections(r2)));
+	}
+	
+	@Test
+	public void testgetHashMap() {
+		container.setConnectedRoom(r1, "East", 9);
+		container.setConnectedRoom(r1, "South", 6);
+		Map<String, Integer> map = this.container.getHashMap(r1);
+		System.out.println(this.container.getHashMap(r1));
+		
+		assertTrue(map.equals(this.container.getHashMap(r1)));
 	}
 	
 	@Test

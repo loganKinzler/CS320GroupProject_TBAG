@@ -2,7 +2,9 @@ package edu.ycp.cs320.TBAG.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.ycp.cs320.TBAG.model.Room;
 
@@ -62,6 +64,7 @@ public class RoomContainer {
 			int index = getRoomIndex(r);
 			this.rooms.get(index).setShortRoomDescription(description);
 		}
+		
 	
 	
 	
@@ -82,6 +85,24 @@ public class RoomContainer {
 		public String getShortRoomDescription(Room r) {
 			int index = getRoomIndex(r);
 			return this.rooms.get(index).getShortRoomDescription();
+		}
+		
+	//Get all the keys of Room r
+		public Set <String> getAllKeys(Room r){
+			int index = getRoomIndex(r);
+			return this.rooms.get(index).getAllKeys();
+		}
+		
+	//Get all of the connections for Room r
+		public List <String> getAllConnections(Room r){
+			int index = getRoomIndex(r);
+			return this.rooms.get(index).getAllConnections();
+		}
+		
+	//Get the entire HashMap of Room r
+		public Map<String, Integer> getHashMap(Room r){
+			int index = getRoomIndex(r);
+			return this.rooms.get(index).getHashMap();
 		}
 	
 	//Get the index of Room r in the ArrayList of rooms

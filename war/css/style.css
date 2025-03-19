@@ -6,6 +6,7 @@
 	 --caret-color: #019808;
 	 --submit-button-bg: #004103;
 	 --submit-button-hover: #004f04;
+	 --font-size: 2rem;
 }
 
 * {
@@ -31,7 +32,7 @@ box-sizing:border-box;
 	font-family: "VT323", monospace;
 	font-weight: 400;
 	font-style: normal;
-	font-size: 2rem;
+	font-size: var(--font-size);
 }
 
 .input-area {
@@ -54,7 +55,7 @@ box-sizing:border-box;
 	font-family: "VT323", monospace;
 	font-weight: 400;
 	font-style: normal;
-	font-size: 2rem;
+	font-size: var(--font-size);
 	color: var(--console-text-color);
 }
 .input-area > button {
@@ -65,7 +66,7 @@ box-sizing:border-box;
 	font-family: "VT323", monospace;
 	font-weight: 400;
 	font-style: normal;
-	font-size: 2rem;
+	font-size: var(--font-size);
 	color: var(--console-text-color);
 	
 	background-color: var(--submit-button-bg);

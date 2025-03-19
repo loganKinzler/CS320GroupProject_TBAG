@@ -36,5 +36,5 @@ public class EntityModel {
 		}
 	}
 	public int getCurrentRoomIndex() {return currentRoomIndex;}
-	public void setCurrentRoomIndex(double currentRoomIndex) {this.maxHealth = currentRoomIndex;}
+	public void setCurrentRoomIndex(int currentRoomIndex) {this.currentRoomIndex = currentRoomIndex;}
 }

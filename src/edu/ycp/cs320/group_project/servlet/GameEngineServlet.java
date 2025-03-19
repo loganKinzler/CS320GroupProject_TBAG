@@ -1,10 +1,7 @@
 package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
-
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -13,15 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import edu.ycp.cs320.TBAG.controller.*;
 // our imports
-import edu.ycp.cs320.TBAG.model.Action;
-import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
-
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
-import edu.ycp.cs320.TBAG.model.Room;
-
-import edu.ycp.cs320.TBAG.controller.PlayerController;
-import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.model.*;
 
 public class GameEngineServlet extends HttpServlet {
     @Override
@@ -99,6 +90,10 @@ public class GameEngineServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Get or create the session
         HttpSession session = req.getSession(true);
+        
+        System.out.println("-----------------" + session.getAttribute("playerCurrentRoom"));
+
+    	PlayerController player = new PlayerController(new PlayerModel(100.0, 3, 0));
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
         // Retrieve the game history from the session (or create a new one if it doesn't exist)
@@ -106,6 +101,17 @@ public class GameEngineServlet extends HttpServlet {
         if (gameHistory == null) {
             gameHistory = new ArrayList<>();
             session.setAttribute("gameHistory", gameHistory);
+        }
+        
+        //Check if player current room is in session history, set if yes, initialize if not
+        if (session.getAttribute("playerCurrentRoom") == null) {
+        	session.setAttribute("playerCurrentRoom", player.getCurrentRoomIndex());
+        	System.out.println("Post-init: " + session.getAttribute("playerCurrentRoom"));
+        }
+        else {
+        	int roomIndex = ((Integer) session.getAttribute("playerCurrentRoom")).intValue();
+        	player.setCurrentRoomIndex(roomIndex);
+        	System.out.println("Didn't need to init: " + session.getAttribute("playerCurrentRoom") + "/" + player.getCurrentRoomIndex() + "/" + roomIndex);
         }
 
         
@@ -158,9 +164,15 @@ public class GameEngineServlet extends HttpServlet {
             		break;
             	}
             }
-            
+
+            //increment player's room index every valid input, then store it to session info
+            player.setCurrentRoomIndex(player.getCurrentRoomIndex() + 1);
+            session.setAttribute("playerCurrentRoom", player.getCurrentRoomIndex());
+
             gameHistory.add(systemResponse);
+            gameHistory.add("Player room: " + Integer.toString(player.getCurrentRoomIndex()));
             gameHistory.add("~-===================-~");// end of turn line break
+            
         }
 
         // Set the game history as a request attribute for the JSP

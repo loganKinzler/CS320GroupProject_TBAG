@@ -12,57 +12,78 @@ import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
 import edu.ycp.cs320.TBAG.model.Action;
 
 public class ConsoleInterpreterTest {
+	ConsoleInterpreter model;
 	
 	@Before
 	public void setUp() {
-		
+		model = new ConsoleInterpreter();
 	}
 	
 	@Test
-	public void testInterpreterSyntax() {
+	public void testInterpreter() {
 		//Correct Syntax
-		Action test = ConsoleInterpreter.ReadConsoleInput("move(north)");
-		assertEquals(test.GetType(), ConsoleInterpreter.MOVE);
+		Action userInput = model.ValidateInput("using");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "Input was not a command.");
 		
-		//First parenthesis
-		test = ConsoleInterpreter.ReadConsoleInput("movenorth)");
-		assertEquals(test.IsValid(), false);
 		
-		//Last parenthesis
-		test = ConsoleInterpreter.ReadConsoleInput("move(north");
-		assertEquals(test.IsValid(), false);
+		userInput = model.ValidateInput("create:");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "Command given doesn't exist.");
 		
-		//Unordered parenthesis
-		test = ConsoleInterpreter.ReadConsoleInput("move)north(");
-		assertEquals(test.IsValid(), false);
 		
-		//End parenthesis not at end
-		test = ConsoleInterpreter.ReadConsoleInput("move()north");
-		assertEquals(test.IsValid(), false);
+		userInput = model.ValidateInput("use: ");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "No parameters given.");
 		
-		//Count start parenthesis
-		test = ConsoleInterpreter.ReadConsoleInput("move((north)");
-		assertEquals(test.IsValid(), false);
 		
-		//Count end parenthesis
-		test = ConsoleInterpreter.ReadConsoleInput("move(north))");
-		assertEquals(test.IsValid(), false);
-	}
-	
-	@Test
-	public void testInterpreterValidCommand() {
-		//Correct Syntax
-		Action test = ConsoleInterpreter.ReadConsoleInput("move(north)");
-		assertEquals(test.GetParams().get(0), ConsoleInterpreter.NORTH);
-		
-		//Invalid command
-		test = ConsoleInterpreter.ReadConsoleInput("movee(north)");
-		assertEquals(test.IsValid(), false);
-		
-		//Invalid parameter
-		test = ConsoleInterpreter.ReadConsoleInput("move(forward)");
-		assertEquals(test.IsValid(), false);
-		
-	}
+		userInput = model.ValidateInput("describe: inventory");
+		assertEquals(userInput.IsValid(), true);
+		assertEquals(userInput.GetErrorMessage(), null);
+		assertEquals(userInput.GetMethod(), "describe");
+		assertEquals(userInput.GetParams().get(0), "inventory");
 
+		
+		userInput = model.ValidateInput("use: health potion");
+		assertEquals(userInput.IsValid(), true);
+		assertEquals(userInput.GetErrorMessage(), null);
+		assertEquals(userInput.GetMethod(), "use");
+		assertEquals(userInput.GetParams().get(0), "health potion");
+		
+		
+		userInput = model.ValidateInput("attack: ");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "Keyword 'using' or 'with' is missing.");
+		
+		
+		userInput = model.ValidateInput("attack: using nothing, totally nothing ever");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "Keyword 'using' or 'with' is missing.");
+	
+		userInput = model.ValidateInput("attack: Person Sword using Slash");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "Keyword 'using' or 'with' is missing.");
+		
+		userInput = model.ValidateInput("attack: with weapon using ultra slash");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "No target was included.");
+		
+
+		userInput = model.ValidateInput("attack: Drone with using Red Laser");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "No weapon was included.");
+		
+		
+		userInput = model.ValidateInput("attack: Ogre with Big Sword using");
+		assertEquals(userInput.IsValid(), false);
+		assertEquals(userInput.GetErrorMessage(), "No attack type was given.");
+		
+		
+		userInput = model.ValidateInput("attack: Bat with Bow using Fire Arrow");
+		assertEquals(userInput.IsValid(), true);
+		assertEquals(userInput.GetMethod(), "attack");
+		assertEquals(userInput.GetParams().get(0), "Bat");
+		assertEquals(userInput.GetParams().get(1), "Bow");
+		assertEquals(userInput.GetParams().get(2), "Fire Arrow");
+	}
 }

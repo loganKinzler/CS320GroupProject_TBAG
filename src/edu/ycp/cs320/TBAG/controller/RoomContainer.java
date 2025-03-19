@@ -2,7 +2,9 @@ package edu.ycp.cs320.TBAG.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.ycp.cs320.TBAG.model.Room;
 
@@ -12,7 +14,7 @@ public class RoomContainer {
 	//TODO: We are definitely going to need to draw out a map layout in lucidchart and label it
 	
 	//Fields
-	//The index of the ArrayList is where the room will be "Located" aka it's value to get to that room
+	//The index of the ArrayList is where the room will be "Located" AKA it's value to get to that room
 	private ArrayList<Room> rooms = new ArrayList<Room>();
 	
 	//Constructor
@@ -51,11 +53,18 @@ public class RoomContainer {
 		this.rooms.get(index).setConnectedRoom(direction, new_room_id);
 	}
 	
-	//Set the room description in Room r with a value of room_id
-	public void setRoomDescription(Room r, String description, Integer room_id) {
+	//Set the long room description in Room r equal to the String description
+	public void setLongRoomDescription(Room r, String description) {
 		int index = getRoomIndex(r);
-		this.rooms.get(index).setRoomDescription(description, room_id);
+		this.rooms.get(index).setLongRoomDescription(description);
 	}
+	
+	//Set the short room description in Room r equal to the String description
+		public void setShortRoomDescription(Room r, String description) {
+			int index = getRoomIndex(r);
+			this.rooms.get(index).setShortRoomDescription(description);
+		}
+		
 	
 	
 	
@@ -66,34 +75,39 @@ public class RoomContainer {
 		return this.rooms.get(index).getConnectedRoom(direction);
 	}
 	
-	//Get the description of a value of room_id in Room r
-	public String getRoomDescription(Room r, Integer room_id) {
+	//Get the long room description of Room r
+	public String getLongRoomDescription(Room r) {
 		int index = getRoomIndex(r);
-		return this.rooms.get(index).getRoomDescription(room_id);
+		return this.rooms.get(index).getLongRoomDescription();
 	}
+	
+	//Get the short room description of Room r
+		public String getShortRoomDescription(Room r) {
+			int index = getRoomIndex(r);
+			return this.rooms.get(index).getShortRoomDescription();
+		}
+		
+	//Get all the keys of Room r
+		public Set <String> getAllKeys(Room r){
+			int index = getRoomIndex(r);
+			return this.rooms.get(index).getAllKeys();
+		}
+		
+	//Get all of the connections for Room r
+		public List <String> getAllConnections(Room r){
+			int index = getRoomIndex(r);
+			return this.rooms.get(index).getAllConnections();
+		}
+		
+	//Get the entire HashMap of Room r
+		public Map<String, Integer> getHashMap(Room r){
+			int index = getRoomIndex(r);
+			return this.rooms.get(index).getHashMap();
+		}
 	
 	//Get the index of Room r in the ArrayList of rooms
 	public int getRoomIndex(Room r) {
 		return rooms.indexOf(r);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	
-	
-	
-	
-	
-	
 		
 }

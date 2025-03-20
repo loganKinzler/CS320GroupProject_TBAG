@@ -40,4 +40,16 @@ public class EntityModelTest {
 		model.setHealth(-1);
 		assertEquals(25, model.getHealth(), .001);
 	}
+	@Test
+	public void testCurrentRoomIndex() {
+		setUp();
+		model.setCurrentRoomIndex(1);
+		assertEquals(1,model.getCurrentRoomIndex());
+	}
+	@Test
+	public void testLives() {
+		setUp();
+		model.setLives(2);
+		assertEquals(2, model.getLives());
+	}
 }

@@ -26,10 +26,23 @@ public class EntityControllerTest {
 		entity.AddHealth(-20);
 		assertEquals(80, entity.getHealth(), .001);
 		
-		entity.AddHealth(40);
-		assertEquals(80, entity.getHealth(), .001);
-		
 	}
+	@Test
+	public void testAddHealthOver() {
+		setUp();
+		entity.setHealth(80);
+		entity.AddHealth(30);
+		assertEquals(80, entity.getHealth(), .001);
+	}
+	@Test
+	public void testAddHealthUnder() {
+		setUp();
+		entity.setHealth(50);
+		entity.AddHealth(-60);
+		assertEquals(50, entity.getHealth(), .001);
+	}
+	
+	
 	@Test
 	public void testAddHealthClamped() {
 		setUp();
@@ -37,11 +50,19 @@ public class EntityControllerTest {
 		
 		entity.AddHealthClamped(-20);
 		assertEquals(80, entity.getHealth(), .001);
-		
+	}
+	@Test
+	public void testAddHealthClampedOver() {
+		setUp();
+		entity.setHealth(80);
 		entity.AddHealthClamped(40);
 		assertEquals(100, entity.getHealth(), .001);
-		
-		entity.AddHealthClamped(-120);
+	}
+	@Test
+	public void testAddHealthClampedUnder() {
+		setUp();
+		entity.setHealth(80);
+		entity.AddHealthClamped(-100);
 		assertEquals(0, entity.getHealth(), .001);
 	}
 }

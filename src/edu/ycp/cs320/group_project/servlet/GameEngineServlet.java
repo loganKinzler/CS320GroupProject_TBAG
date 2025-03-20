@@ -1,7 +1,9 @@
 package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -10,9 +12,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+<<<<<<< HEAD
 import edu.ycp.cs320.TBAG.controller.*;
 // our imports
 import edu.ycp.cs320.TBAG.model.*;
+=======
+import edu.ycp.cs320.TBAG.model.Action;
+import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
+>>>>>>> refs/remotes/origin/development-branch
 
 public class GameEngineServlet extends HttpServlet {
     @Override
@@ -47,6 +54,7 @@ public class GameEngineServlet extends HttpServlet {
     }
     */
     
+<<<<<<< HEAD
     private RoomContainer createRooms() {
         RoomContainer rooms = new RoomContainer();
         
@@ -86,13 +94,18 @@ public class GameEngineServlet extends HttpServlet {
         return rooms;
     }
     
+=======
+>>>>>>> refs/remotes/origin/development-branch
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Get or create the session
         HttpSession session = req.getSession(true);
+<<<<<<< HEAD
         
 
     	PlayerController player = new PlayerController(new PlayerModel(100.0, 3, 0));
+=======
+>>>>>>> refs/remotes/origin/development-branch
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
         // Retrieve the game history from the session (or create a new one if it doesn't exist)
@@ -112,13 +125,21 @@ public class GameEngineServlet extends HttpServlet {
         }
 
         
+<<<<<<< HEAD
         // hard code the rooms
         RoomContainer rooms = createRooms();
         
         
+=======
+>>>>>>> refs/remotes/origin/development-branch
         // Process user input
         String userInput = req.getParameter("userInput");
+<<<<<<< HEAD
         gameHistory.add("C:&bsol;Users&bsol;exampleUser&gt; " + userInput);// add user input to console (for user's reference)
+=======
+        gameHistory.add( userInput );// add user input to console (for user's reference)
+        
+>>>>>>> refs/remotes/origin/development-branch
         
         if (userInput != null && !userInput.trim().isEmpty()) {
             // Add user input to the game history
@@ -130,6 +151,7 @@ public class GameEngineServlet extends HttpServlet {
             
             // action details here (strings for now, need more structure for true game)
             if (userAction.IsValid()) {
+<<<<<<< HEAD
             	ArrayList<String> params = userAction.GetParams();
             	
             	switch (userAction.GetMethod()) {
@@ -215,10 +237,47 @@ public class GameEngineServlet extends HttpServlet {
             //increment player's room index every valid input, then store it to session info
             session.setAttribute("playerCurrentRoom", player.getCurrentRoomIndex());
 
+=======
+            	switch (userAction.GetMethod()) {
+            	
+            		// TYPE 1 COMMANDS:
+            		case "move":
+            			systemResponse = String.format("Moving to %s...", userAction.GetParams().get(0));
+            		break;
+            		
+            		case "use":
+            			systemResponse = String.format("Used %s...", userAction.GetParams().get(0));
+            		break;
+            		
+            		case "pickup":
+            			systemResponse = String.format("Picked up %s...", userAction.GetParams().get(0));
+            		break;
+            		
+            		case "describe":
+            			systemResponse = String.format("Describing %s...", userAction.GetParams().get(0));
+            		break;
+            		
+            		// TYPE 2 COMMANDS
+            		case "attack":
+            			systemResponse = String.format("Attacked %s with %s using %s.", userAction.GetParams().get(0),
+            					userAction.GetParams().get(1),userAction.GetParams().get(2));
+            		break;
+            		
+            		default:
+            			systemResponse = String.format("User inputted valid command of type: %s", userAction.GetMethod());
+            		break;
+            	}
+            }
+            
+>>>>>>> refs/remotes/origin/development-branch
             gameHistory.add(systemResponse);
+<<<<<<< HEAD
             gameHistory.add("<br>");
             gameHistory.add("~-===================-~");// end of turn line break
             gameHistory.add("<br>");
+=======
+            gameHistory.add("~-===================-~");// end of turn line break
+>>>>>>> refs/remotes/origin/development-branch
         }
 
         // Set the game history as a request attribute for the JSP

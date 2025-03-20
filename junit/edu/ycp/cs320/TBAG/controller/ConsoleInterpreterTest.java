@@ -29,7 +29,11 @@ public class ConsoleInterpreterTest {
 		
 		userInput = model.ValidateInput("create:");
 		assertEquals(userInput.IsValid(), false);
+<<<<<<< HEAD
 		assertEquals(userInput.GetErrorMessage(), "Command given was not valid.");
+=======
+		assertEquals(userInput.GetErrorMessage(), "Command given doesn't exist.");
+>>>>>>> refs/remotes/origin/development-branch
 		
 		
 		userInput = model.ValidateInput("use: ");
@@ -82,8 +86,14 @@ public class ConsoleInterpreterTest {
 		userInput = model.ValidateInput("attack: Bat with Bow using Fire Arrow");
 		assertEquals(userInput.IsValid(), true);
 		assertEquals(userInput.GetMethod(), "attack");
+<<<<<<< HEAD
 		assertEquals(userInput.GetParams().get(0), "bat");
 		assertEquals(userInput.GetParams().get(1), "bow");
 		assertEquals(userInput.GetParams().get(2), "fire arrow");
+=======
+		assertEquals(userInput.GetParams().get(0), "Bat");
+		assertEquals(userInput.GetParams().get(1), "Bow");
+		assertEquals(userInput.GetParams().get(2), "Fire Arrow");
+>>>>>>> refs/remotes/origin/development-branch
 	}
 }

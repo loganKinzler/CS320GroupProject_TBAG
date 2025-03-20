@@ -53,79 +53,47 @@ public class RoomContainer {
 	
 	/*Set the value of the key in room r to the String stored in new_room_id
 	NOTE: This method will not function properly if rooms in the ArrayList have the same variable name*/
-	public void setConnectedRoom(Room r, String direction, Integer new_room_id) {
-		int index = getRoomIndex(r);
+	public void setConnectedRoom(Integer index, String direction, Integer new_room_id) {
 		this.rooms.get(index).setConnectedRoom(direction, new_room_id);
 	}
 	
 	//Set the long room description in Room r equal to the String description
-	public void setLongRoomDescription(Room r, String description) {
-		int index = getRoomIndex(r);
+	public void setLongRoomDescription(Integer index, String description) {
 		this.rooms.get(index).setLongRoomDescription(description);
 	}
 	
 	//Set the short room description in Room r equal to the String description
-	public void setShortRoomDescription(Room r, String description) {
-		int index = getRoomIndex(r);
+	public void setShortRoomDescription(Integer index, String description) {
 		this.rooms.get(index).setShortRoomDescription(description);
 	}
-		
-	
-	
 	
 	
 	//Get the value of the key in Room r with the String direction
-	public Integer getConnectedRoom(Room r, String direction) {
-		int index = getRoomIndex(r);
+	public Integer getConnectedRoom(Integer index, String direction) {
 		return this.rooms.get(index).getConnectedRoom(direction);
 	}
 	
 	//Get the long room description of Room r
-	public String getLongRoomDescription(Room r) {
-		int index = getRoomIndex(r);
-		return this.rooms.get(index).getLongRoomDescription();
-	}
-	
 	public String getLongRoomDescription(Integer index) {
 		return this.rooms.get(index).getLongRoomDescription();
 	}
 	
 	//Get the short room description of Room r
-	public String getShortRoomDescription(Room r) {
-		int index = getRoomIndex(r);
-		return this.rooms.get(index).getShortRoomDescription();
-	}
-	
 	public String getShortRoomDescription(Integer index) {
 		return this.rooms.get(index).getShortRoomDescription();
 	}
 		
 	//Get all the keys of Room r
-	public Set <String> getAllKeys(Room r){
-		int index = getRoomIndex(r);
-		return this.rooms.get(index).getAllKeys();
-	}
-	
 	public Set <String> getAllKeys(Integer index){
 		return this.rooms.get(index).getAllKeys();
 	}
 		
 	//Get all of the connections for Room r
-	public List <String> getAllConnections(Room r){
-		int index = getRoomIndex(r);
-		return this.rooms.get(index).getAllConnections();
-	}
-	
 	public List <String> getAllConnections(Integer index){
 		return this.rooms.get(index).getAllConnections();
 	}
 		
 	//Get the entire HashMap of Room r
-	public Map<String, Integer> getHashMap(Room r){
-		int index = getRoomIndex(r);
-		return this.rooms.get(index).getHashMap();
-	}
-	
 	public Map<String, Integer> getHashMap(Integer index){
 		return this.rooms.get(index).getHashMap();
 	}
@@ -134,5 +102,4 @@ public class RoomContainer {
 	public int getRoomIndex(Room r) {
 		return rooms.indexOf(r);
 	}
-		
 }

@@ -136,7 +136,6 @@ public class GameEngineServlet extends HttpServlet {
             	
             		// TYPE 1 COMMANDS:
             		case "move":
-            			
             			Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
             					params.get(0));
             			
@@ -174,7 +173,9 @@ public class GameEngineServlet extends HttpServlet {
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:<br>");
             					
             					for (String direction : rooms.getAllKeys( player.getCurrentRoomIndex() )) {
-            						systemResponse += String.format("%s: %s<br>", direction,
+            						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1);
+            						
+            						systemResponse += String.format(" - %s &mdash;&mdash;&#62; %s<br>", camelCaseDirection,
             								rooms.getShortRoomDescription(
             									rooms.nextConnection(player.getCurrentRoomIndex(), direction)
             								));
@@ -187,8 +188,8 @@ public class GameEngineServlet extends HttpServlet {
             							+ "Command Structure:<br>"
             							+ "[command]: [param1] [param2] ...<br><br>"
             							+ "Command List:<br>"
-            							+ "move: [direction]<br>"
-            							+ "describe: [room / moves / commands]";
+            							+ " - move: [direction]<br>"
+            							+ " - describe: [room / moves / commands]";
             				break;
             				
             				default:

@@ -1,9 +1,9 @@
-//TODO: count if there are multiple of one parenthesis
-
 package edu.ycp.cs320.TBAG.controller;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import edu.ycp.cs320.TBAG.model.Action;
 
@@ -14,6 +14,8 @@ public class ConsoleInterpreter {
 	public static final String DESCRIBE = "describe";
 	public static final String USE = "use";
 	public static final String ATTACK = "attack";
+	public static final Set<String> MOVE_COMMANDS = new HashSet<String>(Arrays.asList(
+			new String[]{"north", "east", "south", "west"}));
 	
 	public ConsoleInterpreter() {}
 	
@@ -37,14 +39,10 @@ public class ConsoleInterpreter {
     		case USE: commandType = 1; break;
     	
     		case ATTACK: commandType = 2; break;
+    		default: return new Action("Command given was not valid.");
     	}
     	
     	switch (commandType) {
-    	
-    		// command doesn't exist
-    		case 0:
-    			return new Action("Command given doesn't exist.");
-    		
     	
     		// format: '<command>: <param1>'
     		case 1:
@@ -61,8 +59,18 @@ public class ConsoleInterpreter {
     					inputWords.remove(2);
     				}
     			}
-    				
+    			
+    			
+    			// commands with extra behavior
+    			switch (inputWords.get(0)) {
+    				case "move":
+    					if (!MOVE_COMMANDS.contains(inputWords.get(1)))
+    						return new Action("Direction given was not valid.");
+    				break;
+    			}
+    			
     			return new Action(inputWords.get(0),new ArrayList<String>( Arrays.asList(secondWord) ));
+
     		
     			
     		// format: 'attack: <enemy> with <weapon> using <attack type>'

@@ -38,52 +38,52 @@ public class RoomContainerTest {
 	public void testsetConnectedRoom() {
 		String direction = "North";
 		Integer new_room_id = 3;
-		container.setConnectedRoom(r1, direction, new_room_id);
-		assertTrue(new_room_id == container.getConnectedRoom(r1, direction));
+		container.setConnectedRoom(0, direction, new_room_id);
+		assertTrue(new_room_id == container.getConnectedRoom(0, direction));
 	}
 	
 	@Test
 	public void testsetLongRoomDescription() {
 		String description = "this a test";
-		container.setLongRoomDescription(r2, description);
-		assertTrue(description.equals(container.getLongRoomDescription(r2)));
+		container.setLongRoomDescription(1, description);
+		assertTrue(description.equals(container.getLongRoomDescription(1)));
 	}
 	
 	@Test
 	public void testsetShortRoomDescription() {
 		String description = "test";
-		container.setShortRoomDescription(r3, description);
-		assertTrue(description.equals(container.getShortRoomDescription(r3)));
+		container.setShortRoomDescription(2, description);
+		assertTrue(description.equals(container.getShortRoomDescription(2)));
 	}
 	
 	@Test
 	public void testgetAllKeys() {
-		container.setConnectedRoom(r1, "North", 2);
-		container.setConnectedRoom(r1, "South", 6);
-		Set <String> keys = this.container.getAllKeys(r1);
-		System.out.println(this.container.getAllKeys(r1));
+		container.setConnectedRoom(0, "North", 2);
+		container.setConnectedRoom(0, "South", 6);
+		Set <String> keys = this.container.getAllKeys(0);
+		System.out.println(this.container.getAllKeys(0));
 		
-		assertTrue(keys.equals(this.container.getAllKeys(r1)));
+		assertTrue(keys.equals(this.container.getAllKeys(0)));
 	}
 	
 	@Test
 	public void testgetAllConnection() {
-		container.setConnectedRoom(r2, "North", 2);
-		container.setConnectedRoom(r2, "South", 6);
-		List <String> connect = this.container.getAllConnections(r2);
-		System.out.println(this.container.getAllConnections(r2));
+		container.setConnectedRoom(1, "North", 2);
+		container.setConnectedRoom(1, "South", 6);
+		List <String> connect = this.container.getAllConnections(1);
+		System.out.println(this.container.getAllConnections(1));
 		
-		assertTrue(connect.equals(this.container.getAllConnections(r2)));
+		assertTrue(connect.equals(this.container.getAllConnections(1)));
 	}
 	
 	@Test
 	public void testgetHashMap() {
-		container.setConnectedRoom(r1, "East", 9);
-		container.setConnectedRoom(r1, "South", 6);
-		Map<String, Integer> map = this.container.getHashMap(r1);
-		System.out.println(this.container.getHashMap(r1));
+		container.setConnectedRoom(0, "East", 9);
+		container.setConnectedRoom(0, "South", 6);
+		Map<String, Integer> map = this.container.getHashMap(0);
+		System.out.println(this.container.getHashMap(0));
 		
-		assertTrue(map.equals(this.container.getHashMap(r1)));
+		assertTrue(map.equals(this.container.getHashMap(0)));
 	}
 	
 	@Test
@@ -98,15 +98,15 @@ public class RoomContainerTest {
 	public void testaddRoom() {
 		Room r4 = new Room("Room4","Roooooom4");
 		container.addRoom(r4);
-		assertTrue("Room4".equals(container.getShortRoomDescription(r4)));
-		assertTrue("Roooooom4".equals(container.getLongRoomDescription(r4)));
+		assertTrue("Room4".equals(container.getShortRoomDescription(3)));
+		assertTrue("Roooooom4".equals(container.getLongRoomDescription(3)));
 	}
 	
 	@Test
 	public void testnextConnection() {
 		//Going North takes you to r3 since r3 has an index of 2 in the ArrayList
-		container.setConnectedRoom(r1, "North", 2);
-		assertTrue(2 == container.getConnectedRoom(r1, "North"));
+		container.setConnectedRoom(0, "North", 2);
+		assertTrue(2 == container.getConnectedRoom(0, "North"));
 	}
 	
 	

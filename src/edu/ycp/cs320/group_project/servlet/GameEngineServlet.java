@@ -117,15 +117,15 @@ public class GameEngineServlet extends HttpServlet {
         // hard code the rooms
         RoomContainer rooms = createRooms();
         
-        
         // Process user input
         String userInput = req.getParameter("userInput");
-        gameHistory.add("C:&bsol;Users&bsol;exampleUser&gt; " + userInput);// add user input to console (for user's reference)
-
         
         if (userInput != null && !userInput.trim().isEmpty()) {
             // Add user input to the game history
 
+        	
+        	gameHistory.add("C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
+        	
             String systemResponse;
             
             Action userAction = interpreter.ValidateInput(userInput);
@@ -185,6 +185,14 @@ public class GameEngineServlet extends HttpServlet {
             					}
             				break;
             				
+            				case "directions":
+            					systemResponse = String.format("Describing directions...<br><br>Possible moves:<br>");
+            				
+            					for (String direction : ConsoleInterpreter.MOVE_DIRECTIONS)
+            						systemResponse += String.format(" - %s",
+            								direction.substring(0, 1).toUpperCase() + direction.substring(1));
+            				break;
+            				
             				case "commands":
             					systemResponse = ""
             							+ "Describing commands...<br><br>"
@@ -192,7 +200,8 @@ public class GameEngineServlet extends HttpServlet {
             							+ "[command]: [param1] [param2] ...<br><br>"
             							+ "Command List:<br>"
             							+ " - move: [direction]<br>"
-            							+ " - describe: [room / moves / commands]";
+            							+ " - describe: [room / moves / directions / commands]<br>"
+            							+ " - attack [enemy] with [weapon] using [attack]";
             				break;
             				
             				default:
@@ -220,7 +229,7 @@ public class GameEngineServlet extends HttpServlet {
             gameHistory.add(systemResponse);
 
             gameHistory.add("<br>");
-            gameHistory.add("~-===================-~");// end of turn line break
+            gameHistory.add("~-==============================-~");// end of turn line break
             gameHistory.add("<br>");
 
         }

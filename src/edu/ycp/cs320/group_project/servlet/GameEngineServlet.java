@@ -189,7 +189,7 @@ public class GameEngineServlet extends HttpServlet {
             					systemResponse = String.format("Describing directions...<br><br>Possible moves:<br>");
             				
             					for (String direction : ConsoleInterpreter.MOVE_DIRECTIONS)
-            						systemResponse += String.format(" - %s",
+            						systemResponse += String.format(" - %s<br>",
             								direction.substring(0, 1).toUpperCase() + direction.substring(1));
             				break;
             				

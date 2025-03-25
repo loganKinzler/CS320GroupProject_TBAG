@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.lang.Math;
 
 
-public class Inventory {
+public abstract class Inventory {
 	
 	// vars
 	protected HashMap<Item, Integer> items;

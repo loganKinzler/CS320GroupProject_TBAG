@@ -91,6 +91,11 @@ public class RoomContainerTest {
 		assertTrue(0 == container.getRoomIndex(r1));
 	}
 	
+	@Test
+	public void testgetRoom() {
+		assertTrue(r1 == this.container.getRoom(0));
+	}
+	
 	
 	
 	

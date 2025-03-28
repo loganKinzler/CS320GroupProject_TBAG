@@ -87,6 +87,24 @@ public class RoomTest {
 		assertTrue(connect.equals(this.model.getHashMap()));
 	}
 	
+	@Test
+	public void testgetItems() {
+		Item carrot = new Item("carrot", "It's shaped like a cane");
+		model.AddItem(carrot);
+		Item coin = new Item("coin", "it's made out of copper");
+		model.AddItem(coin);
+		HashMap<Item, Integer> item = this.model.getItems();
+		
+		assertTrue(item.equals(this.model.getItems()));
+	}
+	
+	@Test
+	public void testgetRoomInventory() {
+		assertTrue(this.model.getRoomInventory() == this.model.getRoomInventory());
+	}
+	
+	
+	
 	
 	
 	@Test
@@ -101,5 +119,54 @@ public class RoomTest {
 		String direction2 = "South";
 		assertTrue(false == model.doesKeyExist(direction2));
 		
+	}
+	
+	@Test
+	public void testAddItem() {
+		Item coin = new Item("coin", "it's made out of copper");
+		model.AddItem(coin);
+		assertTrue(model.ContainsExactly(coin, 1));
+	}
+	
+	@Test
+	public void testAddItems() {
+		Item carrot = new Item("carrot", "It's shaped like a cane");
+		model.AddItems(carrot, 4);
+		assertTrue(model.ContainsExactly(carrot, 4));
+	}
+	
+	@Test
+	public void testExtractItem() {
+		Item carrot = new Item("carrot", "It's shaped like a cane");
+		model.AddItem(carrot);
+		assertTrue(1 == model.ExtractItem(carrot));
+	}
+	
+	@Test
+	public void testExtractItems() {
+		Item carrot = new Item("carrot", "It's shaped like a cane");
+		model.AddItems(carrot, 2);
+		assertTrue(2 == model.ExtractItems(carrot, 2));
+	}
+	
+	@Test
+	public void testContainsItem() {
+		Item carrot = new Item("carrot", "It's shaped like a cane");
+		model.AddItem(carrot);
+		assertTrue(true == model.ContainsItem(carrot));
+	}
+	
+	@Test
+	public void testContainsMoreThan() {
+		Item carrot = new Item("carrot", "It's shaped like a cane");
+		model.AddItem(carrot);
+		assertTrue(true == model.ContainsMoreThan(carrot, 0));
+	}
+	
+	@Test
+	public void testContainsLessThan() {
+		Item carrot = new Item("carrot", "It's shaped like a cane");
+		model.AddItem(carrot);
+		assertTrue(true == model.ContainsLessThan(carrot, 2));
 	}
 }

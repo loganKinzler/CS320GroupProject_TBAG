@@ -2,7 +2,7 @@ package edu.ycp.cs320.TBAG.controller;
 
 import edu.ycp.cs320.TBAG.model.EntityModel;
 
-public class EntityController {
+public abstract class EntityController {
 	private EntityModel model;
 	private double maxHealth, health;
 	private int lives;

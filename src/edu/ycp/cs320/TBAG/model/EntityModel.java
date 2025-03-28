@@ -1,6 +1,6 @@
 package edu.ycp.cs320.TBAG.model;
 
-public class EntityModel {
+public abstract class EntityModel {
 	private double maxHealth, health;
 	private int lives;
 	private int currentRoomIndex;

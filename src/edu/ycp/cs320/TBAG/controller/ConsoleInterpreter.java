@@ -25,10 +25,6 @@ public class ConsoleInterpreter {
     	// no command given
     	if (inputWords.size() == 0) return new Action("No input given.");
     	
-    	// no command indicator
-    	if (inputWords.get(0).indexOf(":") != inputWords.get(0).length()-1) return new Action("Input was not a command.");
-    	inputWords.set(0, inputWords.get(0).replace(":", ""));// remove indicator
-    	
     	// check if command exists
     	Integer commandType = 0;
     	

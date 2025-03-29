@@ -1,4 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -31,8 +33,59 @@
 		<div class="sticky-note-3d">
           <div class="sticky-note-content">
             <h1>Commands</h1>
-            <p>describe</p>
-            <p>move</p>
+			
+			<!-- Move -->
+			<c:if test="${fn:contains(foundCommands, 'move')}">
+			    <p>move [direction]</p>
+			</c:if>
+			
+			<!-- Describe -->
+			<c:if test="${fn:contains(foundCommands, 'describe')}">
+				<p>describe [
+			</c:if>
+			
+			<c:if test="${foundCommands.contains('describe_room')}" var="describe_room">
+				room 
+			</c:if>
+			
+			<c:if test="${foundCommands.contains('describe_room') and 
+				(foundCommands.contains('describe_moves') or
+				foundCommands.contains('describe_directions'))}">
+				/ 
+			</c:if>
+			
+			<c:if test="${foundCommands.contains('describe_moves')}" var="describe_moves">
+				moves 
+			</c:if>
+			
+			<c:if test="${foundCommands.contains('describe_moves') and
+				foundCommands.contains('describe_directions')}">
+				/ 
+			</c:if>
+			
+			<c:if test="${foundCommands.contains('describe_directions')}" var="describe_directions">
+				directions
+			</c:if>
+			
+			<c:if test="${fn:contains(foundCommands, 'describe')}">
+				]</p> 
+			</c:if>
+			
+			<!-- Use -->
+			<c:if test="${fn:contains(foundCommands, 'use')}">
+			    <p>use [item]</p>
+			</c:if>
+			
+			<!-- Pickup -->
+			<c:if test="${fn:contains(foundCommands, 'pickup')}">
+			    <p>pickup [item]</p>
+			</c:if>
+			
+			<!-- Attack -->
+			<c:if test="${fn:contains(foundCommands, 'attack')}">
+			    <p>attack [enemy] with [weapon] using [attack]</p>
+			</c:if>
+			
           </div>
         </div>
 	</div>

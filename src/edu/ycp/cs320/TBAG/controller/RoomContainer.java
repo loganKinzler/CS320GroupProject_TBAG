@@ -102,4 +102,9 @@ public class RoomContainer {
 	public int getRoomIndex(Room r) {
 		return rooms.indexOf(r);
 	}
+	
+	//Get the room at index
+	public Room getRoom(Integer index) {
+		return this.rooms.get(index);
+	}
 }

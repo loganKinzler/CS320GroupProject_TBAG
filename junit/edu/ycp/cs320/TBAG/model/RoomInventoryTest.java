@@ -5,8 +5,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class InventoryTest {
-	private Inventory model;
+public class RoomInventoryTest {
+	private RoomInventory model;
 	
 	private Item moss = new Item("Moss", "Green and fluffy! | Heals 10hp");
 	private Item hotChocolate = new Item("Hot Chocolate", "Steamy & cozy.");
@@ -15,7 +15,7 @@ public class InventoryTest {
 	
 	@Before
 	public void SetUp() {
-		this.model = new Inventory();
+		this.model = new RoomInventory();
 		
 		this.model.AddItem(hotChocolate);
 		this.model.AddItems(moss, 5);

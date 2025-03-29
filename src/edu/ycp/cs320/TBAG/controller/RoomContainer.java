@@ -6,13 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.Room;
 
-public class RoomContainer {
-	
-	//TODO: I might potentially make a hashmap for the ArrayList instead of having to rely on it's index in the array for it's value
-	//TODO: We are definitely going to need to draw out a map layout in lucidchart and label it
-	
+public class RoomContainer {	
 	//Fields
 	//The index of the ArrayList is where the room will be "Located" AKA it's value to get to that room
 	private ArrayList<Room> rooms = new ArrayList<Room>();
@@ -27,6 +24,54 @@ public class RoomContainer {
 	}
 	
 	
+	//Adds and item into the room inventory at index
+		public void AddItem(Item item, Integer index) {
+			this.rooms.get(index).getRoomInventory().AddItem(item);
+		}
+		
+		//Adds itemAmount of items into the room inventory at index
+		public void AddItems(Item item, Integer itemAmount, Integer index) {
+			this.rooms.get(index).getRoomInventory().AddItems(item, itemAmount);
+		}
+		
+		/*Removes 1 of that item from the room inventory at index and returns
+		the item removed along with a 1 to indicate 1 item was removed*/
+		public Integer ExtractItem(Item item, Integer index) {
+			return this.rooms.get(index).getRoomInventory().ExtractItem(item);
+		}
+		
+		/*Removes itemAmount of item from the room inventory and returns
+		 * the amount of that item removed. 
+		 * Note: 0 will be return if....
+		 * 1. a negative number of items is removed
+		 * 2. the item doesn't exist
+		 */
+		public Integer ExtractItems(Item item, Integer itemAmount, Integer index) {
+			return this.rooms.get(index).getRoomInventory().ExtractItems(item, itemAmount);
+		}
+		
+		//Check if item is in the room inventory
+		public Boolean ContainsItem(Item item, Integer index) {
+			return this.rooms.get(index).getRoomInventory().ContainsItem(item);
+		}
+		
+		/*This will return true if the amount of that item is greater than 
+		itemAmount*/
+		public Boolean ContainsMoreThan(Item item, Integer itemAmount, Integer index) {
+			return this.rooms.get(index).getRoomInventory().ContainsMoreThan(item, itemAmount);
+		}
+		
+		//will return true if the amount of items is equal to itemAmount//
+		public Boolean ContainsExactly(Item item, Integer itemAmount, Integer index) {
+			return this.rooms.get(index).getRoomInventory().ContainsExactly(item, itemAmount);
+		}
+		
+		/*This will return true if the amount of that item is less than the
+		itemAmount*/
+		public Boolean ContainsLessThan(Item item, Integer itemAmount, Integer index) {
+			return this.rooms.get(index).getRoomInventory().ContainsLessThan(item, itemAmount);
+		}
+		
 	/*Adds a new room to the ArrayList of rooms.
 	The key and value of the new room is set using the setRoomlocation function,
 	passing in the input and room_id parameters*/
@@ -68,6 +113,8 @@ public class RoomContainer {
 	}
 	
 	
+	
+	
 	//Get the value of the key in Room r with the String direction
 	public Integer getConnectedRoom(Integer index, String direction) {
 		return this.rooms.get(index).getConnectedRoom(direction);
@@ -106,5 +153,15 @@ public class RoomContainer {
 	//Get the room at index
 	public Room getRoom(Integer index) {
 		return this.rooms.get(index);
+	}
+	
+	//Get all the Items in room at index and returns them as a HashMap
+	public HashMap<Item, Integer> getItems(Integer index){
+		return this.rooms.get(index).getItems();
+	}
+	
+	//Get the amount of the Item in the room at index
+	public Integer getItemAmount(Item item, Integer index) {
+		return this.rooms.get(index).getItemAmount(item);
 	}
 }

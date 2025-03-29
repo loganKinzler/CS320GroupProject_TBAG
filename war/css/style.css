@@ -151,7 +151,7 @@ box-sizing:border-box;
     animation: sway 4s ease-in-out infinite alternate;
   }
   
-  @keyframes sway {
+@keyframes sway {
     0%   { transform: rotateX(3deg) scaleY(1); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); }
     10%  { transform: rotateX(3.5deg) scaleY(0.99); box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22); }
     20%  { transform: rotateX(4.5deg) scaleY(0.985); box-shadow: 0 18px 35px rgba(0, 0, 0, 0.23); }
@@ -163,9 +163,9 @@ box-sizing:border-box;
     80%  { transform: rotateX(3.8deg) scaleY(0.99); box-shadow: 0 17px 33px rgba(0, 0, 0, 0.22); }
     90%  { transform: rotateX(4.5deg) scaleY(0.985); box-shadow: 0 19px 36px rgba(0, 0, 0, 0.24); }
     100% { transform: rotateX(3deg) scaleY(1); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); }
-  }
+}
   
-  .sticky-note-content {
+.sticky-note-content {
     width: 300px;
     aspect-ratio: 1/1;
     background-color: var(--sticky-note-color);
@@ -178,9 +178,9 @@ box-sizing:border-box;
     font-family: "Shadows Into Light", cursive;
   	font-weight: 400;
   	font-style: normal;
-  }
+}
 
-  .sticky-note-content::before {
+.sticky-note-content::before {
     content: "";
     position: absolute;
     bottom: 0;
@@ -190,9 +190,9 @@ box-sizing:border-box;
     background: linear-gradient(to top, rgba(255, 255, 255, 0.15), transparent);
     pointer-events: none;
     z-index: 1;
-  }
+}
   
-  .sticky-note-content::after {
+.sticky-note-content::after {
     content: "";
     position: absolute;
     bottom: 0;
@@ -202,9 +202,9 @@ box-sizing:border-box;
     background: linear-gradient(to top, rgba(0,0,0,0.15), transparent);
     pointer-events: none;
     z-index: 2;
-  }
+}
   
-  .buttons {
+.buttons {
   	position: absolute;
   	width: 100vw;
   	height: 4vh;
@@ -217,9 +217,9 @@ box-sizing:border-box;
   	align-items: center;
   	padding-right: 20%;
   	padding-bottom: 2vh;
-  }
+}
   
-  .monitor-button {
+.monitor-button {
   display: inline-block;
   width: auto;
   padding: 0.5rem 1rem; /* Adjust as needed for vertical and horizontal space */
@@ -241,14 +241,12 @@ box-sizing:border-box;
 
   cursor: pointer;
   transition: all 0.1s ease;
-  }
+}
   
-  .monitor-button:active {
+.monitor-button:active {
   	box-shadow:
     inset 1px 1px 0 #888,
     inset -1px -1px 0 #fff,
     0 1px 0 rgba(0, 0, 0, 0.2);
   	background-color: var(--darker-monitor-color);
-  }
-  
-  
+}

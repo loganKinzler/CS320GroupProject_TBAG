@@ -112,6 +112,14 @@ public class GameEngineServlet extends HttpServlet {
         	int roomIndex = ((Integer) session.getAttribute("playerCurrentRoom")).intValue();
         	player.setCurrentRoomIndex(roomIndex);
         }
+        
+        // get found commands
+        List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
+        if (foundCommands == null) {
+        	foundCommands = new ArrayList<>();
+        	session.setAttribute("foundCommands", foundCommands);
+        }
+        System.out.println(foundCommands.toString());
 
         
         // hard code the rooms
@@ -139,6 +147,8 @@ public class GameEngineServlet extends HttpServlet {
             	
             		// TYPE 1 COMMANDS:
             		case "move":
+            			if (!foundCommands.contains("move")) foundCommands.add("move");
+            			
             			Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
             					params.get(0));
             			
@@ -157,22 +167,32 @@ public class GameEngineServlet extends HttpServlet {
             		break;
             		
             		case "use":
+            			if (!foundCommands.contains("use")) foundCommands.add("use");
+            			
             			systemResponse = String.format("Used %s...", params.get(0));
             		break;
             		
             		case "pickup":
+            			if (!foundCommands.contains("pickup")) foundCommands.add("pickup");
+            			
             			systemResponse = String.format("Picked up %s...", params.get(0));
             		break;
             		
             		case "describe":
+            			if (!foundCommands.contains("describe")) foundCommands.add("describe");
+            			
             			switch (params.get(0)) {
             				case "room":
+            					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
+            					
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
                     					rooms.getShortRoomDescription( player.getCurrentRoomIndex() ),
                     					rooms.getLongRoomDescription( player.getCurrentRoomIndex() ));
             				break;
             				
             				case "moves":
+            					if (!foundCommands.contains("describe_moves")) foundCommands.add("describe_moves");
+            					
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:<br>");
             					
             					for (String direction : rooms.getAllKeys( player.getCurrentRoomIndex() )) {
@@ -186,22 +206,13 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             				
             				case "directions":
+            					if (!foundCommands.contains("describe_directions")) foundCommands.add("describe_directions");
+            					
             					systemResponse = String.format("Describing directions...<br><br>Possible moves:<br>");
             				
             					for (String direction : ConsoleInterpreter.MOVE_DIRECTIONS)
             						systemResponse += String.format(" - %s<br>",
             								direction.substring(0, 1).toUpperCase() + direction.substring(1));
-            				break;
-            				
-            				case "commands":
-            					systemResponse = ""
-            							+ "Describing commands...<br><br>"
-            							+ "Command Structure:<br>"
-            							+ "[command]: [param1] [param2] ...<br><br>"
-            							+ "Command List:<br>"
-            							+ " - move: [direction]<br>"
-            							+ " - describe: [room / moves / directions / commands]<br>"
-            							+ " - attack [enemy] with [weapon] using [attack]";
             				break;
             				
             				default:
@@ -214,6 +225,7 @@ public class GameEngineServlet extends HttpServlet {
             		
             		// TYPE 2 COMMANDS
             		case "attack":
+            			if (!foundCommands.contains("attack")) foundCommands.add("attack");
             			systemResponse = String.format("Attacked %s with %s using %s.", userAction.GetParams().get(0),
             					userAction.GetParams().get(1),userAction.GetParams().get(2));
             		break;
@@ -236,6 +248,7 @@ public class GameEngineServlet extends HttpServlet {
 
         // Set the game history as a request attribute for the JSP
         req.setAttribute("gameHistory", gameHistory);
+        req.setAttribute("foundCommands", foundCommands);
 
         // Forward to the JSP file
         req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);

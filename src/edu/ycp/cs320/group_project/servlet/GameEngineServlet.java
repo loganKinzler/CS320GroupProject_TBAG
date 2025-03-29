@@ -85,6 +85,8 @@ public class GameEngineServlet extends HttpServlet {
         white.setConnectedRoom("south", 4);// to green
         rooms.addRoom(white);
         
+        orange.AddItems(new Item("Test", "Debug"), 2);
+        
         return rooms;
     }
     
@@ -119,7 +121,7 @@ public class GameEngineServlet extends HttpServlet {
         	foundCommands = new ArrayList<>();
         	session.setAttribute("foundCommands", foundCommands);
         }
-        System.out.println(foundCommands.toString());
+//        System.out.println(foundCommands.toString());
 
         
         // hard code the rooms
@@ -174,6 +176,9 @@ public class GameEngineServlet extends HttpServlet {
             		
             		case "pickup":
             			if (!foundCommands.contains("pickup")) foundCommands.add("pickup");
+            			//insert code to have player pick up item
+            			//consider a map of all items in the game that can be grabbed using string input from the user input
+            			//then use player pickup() method
             			
             			systemResponse = String.format("Picked up %s...", params.get(0));
             		break;

@@ -1,6 +1,6 @@
 package edu.ycp.cs320.TBAG.controller;
 
-import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.*;
 
 public abstract class EntityController {
 	private EntityModel model;
@@ -40,6 +40,11 @@ public abstract class EntityController {
 		if (finalHealth < 0) finalHealth = 0;
 		this.model.setHealth(finalHealth);
 	}
+	public EntityInventory getInventory() {return this.model.getInventory();}
+	
+	public void AddToInventory(Item toAdd, int amount) {
+		this.model.getInventory().AddItems(toAdd, amount);
+	}
 
 	public void Attack(EntityController receiver) {
 		//TODO fill this in
@@ -47,7 +52,24 @@ public abstract class EntityController {
 	public void Die() {
 		//TODO fill this in
 	}
-	public void PickUp() {
-		//TODO fill this in
+	public boolean PickUp(RoomContainer rooms, Item toPickUp) {
+		RoomInventory roomInv = rooms.getRoom(this.model.getCurrentRoomIndex()).getRoomInventory();
+		
+		if (roomInv.ContainsItem(toPickUp)) {
+			int amount = roomInv.GetItemAmount(toPickUp);
+			
+			this.AddToInventory(toPickUp, amount);
+			roomInv.ExtractItems(toPickUp, amount);
+			
+			System.out.println("----------");
+			System.out.println(this.model.getInventory() + " from player");
+			System.out.println(rooms.getRoom(this.model.getCurrentRoomIndex()).getRoomInventory() + " from room");
+			
+			return true;
+		}
+		else {
+			System.out.println("item not found");
+			return false;
+		}
 	}
 }

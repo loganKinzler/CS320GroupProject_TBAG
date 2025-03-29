@@ -36,6 +36,7 @@ public class ConsoleInterpreter {
     	
     		case ATTACK: commandType = 2; break;
     	}
+  	
     	
     	switch (commandType) {
     	
@@ -49,6 +50,7 @@ public class ConsoleInterpreter {
     			
     			// combine the rest of the words
     			String secondWord = inputWords.get(1);
+    			System.out.println(secondWord);
     			
     			if (inputWords.size() > 2) {
     				Integer fullSize = inputWords.size();

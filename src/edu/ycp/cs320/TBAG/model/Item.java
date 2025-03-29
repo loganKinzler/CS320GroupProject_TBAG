@@ -1,6 +1,6 @@
 package edu.ycp.cs320.TBAG.model;
 
-class Item {
+public class Item {
 	
 	// vars
 	protected String name, description;

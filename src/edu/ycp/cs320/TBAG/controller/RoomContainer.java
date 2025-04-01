@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.Room;
 
@@ -13,6 +14,7 @@ public class RoomContainer {
 	//Fields
 	//The index of the ArrayList is where the room will be "Located" AKA it's value to get to that room
 	private ArrayList<Room> rooms = new ArrayList<Room>();
+	private EnemyController enemy_controller;
 	
 	//Constructor
 	public RoomContainer() {
@@ -93,6 +95,23 @@ public class RoomContainer {
 		
 	}
 	
+	//This will add health to the enemy in room_index and enemy_index and add it to the amount
+	public void AddHealth(Integer room_index, Integer enemy_index, double amount) {
+		enemy_controller = new EnemyController(this.rooms.get(room_index).getEnemy(enemy_index));
+		enemy_controller.AddHealth(amount);
+	}
+	
+	//This will add health with a clamp
+	public void AddHealthClamped(Integer room_index, Integer enemy_index, double amount) {
+		enemy_controller = new EnemyController(this.rooms.get(room_index).getEnemy(enemy_index));
+		enemy_controller.AddHealthClamped(amount);
+	}
+	
+	//This will add an Enemy into the ArrayList of enemies in the room at room_index
+	public void AddEnemy(Integer room_index, EnemyModel enemy) {
+		this.rooms.get(room_index).getEnemiesinRoom().add(enemy);
+	}
+	
 	
 	
 	
@@ -110,6 +129,19 @@ public class RoomContainer {
 	//Set the short room description in Room r equal to the String description
 	public void setShortRoomDescription(Integer index, String description) {
 		this.rooms.get(index).setShortRoomDescription(description);
+	}
+	
+	//Set the lives of the enemy in room_index at enemy_index
+	public void setLives(int lives, Integer room_index, Integer enemy_index) {
+		this.rooms.get(room_index).setLives(lives, enemy_index);
+	}
+	
+	public void setHealth(double health, Integer room_index, Integer enemy_index) {
+		this.rooms.get(room_index).setHealth(health, enemy_index);
+	}
+	
+	public void setMaxHealth(double maxhealth, Integer room_index, Integer enemy_index) {
+		this.rooms.get(room_index).setMaxHealth(maxhealth, enemy_index);
 	}
 	
 	
@@ -164,4 +196,34 @@ public class RoomContainer {
 	public Integer getItemAmount(Item item, Integer index) {
 		return this.rooms.get(index).getItemAmount(item);
 	}
+	
+	//This will get the Health of the enemy at room_index and enemy_index
+	public double getHealth(Integer room_index, Integer enemy_index) {
+		return this.rooms.get(room_index).getEnemy(enemy_index).getHealth();
+	}
+	
+	//This will get the Lives of the enemy at room_index and enemy_index
+	public int getLives(Integer room_index, Integer enemy_index) {
+		return this.rooms.get(room_index).getEnemy(enemy_index).getLives();
+	}
+	
+	//This will get the MaxHealth of the enemy at room_index and enemy_index
+	public double getMaxHealth(Integer room_index, Integer enemy_index) {
+		return this.rooms.get(room_index).getEnemy(enemy_index).getMaxHealth();
+	}
+	
+	//This will return all of the enemies as a String in room_index
+	public String getAllEnemies(Integer room_index) {
+		return this.rooms.get(room_index).getAllEnemies();
+	}
+	
+	public EnemyModel getEnemy(Integer room_index, Integer enemy_index) {
+		return this.rooms.get(room_index).getEnemy(enemy_index);
+	}
+	
+	public ArrayList<EnemyModel> getEnemiesinRoom(Integer room_index){
+		return this.rooms.get(room_index).getEnemiesinRoom();
+	}
+	
+	
 }

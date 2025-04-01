@@ -18,10 +18,15 @@ public class RoomTest {
 	//private Map<String, Integer> connections = new HashMap<>();
 	private String long_description;
 	private String short_description;
+	private ArrayList<EnemyModel> enemies = new ArrayList<EnemyModel>();
 	
 	@Before
 	public void setUp() {
-		model = new Room(short_description, long_description);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy2 = new EnemyModel(3.5, 1, 1);
+		enemies.add(enemy1);
+		enemies.add(enemy2);
+		model = new Room(short_description, long_description, enemies);
 	}
 	
 	
@@ -106,6 +111,39 @@ public class RoomTest {
 		model.getRoomInventory().AddItems(coin, 2);
 		assertTrue(this.model.getItemAmount(coin) == 2);
 	}
+	
+	@Test
+	public void testgetHealth() {
+		model.setHealth(3.0, 0);
+		assertTrue(this.model.getHealth(0) == 3.0);
+	}
+	
+	@Test
+	public void testgetLives() {
+		model.setLives(1, 0);
+		assertTrue(this.model.getLives(0) == 1);
+	}
+	
+	@Test
+	public void testgetMaxHealth() {
+		model.setMaxHealth(3.5, 1);
+		System.out.print(this.model.getMaxHealth(1));
+		assertTrue(this.model.getMaxHealth(1) == 3.5);
+	}
+	
+	public void testgetAllEnemies() {
+		String enemies = model.getAllEnemies();
+		assertTrue(this.model.getAllEnemies().equals(enemies));
+	}
+	
+	public void testgetEnemy() {
+		EnemyModel enemy = this.model.getEnemy(1);
+		assertTrue(this.model.getEnemy(1).equals(enemy));
+	}
+	
+	
+	
+	
 	
 	@Test
 	public void testdoesKeyExist() {

@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.controller.RoomContainer;
@@ -113,6 +114,54 @@ public class RoomContainerTest {
 		assertTrue(1 == this.container.getItemAmount(carrot, 0));
 	}
 	
+	@Test
+	public void testgetHealth() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		this.container.setHealth(3.0, 0, 0);
+		assertTrue(this.container.getHealth(0, 0) == 3.0);
+		
+	}
+	
+	@Test
+	public void testgetLives() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		this.container.setLives(3, 0, 0);
+		assertTrue(this.container.getLives(0, 0) == 3);
+	}
+	
+	@Test
+	public void testgetMaxHealth() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		this.container.setMaxHealth(5.0, 0, 0);
+	}
+	
+	@Test
+	public void testgetAllEnemies() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		String enemies = this.container.getAllEnemies(0);
+		assertTrue(this.container.getAllEnemies(0).equals(enemies));
+	}
+	
+	@Test
+	public void testgetEnemy() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		EnemyModel enemy = this.container.getEnemy(0, 0);
+		assertTrue(this.container.getEnemy(0, 0).equals(enemy));
+	}
+	
+	@Test
+	public void testgetEnemiesinRoom() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		ArrayList<EnemyModel> enemy = this.container.getEnemiesinRoom(0);
+		assertTrue(this.container.getEnemiesinRoom(0).equals(enemy));
+	}
+	
 	
 	
 	
@@ -186,6 +235,31 @@ public class RoomContainerTest {
 		Item carrot = new Item("carrot", "it's shaped like a cane");
 		container.AddItem(carrot, 0);
 		assertTrue(true == container.ContainsExactly(carrot, 1, 0));
+	}
+	
+	@Test
+	public void testAddHealth() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		this.container.AddHealth(0,0,-2.0);
+		assertTrue(this.container.getHealth(0, 0) ==  2.0);
+	}
+	
+	@Test
+	public void testAddHealthClamped() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		this.container.AddHealth(0, 0, -3.0);
+		this.container.AddHealthClamped(0, 0, 5.0);
+		
+		assertTrue(this.container.getHealth(0, 0) == 4.0);
+	}
+	
+	@Test
+	public void testAddEnemy() {
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		this.container.AddEnemy(0, enemy1);
+		assertTrue(this.container.getEnemy(0, 0).equals(enemy1));
 	}
 	
 	

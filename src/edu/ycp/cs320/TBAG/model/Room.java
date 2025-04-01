@@ -15,8 +15,6 @@ public class Room {
 	private String short_description;
 	private RoomInventory room_inventory;
 	private ArrayList<EnemyModel> enemies = new ArrayList<EnemyModel>();
-	//TODO: Need an ArrayList of enemy in the rooms
-	//TODO: Lots of this needs to be moved into the RoomContainer because it violates MVC
 	//TODO: Might have to move doesKeyExist into the container as well
 	
 	//Constructors
@@ -26,6 +24,13 @@ public class Room {
 		this.long_description = long_description;
 		this.room_inventory = new RoomInventory();
 		this.enemies = new ArrayList<EnemyModel>();
+	}
+	
+	public Room(String short_description, String long_description, ArrayList<EnemyModel> enemies) {
+		this.short_description = short_description;
+		this.long_description = long_description;
+		this.room_inventory = new RoomInventory();
+		this.enemies = enemies;
 	}
 	
 	/*This constructor takes an existing RoomInventory and set's it equal to the room_inventory field.
@@ -122,6 +127,15 @@ public class Room {
 		return this.enemies.toString();
 	}
 	
+	//This will return the enemy at index in the ArrayList
+	public EnemyModel getEnemy(Integer index) {
+		return this.enemies.get(index);
+	}
+	
+	public ArrayList<EnemyModel> getEnemiesinRoom() {
+		return this.enemies;
+	}
+	
 	
 	
 	
@@ -143,12 +157,17 @@ public class Room {
 	}
 		
 	//Set the Lives of the enemy at index equal to lives
-	public void setLives(Integer index, int lives) {
+	public void setLives(int lives, Integer index) {
 		this.enemies.get(index).setLives(lives);
+	}
+	
+	//Set the health of the enemy at index equal to health
+	public void setHealth(double health, Integer index) {
+		this.enemies.get(index).setHealth(health);
 	}
 		
 	//Set the MaxHealth of the enemy at index equal to health
-	public void setMaxHealth(Integer index, int lives) {
-		this.enemies.get(index).setHealth(lives);
+	public void setMaxHealth(double maxHealth, Integer index) {
+		this.enemies.get(index).setHealth(maxHealth);
 	}
 }

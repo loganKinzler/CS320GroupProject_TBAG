@@ -24,17 +24,11 @@ public class FightController {
 	}
 	
 	
-	private void TakeTurn(Integer entityIndex, Integer attackIndex, String weaponSlot) {
+	public void TakeTurn(Integer entityIndex, Integer attackIndex, String weaponSlot) {
 		
 		// attack an entity
-//		new EntityController(fightingEntities.get(attackIndex)).AddHealthClamped(...);
+		new EntityController(fightingEntities.get(attackIndex)).AddHealthClamped(
+				-fightingEntities.get(entityIndex).getInventory().GetWeapon(weaponSlot).GetDamage()
+		);
 	}
-	
-//	public void TakePlayerTurn(Integer playerIndex, Integer attackIndex, String weaponSlot) {
-//		
-//	}
-//	
-//	public void TakeEnemyTurn(Weapon attackWeapon) {
-//		
-//	}
 }

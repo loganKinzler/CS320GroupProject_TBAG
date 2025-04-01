@@ -20,7 +20,22 @@ public class GameEngineServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Redirect GET requests to POST
-        doPost(req, resp);
+    	HttpSession session = req.getSession();
+        String userInput = (String) session.getAttribute("userInput");
+
+        if (userInput != null) {
+            req.setAttribute("userInput", userInput);
+            session.removeAttribute("userInput"); // optional: only show once
+        }
+        
+        List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
+        List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
+
+        req.setAttribute("gameHistory", gameHistory);
+        req.setAttribute("foundCommands", foundCommands);
+
+        // 5. Forward to JSP
+        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
     }
 
     //Use this section for when we end up having a database for storing the information
@@ -121,7 +136,6 @@ public class GameEngineServlet extends HttpServlet {
         	foundCommands = new ArrayList<>();
         	session.setAttribute("foundCommands", foundCommands);
         }
-//        System.out.println(foundCommands.toString());
 
         
         // hard code the rooms
@@ -129,6 +143,11 @@ public class GameEngineServlet extends HttpServlet {
         
         // Process user input
         String userInput = req.getParameter("userInput");
+        req.getSession().setAttribute("userInput", userInput);
+        
+        System.out.println(gameHistory);
+        System.out.println(userInput);
+        
         
         if (userInput != null && !userInput.trim().isEmpty()) {
             // Add user input to the game history
@@ -146,6 +165,12 @@ public class GameEngineServlet extends HttpServlet {
             	ArrayList<String> params = userAction.GetParams();
             	
             	switch (userAction.GetMethod()) {
+        			//sudo rm -rf \ easter egg
+	        		case "sudoEasterEgg" :
+	        			systemResponse = "Warning: executing 'rm -rf /' is extremely dangerous.<br>"
+	        					+ "Proceeding anyway...<br>"
+	        					+ "Deleting system...";
+        			break;
             	
             		// TYPE 1 COMMANDS:
             		case "move":
@@ -256,6 +281,7 @@ public class GameEngineServlet extends HttpServlet {
         req.setAttribute("foundCommands", foundCommands);
 
         // Forward to the JSP file
-        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+//        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+        resp.sendRedirect("game");
     }
 }

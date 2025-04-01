@@ -20,7 +20,12 @@ public class ConsoleInterpreter {
 	public ConsoleInterpreter() {}
 	
     public Action ValidateInput(String userInput) {
+    	//sudo rm -rf \ easter egg
+    	if (userInput.equals("sudo rm -rf \\")) {
+    		return new Action("sudoEasterEgg", new ArrayList<String>( Arrays.asList("sudo rm -rf \\") ));
+    	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
+    	
     	
     	// no command given
     	if (inputWords.size() == 0) return new Action("No input given.");
@@ -50,7 +55,6 @@ public class ConsoleInterpreter {
     			
     			// combine the rest of the words
     			String secondWord = inputWords.get(1);
-    			System.out.println(secondWord);
     			
     			if (inputWords.size() > 2) {
     				Integer fullSize = inputWords.size();

@@ -26,7 +26,7 @@
 		    </form>
 		</div>
 		<div class="buttons">
-			<button class="monitor-button" onclick="passed">Clear Console</button>
+			<button class="monitor-button" onclick="passed" style="display: none;">Clear Console</button>
 		</div>
 	</div>
 	<div class=sticky-note-container>

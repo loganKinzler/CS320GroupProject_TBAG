@@ -137,16 +137,18 @@ public class GameEngineServlet extends HttpServlet {
         	session.setAttribute("foundCommands", foundCommands);
         }
 
-        
-        // hard code the rooms
-        RoomContainer rooms = createRooms();
+        RoomContainer rooms = new RoomContainer();
+        if (session.getAttribute("rooms") == null) {
+        	rooms = new RoomContainer();
+        	rooms.createHardcodedRooms();
+        }
+        else {
+        	//Do something to pull rooms info (it cant be cleanly pulled... may be better to just use database
+        }
         
         // Process user input
         String userInput = req.getParameter("userInput");
         req.getSession().setAttribute("userInput", userInput);
-        
-        System.out.println(gameHistory);
-        System.out.println(userInput);
         
         
         if (userInput != null && !userInput.trim().isEmpty()) {

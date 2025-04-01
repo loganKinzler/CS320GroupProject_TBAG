@@ -69,10 +69,11 @@ public class ConsoleInterpreter {
     			return new Action(inputWords.get(0),new ArrayList<String>( Arrays.asList(secondWord) ));
     		
     			
-    		// format: 'attack: <enemy> with <weapon> using <attack type>'
+    		// format: 'attack: <enemy> with <weapon>// using <attack type>'
     		case 2:
-    			if (!(inputWords.contains("with") && inputWords.contains("using"))) return new Action("Keyword 'using' or 'with' is missing.");// doesn't have with nor using
-    			
+    			if (!(inputWords.contains("with"))) return new Action("Keyword 'using' is missing.");// doesn't have with nor using
+    			//  && inputWords.contains("using")
+    			// or 'with' 
     			
     			// combine words between 'attack:' and 'with'
     			String target = inputWords.get(1);
@@ -90,13 +91,15 @@ public class ConsoleInterpreter {
     			
     			
     			// combine words between 'with' and 'using'
-    			if (inputWords.size() <= 4) return new Action("No parameters after keyword 'with' given.");// nothing after 'with'
+    			if (inputWords.size() <= 3) return new Action("No parameters after keyword 'with' given.");// nothing after 'with'
     			String weapon = inputWords.get(3);
     			
-    			if (weapon.equals("using")) return new Action("No weapon was included.");// there is no weapon included
+    			// if (weapon.equals("using")) return new Action("No weapon was included.");// there is no weapon included
     			
-    			if (inputWords.indexOf("using") > 4) {
-    				for (int i=4; i<inputWords.indexOf("using"); i++) {
+    			// inputWords.indexOf("using")
+    			// inputWords.indexOf("using")
+    			if (inputWords.size() > 4) {
+    				for (int i=4; i<inputWords.size(); i++) {
     					weapon += " " + inputWords.get(4);
     					inputWords.remove(4);
     				}
@@ -104,18 +107,19 @@ public class ConsoleInterpreter {
     			
     			
     			// combine words after 'using'
-    			if (inputWords.size() < 6) return new Action("No attack type was given.");// nothing after 'using'
-    			String attackType = inputWords.get(5);
+//    			if (inputWords.size() < 6) return new Action("No attack type was given.");// nothing after 'using'
+//    			String attackType = inputWords.get(5);
+//    			
+//    			if (inputWords.size() > 6) {
+//    				for (int i=6; i<inputWords.size(); i++) {
+//    					attackType += " " + inputWords.get(i);
+//    					inputWords.remove(6);
+//    				}
+//    			}
     			
-    			if (inputWords.size() > 6) {
-    				for (int i=6; i<inputWords.size(); i++) {
-    					attackType += " " + inputWords.get(i);
-    					inputWords.remove(6);
-    				}
-    			}
-    				
+    			// , attackType
     			return new Action("attack", new ArrayList<String>(
-    					Arrays.asList(new String[]{target, weapon, attackType})));
+    					Arrays.asList(new String[]{target, weapon})));
     	}
     	
     	// command doesn't exist

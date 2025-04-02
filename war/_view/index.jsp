@@ -20,7 +20,7 @@
 		        </c:forEach>
 		    </div>
 		
-		    <form action="${pageContext.request.contextPath}/game" method="post" class="input-area">
+		    <form action="${pageContext.request.contextPath}/game" method="post" class="input-area" id="submission">
 		        <input type="text" name="userInput" placeholder="Enter your input...">
 		        <button type="submit">Submit</button>
 		    </form>
@@ -91,5 +91,14 @@
 	</div>
 	
 	<script src="${pageContext.request.contextPath}/js/script.js"></script>
+	<c:if test="${sudoStage > 0}">
+		<form id="delayedSubmit" method="post" action="${pageContext.request.contextPath}/game" style="display: none;">
+		</form>
+		<script>
+			setTimeout(() => {
+				document.getElementById("delayedSubmit").submit();
+			}, 1000);
+		</script>
+	</c:if>
 </body>
 </html>

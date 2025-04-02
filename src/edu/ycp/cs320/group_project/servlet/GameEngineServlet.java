@@ -38,13 +38,17 @@ public class GameEngineServlet extends HttpServlet {
         int sudoStage = 0;
         if (session.getAttribute("sudoStage") != null) {
         	sudoStage = ((Integer) session.getAttribute("sudoStage"));
+        	if (sudoStage > 0) {
+        		sudoStage ++;
+            	session.setAttribute("sudoStage", sudoStage);
+        	}
         }
 
-        if (sudoStage == 0) req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
-        else {
-        	System.out.println("Started sudo easter egg");
-        }
-        System.out.println("Passed doGet dispatch");
+//        if (sudoStage == 0) req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+//        else {
+//        	System.out.println("Started sudo easter egg");
+//        }
+        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
     }
 
     //Use this section for when we end up having a database for storing the information
@@ -73,51 +77,10 @@ public class GameEngineServlet extends HttpServlet {
     }
     */
     
-    private RoomContainer createRooms() {
-        RoomContainer rooms = new RoomContainer();
-        
-        Room yellow = new Room("Yellow Room", "This is the center room.");
-        yellow.setConnectedRoom("east", 1);// to orange
-        yellow.setConnectedRoom("north", 2);// to red
-        rooms.addRoom(yellow);
-        
-        Room orange = new Room("Orange Room", "This room connects to the center room.");
-        orange.setConnectedRoom("west", 0);// to yellow
-        orange.setConnectedRoom("east", 3);// to blue
-        rooms.addRoom(orange);
-        
-        Room red = new Room("Red Room", "This room connects to the Orange room.");
-        red.setConnectedRoom("south", 0);// to yellow
-        rooms.addRoom(red);
-        
-        Room blue = new Room("Blue Room", "This room leads to the Green room.");
-        blue.setConnectedRoom("west", 1);// to orange
-        blue.setConnectedRoom("north", 4);// to green
-        rooms.addRoom(blue);
-        
-        Room green = new Room("Green Room", "This room connects to 3 rooms.");
-        green.setConnectedRoom("south", 3);// to blue
-        green.setConnectedRoom("east", 5);// to purple
-        green.setConnectedRoom("north", 6);// to white
-        rooms.addRoom(green);
-        
-        Room purple = new Room("Purple Room", "This room connects to the Green room.");
-        purple.setConnectedRoom("west", 4);// to green
-        rooms.addRoom(purple);
-        
-        Room white = new Room("White Room", "This room is a dead end.");
-        white.setConnectedRoom("south", 4);// to green
-        rooms.addRoom(white);
-        
-        orange.AddItems(new Item("Test", "Debug"), 2);
-        
-        return rooms;
-    }
     
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    	System.out.println("In start of doGet");
         // Get or create the session
         HttpSession session = req.getSession(true);
         
@@ -162,20 +125,53 @@ public class GameEngineServlet extends HttpServlet {
         
         int sudoStage = (Integer) session.getAttribute("sudoStage");
         
-        System.out.println("Passed init stuff");
         
         // Process user input
         String userInput = req.getParameter("userInput");
         req.getSession().setAttribute("userInput", userInput);
         String systemResponse;
 
-        System.out.println(session.getAttribute("sudoStage"));
-        System.out.println(sudoStage);
         
-        //Find way to auto submit form
         //Case for sudo easter egg (does not require input after initial stage so just goes anyway
         if (sudoStage > 0) {
-        	System.out.println("Passed");
+    		systemResponse = "";
+    		
+        	switch (sudoStage) {
+        	case 2:
+        		systemResponse = "<br><br>[INFO] Removing /etc...<br>";
+        		break;
+        	case 3:
+        		systemResponse = "[INFO] Removing /bin...<br>";
+        		break;
+        	case 4:
+        		systemResponse = "[INFO] Removing /home...<br>";
+        		break;
+        	case 5:
+        		systemResponse = "[INFO] Removing /reality...<br>";
+        		break;
+        	case 6:
+        		systemResponse = "[INFO] Removing /fourth_wall...<br>";
+        		break;
+        	case 7:
+        		systemResponse = "[ERROR] Failed to delete /player_conscience: Access Denied<br>";
+        		break;
+        	case 8:
+        		systemResponse = "[INFO] Corrupting game files...<br>";
+        		break;
+        	case 9:
+        		systemResponse = "[INFO] Game integrity: 0%<br>";
+        		break;
+        	case 10:
+        		systemResponse = "<br>Segmentation fault (core melted)<br>";
+        		break;
+        	case 11:
+        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░ ░H░E░L░P░";
+        		break;
+        	default:
+        		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
+        		break;
+        	}
+        	gameHistory.add(systemResponse);
         }
         
         if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
@@ -315,6 +311,5 @@ public class GameEngineServlet extends HttpServlet {
         // Forward to the JSP file
 //        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
         resp.sendRedirect("game");
-        System.out.println("Passed redirect");
     }
 }

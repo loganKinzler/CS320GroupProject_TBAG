@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.Room;
 
 public class RoomContainer {
@@ -186,5 +187,7 @@ public class RoomContainer {
 		miniBoss1.setConnectedRoom(WEST, 11);
 		
 		//Add items
+		startRoom.AddItem(Inventory.LEAD_PIPE);
+		startRoom.AddItems(Inventory.SHWARMA, 5);
 	}
 }

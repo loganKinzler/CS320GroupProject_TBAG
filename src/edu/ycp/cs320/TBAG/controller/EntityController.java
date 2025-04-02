@@ -61,10 +61,6 @@ public class EntityController {
 			this.AddToInventory(toPickUp, amount);
 			roomInv.ExtractItems(toPickUp, amount);
 			
-			System.out.println("----------");
-			System.out.println(this.model.getInventory() + " from player");
-			System.out.println(rooms.getRoom(this.model.getCurrentRoomIndex()).getRoomInventory() + " from room");
-			
 			return true;
 		}
 		else {

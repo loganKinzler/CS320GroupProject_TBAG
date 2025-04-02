@@ -5,6 +5,9 @@ import java.lang.Math;
 
 
 public abstract class Inventory {
+	public static Item TEST_ITEM = new Item("Test","This is a test item.");
+	public static Item LEAD_PIPE = new Item("Lead Pipe", "Wack!");
+	public static Item SHWARMA = new Item("Shwarma", "Tastes good...");
 	
 	// vars
 	protected HashMap<Item, Integer> items;

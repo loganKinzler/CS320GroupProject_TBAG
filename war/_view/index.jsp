@@ -83,7 +83,7 @@
 			
 			<!-- Attack -->
 			<c:if test="${fn:contains(foundCommands, 'attack')}">
-			    <p>attack [enemy] with [weapon] using [attack]</p>
+			    <p>attack [enemy] with [weapon]</p><!-- using [attack] -->
 			</c:if>
 			
           </div>

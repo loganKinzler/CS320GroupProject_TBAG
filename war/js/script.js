@@ -4,3 +4,8 @@ window.addEventListener('load', () => {
 	
 	document.querySelector('input[name="userInput"]').focus();
 });
+
+
+function passed() {
+	console.log("Passed");
+}

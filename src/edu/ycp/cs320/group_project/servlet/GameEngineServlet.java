@@ -19,23 +19,32 @@ import edu.ycp.cs320.TBAG.model.*;
 public class GameEngineServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Redirect GET requests to POST
     	HttpSession session = req.getSession();
         String userInput = (String) session.getAttribute("userInput");
 
         if (userInput != null) {
             req.setAttribute("userInput", userInput);
-            session.removeAttribute("userInput"); // optional: only show once
+            session.removeAttribute("userInput");
         }
         
         List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
+        
+        
 
         req.setAttribute("gameHistory", gameHistory);
         req.setAttribute("foundCommands", foundCommands);
+        
+        int sudoStage = 0;
+        if (session.getAttribute("sudoStage") != null) {
+        	sudoStage = ((Integer) session.getAttribute("sudoStage"));
+        }
 
-        // 5. Forward to JSP
-        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+        if (sudoStage == 0) req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+        else {
+        	System.out.println("Started sudo easter egg");
+        }
+        System.out.println("Passed doGet dispatch");
     }
 
     //Use this section for when we end up having a database for storing the information
@@ -108,6 +117,7 @@ public class GameEngineServlet extends HttpServlet {
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    	System.out.println("In start of doGet");
         // Get or create the session
         HttpSession session = req.getSession(true);
         
@@ -146,18 +156,32 @@ public class GameEngineServlet extends HttpServlet {
         	//Do something to pull rooms info (it cant be cleanly pulled... may be better to just use database
         }
         
+        if (session.getAttribute("sudoStage") == null) {
+        	session.setAttribute("sudoStage", 0);
+        }
+        
+        int sudoStage = (Integer) session.getAttribute("sudoStage");
+        
+        System.out.println("Passed init stuff");
+        
         // Process user input
         String userInput = req.getParameter("userInput");
         req.getSession().setAttribute("userInput", userInput);
+        String systemResponse;
+
+        System.out.println(session.getAttribute("sudoStage"));
+        System.out.println(sudoStage);
         
+        //Find way to auto submit form
+        //Case for sudo easter egg (does not require input after initial stage so just goes anyway
+        if (sudoStage > 0) {
+        	System.out.println("Passed");
+        }
         
-        if (userInput != null && !userInput.trim().isEmpty()) {
+        if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
             // Add user input to the game history
 
-        	
         	gameHistory.add("C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
-        	
-            String systemResponse;
             
             Action userAction = interpreter.ValidateInput(userInput);
             systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
@@ -172,6 +196,8 @@ public class GameEngineServlet extends HttpServlet {
 	        			systemResponse = "Warning: executing 'rm -rf /' is extremely dangerous.<br>"
 	        					+ "Proceeding anyway...<br>"
 	        					+ "Deleting system...";
+	        			sudoStage = 1;
+	        	        session.setAttribute("sudoStage", sudoStage);
         			break;
             	
             		// TYPE 1 COMMANDS:
@@ -268,22 +294,24 @@ public class GameEngineServlet extends HttpServlet {
             	}
             }
 
-            //increment player's room index every valid input, then store it to session info
             session.setAttribute("playerCurrentRoom", player.getCurrentRoomIndex());
             gameHistory.add(systemResponse);
 
-            gameHistory.add("<br>");
-            gameHistory.add("~-==============================-~");// end of turn line break
-            gameHistory.add("<br>");
-
+            if (sudoStage == 0) {
+            	gameHistory.add("<br>");
+                gameHistory.add("~-==============================-~");// end of turn line break
+                gameHistory.add("<br>");
+            }
         }
 
         // Set the game history as a request attribute for the JSP
         req.setAttribute("gameHistory", gameHistory);
         req.setAttribute("foundCommands", foundCommands);
+        req.setAttribute("sudoStage", sudoStage);
 
         // Forward to the JSP file
 //        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
         resp.sendRedirect("game");
+        System.out.println("Passed redirect");
     }
 }

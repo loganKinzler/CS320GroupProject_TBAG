@@ -18,10 +18,15 @@ public class RoomTest {
 	//private Map<String, Integer> connections = new HashMap<>();
 	private String long_description;
 	private String short_description;
+	private ArrayList<EnemyModel> enemies = new ArrayList<EnemyModel>();
 	
 	@Before
 	public void setUp() {
-		model = new Room(short_description, long_description);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy2 = new EnemyModel(3.5, 1, 1);
+		enemies.add(enemy1);
+		enemies.add(enemy2);
+		model = new Room(short_description, long_description, enemies);
 	}
 	
 	
@@ -88,19 +93,52 @@ public class RoomTest {
 	}
 	
 	@Test
-	public void testgetItems() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
-		model.AddItem(carrot);
-		Item coin = new Item("coin", "it's made out of copper");
-		model.AddItem(coin);
-		HashMap<Item, Integer> item = this.model.getItems();
-		
-		assertTrue(item.equals(this.model.getItems()));
+	public void testgetRoomInventory() {
+		assertTrue(this.model.getRoomInventory() == this.model.getRoomInventory());
 	}
 	
 	@Test
-	public void testgetRoomInventory() {
-		assertTrue(this.model.getRoomInventory() == this.model.getRoomInventory());
+	public void testgetItems() {
+		Item coin = new Item("coin", "it's a coin!");
+		model.getRoomInventory().AddItem(coin);
+		HashMap<Item, Integer> items = this.model.getItems();
+		assertTrue(items.equals(this.model.getItems()));
+	}
+	
+	@Test
+	public void testgetItemAmount() {
+		Item coin = new Item("coin", "it's a coin!");
+		model.getRoomInventory().AddItems(coin, 2);
+		assertTrue(this.model.getItemAmount(coin) == 2);
+	}
+	
+	@Test
+	public void testgetHealth() {
+		model.setHealth(3.0, 0);
+		assertTrue(this.model.getHealth(0) == 3.0);
+	}
+	
+	@Test
+	public void testgetLives() {
+		model.setLives(1, 0);
+		assertTrue(this.model.getLives(0) == 1);
+	}
+	
+	@Test
+	public void testgetMaxHealth() {
+		model.setMaxHealth(3.5, 1);
+		System.out.print(this.model.getMaxHealth(1));
+		assertTrue(this.model.getMaxHealth(1) == 3.5);
+	}
+	
+	public void testgetAllEnemies() {
+		String enemies = model.getAllEnemies();
+		assertTrue(this.model.getAllEnemies().equals(enemies));
+	}
+	
+	public void testgetEnemy() {
+		EnemyModel enemy = this.model.getEnemy(1);
+		assertTrue(this.model.getEnemy(1).equals(enemy));
 	}
 	
 	
@@ -119,54 +157,5 @@ public class RoomTest {
 		String direction2 = "South";
 		assertTrue(false == model.doesKeyExist(direction2));
 		
-	}
-	
-	@Test
-	public void testAddItem() {
-		Item coin = new Item("coin", "it's made out of copper");
-		model.AddItem(coin);
-		assertTrue(model.ContainsExactly(coin, 1));
-	}
-	
-	@Test
-	public void testAddItems() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
-		model.AddItems(carrot, 4);
-		assertTrue(model.ContainsExactly(carrot, 4));
-	}
-	
-	@Test
-	public void testExtractItem() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
-		model.AddItem(carrot);
-		assertTrue(1 == model.ExtractItem(carrot));
-	}
-	
-	@Test
-	public void testExtractItems() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
-		model.AddItems(carrot, 2);
-		assertTrue(2 == model.ExtractItems(carrot, 2));
-	}
-	
-	@Test
-	public void testContainsItem() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
-		model.AddItem(carrot);
-		assertTrue(true == model.ContainsItem(carrot));
-	}
-	
-	@Test
-	public void testContainsMoreThan() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
-		model.AddItem(carrot);
-		assertTrue(true == model.ContainsMoreThan(carrot, 0));
-	}
-	
-	@Test
-	public void testContainsLessThan() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
-		model.AddItem(carrot);
-		assertTrue(true == model.ContainsLessThan(carrot, 2));
 	}
 }

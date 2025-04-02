@@ -11,13 +11,11 @@ import java.util.Set;
 public class Room {
 	//Fields
 	private Map<String, Integer> connections = new HashMap<>();
-	
 	private String long_description;
 	private String short_description;
 	private RoomInventory room_inventory;
-	//TODO: Need an ArrayList of enemy in the rooms
-	//TODO: Need an Inventory for each of the rooms
-	
+	private ArrayList<EnemyModel> enemies = new ArrayList<EnemyModel>();
+	//TODO: Might have to move doesKeyExist into the container as well
 	
 	//Constructors
 	//This constructor creates a new RoomInventory
@@ -25,13 +23,23 @@ public class Room {
 		this.short_description = short_description;
 		this.long_description = long_description;
 		this.room_inventory = new RoomInventory();
+		this.enemies = new ArrayList<EnemyModel>();
 	}
 	
-	//This constructor takes an existing RoomInventory and set's it equal to the room_inventory field
-	public Room(String short_description, String long_description, RoomInventory room_inventory) {
+	public Room(String short_description, String long_description, ArrayList<EnemyModel> enemies) {
+		this.short_description = short_description;
+		this.long_description = long_description;
+		this.room_inventory = new RoomInventory();
+		this.enemies = enemies;
+	}
+	
+	/*This constructor takes an existing RoomInventory and set's it equal to the room_inventory field.
+	It also takes an existing ArrayList of EnemyModel and set's it equal to the enemies ArrayList*/
+	public Room(String short_description, String long_description, RoomInventory room_inventory, ArrayList<EnemyModel> enemies) {
 		this.short_description = short_description;
 		this.long_description = long_description;
 		this.room_inventory = room_inventory;
+		this.enemies = enemies;
 	}
 	
 	
@@ -41,54 +49,6 @@ public class Room {
 	If it is not it will return false*/
 	public boolean doesKeyExist(String direction) {
 		return this.connections.containsKey(direction);
-	}
-	
-	//Adds and item into the room inventory
-	public void AddItem(Item item) {
-		this.room_inventory.AddItem(item);
-	}
-	
-	//Adds itemAmount of items into the room inventory
-	public void AddItems(Item item, Integer itemAmount) {
-		this.room_inventory.AddItems(item, itemAmount);
-	}
-	
-	/*Removes 1 of that item from the room inventory and returns
-	the item removed along with a 1 to indicate 1 item was removed*/
-	public Integer ExtractItem(Item item) {
-		return this.room_inventory.ExtractItem(item);
-	}
-	
-	/*Removes itemAmount of item from the room inventory and returns
-	 * the amount of that item removed. 
-	 * Note: 0 will be return if....
-	 * 1. a negative number of items is removed
-	 * 2. the item doesn't exist
-	 */
-	public Integer ExtractItems(Item item, Integer itemAmount) {
-		return this.room_inventory.ExtractItems(item, itemAmount);
-	}
-	
-	//Check if item is in the room inventory
-	public Boolean ContainsItem(Item item) {
-		return this.room_inventory.ContainsItem(item);
-	}
-	
-	/*This will return true if the amount of that item is greater than 
-	itemAmount*/
-	public Boolean ContainsMoreThan(Item item, Integer itemAmount) {
-		return this.room_inventory.ContainsMoreThan(item, itemAmount);
-	}
-	
-	//will return true if the amount of items is equal to itemAmount//
-	public Boolean ContainsExactly(Item item, Integer itemAmount) {
-		return this.room_inventory.ContainsExactly(item, itemAmount);
-	}
-	
-	/*This will return true if the amount of that item is less than the
-	itemAmount*/
-	public Boolean ContainsLessThan(Item item, Integer itemAmount) {
-		return this.room_inventory.ContainsLessThan(item, itemAmount);
 	}
 	
 	
@@ -112,6 +72,11 @@ public class Room {
 	//This will get all of the Items in the room as a HashMap
 	public HashMap<Item, Integer> getItems() {
 		return this.room_inventory.GetItems();
+	}
+	
+	//This will return the amount of that Item in the room inventory
+	public Integer getItemAmount(Item item) {
+		return this.room_inventory.GetItemAmount(item);
 	}
 	
 	//Returns the room's Inventory
@@ -138,9 +103,39 @@ public class Room {
 	}
 	
 	//This will get the entire HashMap for the room
-	public  Map<String, Integer> getHashMap(){
+	public Map<String, Integer> getHashMap(){
 		return this.connections;
 	}
+	
+	//This will get the Health of the enemy at index
+	public double getHealth(Integer index) {
+		return this.enemies.get(index).getHealth();
+	}
+	
+	//This will get the Lives of the enemy at index
+	public int getLives(Integer index) {
+		return this.enemies.get(index).getLives();
+	}
+	
+	//This will get the MaxHealth of the enemy at index
+	public double getMaxHealth(Integer index) {
+		return this.enemies.get(index).getMaxHealth();
+	}
+	
+	//This will return all of the enemies as a String
+	public String getAllEnemies(){
+		return this.enemies.toString();
+	}
+	
+	//This will return the enemy at index in the ArrayList
+	public EnemyModel getEnemy(Integer index) {
+		return this.enemies.get(index);
+	}
+	
+	public ArrayList<EnemyModel> getEnemiesinRoom() {
+		return this.enemies;
+	}
+	
 	
 	
 	
@@ -157,7 +152,22 @@ public class Room {
 	}
 	
 	//Set the short description equal to the String description
-		public void setShortRoomDescription(String description) {
-			this.short_description = description;
-		}
+	public void setShortRoomDescription(String description) {
+		this.short_description = description;
+	}
+		
+	//Set the Lives of the enemy at index equal to lives
+	public void setLives(int lives, Integer index) {
+		this.enemies.get(index).setLives(lives);
+	}
+	
+	//Set the health of the enemy at index equal to health
+	public void setHealth(double health, Integer index) {
+		this.enemies.get(index).setHealth(health);
+	}
+		
+	//Set the MaxHealth of the enemy at index equal to health
+	public void setMaxHealth(double maxHealth, Integer index) {
+		this.enemies.get(index).setHealth(maxHealth);
+	}
 }

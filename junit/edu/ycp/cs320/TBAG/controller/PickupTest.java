@@ -1,4 +1,4 @@
-package edu.ycp.cs320.TBAG.model;
+package edu.ycp.cs320.TBAG.controller;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +8,8 @@ import static org.junit.Assert.assertFalse;
 
 import edu.ycp.cs320.TBAG.controller.PlayerController;
 import edu.ycp.cs320.TBAG.controller.RoomContainer;
+import edu.ycp.cs320.TBAG.model.Inventory;
+import edu.ycp.cs320.TBAG.model.PlayerModel;
 
 public class PickupTest {
 	private PlayerController player = new PlayerController(new PlayerModel(100.0, 3, 0));
@@ -15,7 +17,9 @@ public class PickupTest {
 	
 	@Before
 	public void SetUp() {
+		rooms = new RoomContainer();
 		rooms.createHardcodedRooms();
+		player = new PlayerController(new PlayerModel(100.0, 3, 0));
 	}
 
 	@Test

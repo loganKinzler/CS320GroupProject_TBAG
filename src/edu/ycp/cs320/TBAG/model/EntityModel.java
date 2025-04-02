@@ -1,15 +1,17 @@
 package edu.ycp.cs320.TBAG.model;
 
-public class EntityModel {
+public abstract class EntityModel {
 	private double maxHealth, health;
 	private int lives;
 	private int currentRoomIndex;
+	private EntityInventory inventory;
 	
 	public EntityModel(double health, int lives, int currentRoomIndex) {
 		this.maxHealth = health;
 		this.health = health;
 		this.lives = lives;
 		this.currentRoomIndex = currentRoomIndex;
+		this.inventory = new EntityInventory();
 	}
 	
 	public double getHealth() {return health;}
@@ -37,4 +39,5 @@ public class EntityModel {
 	}
 	public int getCurrentRoomIndex() {return currentRoomIndex;}
 	public void setCurrentRoomIndex(int currentRoomIndex) {this.currentRoomIndex = currentRoomIndex;}
+	public EntityInventory getInventory() {return this.inventory;}
 }

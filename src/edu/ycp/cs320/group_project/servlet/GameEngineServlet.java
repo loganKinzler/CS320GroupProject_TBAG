@@ -284,8 +284,11 @@ public class GameEngineServlet extends HttpServlet {
             		// TYPE 2 COMMANDS
             		case "attack":
             			if (!foundCommands.contains("attack")) foundCommands.add("attack");
-            			systemResponse = String.format("Attacked %s with %s using %s.", userAction.GetParams().get(0),
-            					userAction.GetParams().get(1),userAction.GetParams().get(2));
+            			
+            			//  using %s
+            			// , userAction.GetParams().get(2)
+            			systemResponse = String.format("Attacked %s with %s.", userAction.GetParams().get(0),
+            					userAction.GetParams().get(1));
             		break;
             		
             		default:

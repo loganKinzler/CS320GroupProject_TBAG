@@ -8,6 +8,7 @@ import java.util.Set;
 
 
 import edu.ycp.cs320.TBAG.model.Inventory;
+import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.Room;
@@ -83,6 +84,10 @@ public class RoomContainer {
 		itemAmount*/
 		public Boolean ContainsLessThan(Item item, Integer itemAmount, Integer index) {
 			return this.rooms.get(index).getRoomInventory().ContainsLessThan(item, itemAmount);
+		}
+		
+		public RoomInventory getRoomInventory(Integer index) {
+			return this.rooms.get(index).getRoomInventory();
 		}
 		
 	/*Adds a new room to the ArrayList of rooms.
@@ -271,10 +276,14 @@ public class RoomContainer {
 		miniBoss1.setConnectedRoom(WEST, 11);
 		
 		//Add items
-		
-		//Start room
 		AddItems(Inventory.LEAD_PIPE, 1, 0);
 		AddItems(Inventory.SHWARMA, 5, 0);
+
+		//Add Enemies
+		AddEnemy(0, new EnemyModel(5, 1, 0, "Vaccum Cleaner", "vrrrrrrrrrrrmmmmmmmm......"));
+		AddEnemy(0, new EnemyModel(8, 1, 0, "Mechanical Bat", "SQUUEAAK! SQUEEAAAK!!!"));
+
+		//Start room
 	}
 	
 	//Get all the Items in room at index and returns them as a HashMap

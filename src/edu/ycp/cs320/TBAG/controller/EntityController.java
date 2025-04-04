@@ -52,20 +52,14 @@ public class EntityController {
 	public void Die() {
 		//TODO fill this in
 	}
-	public boolean PickUp(RoomContainer rooms, Item toPickUp) {
-		RoomInventory roomInv = rooms.getRoom(this.model.getCurrentRoomIndex()).getRoomInventory();
-		
-		if (roomInv.ContainsItem(toPickUp)) {
-			int amount = roomInv.GetItemAmount(toPickUp);
-			
-			this.AddToInventory(toPickUp, amount);
-			roomInv.ExtractItems(toPickUp, amount);
-			
-			return true;
-		}
-		else {
-			System.out.println("item not found");
-			return false;
-		}
+	public Integer PickUp(RoomContainer rooms, Item toPickUp, Integer quantity) {
+		Integer pickedUp = rooms.ExtractItems(toPickUp, quantity, getCurrentRoomIndex());
+		AddToInventory(toPickUp, pickedUp);
+		return pickedUp;
+	}
+	public Integer Drop(RoomContainer rooms, Item toDrop, Integer quantity) {
+		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
+		rooms.AddItems(toDrop, dropped, getCurrentRoomIndex());
+		return dropped;
 	}
 }

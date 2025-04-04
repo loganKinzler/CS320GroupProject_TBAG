@@ -34,52 +34,54 @@
           <div class="sticky-note-content">
             <h1>Commands</h1>
 			
+			
 			<!-- Move -->
 			<c:if test="${fn:contains(foundCommands, 'move')}">
 			    <p>move [direction]</p>
 			</c:if>
 			
+			
 			<!-- Describe -->
-			<c:if test="${fn:contains(foundCommands, 'describe')}">
-				<p>describe [
+			<c:if test="${foundCommands.contains('describe_room')}">
+				<p>describe [room]</p>
 			</c:if>
 			
-			<c:if test="${foundCommands.contains('describe_room')}" var="describe_room">
-				room 
+			<c:if test="${foundCommands.contains('describe_moves')}">
+				<p>describe [moves]</p>
+			</c:if>
+
+			<c:if test="${foundCommands.contains('describe_directions')}">
+				<p>describe [directions]</p>
 			</c:if>
 			
-			<c:if test="${foundCommands.contains('describe_room') and 
-				(foundCommands.contains('describe_moves') or
-				foundCommands.contains('describe_directions'))}">
-				/ 
+			<c:if test="${foundCommands.contains('describe_items')}">
+				<p>describe [items]</p>
 			</c:if>
 			
-			<c:if test="${foundCommands.contains('describe_moves')}" var="describe_moves">
-				moves 
+			<c:if test="${foundCommands.contains('describe_inventory')}">
+				<p>describe [inventory]</p>
 			</c:if>
 			
-			<c:if test="${foundCommands.contains('describe_moves') and
-				foundCommands.contains('describe_directions')}">
-				/ 
+			<c:if test="${foundCommands.contains('describe_enemies')}">
+				<p>describe [enemies]</p>
 			</c:if>
 			
-			<c:if test="${foundCommands.contains('describe_directions')}" var="describe_directions">
-				directions
-			</c:if>
-			
-			<c:if test="${fn:contains(foundCommands, 'describe')}">
-				]</p> 
-			</c:if>
 			
 			<!-- Use -->
 			<c:if test="${fn:contains(foundCommands, 'use')}">
 			    <p>use [item]</p>
 			</c:if>
 			
-			<!-- Pickup -->
+			
+			<!-- Pickup & Drop -->
 			<c:if test="${fn:contains(foundCommands, 'pickup')}">
-			    <p>pickup [item]</p>
+			    <p>pickup [quantity] [item]</p>
 			</c:if>
+			
+			<c:if test="${fn:contains(foundCommands, 'drop')}">
+			    <p>drop [quantity] [item]</p>
+			</c:if>
+			
 			
 			<!-- Attack -->
 			<c:if test="${fn:contains(foundCommands, 'attack')}">

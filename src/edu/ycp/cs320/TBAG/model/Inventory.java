@@ -24,6 +24,12 @@ public abstract class Inventory {
 	
 	
 	// getters / setters
+	public Item GetItemByName(String itemName) {
+		for (Item item : this.items.keySet())
+			if (item.GetName().toLowerCase().equals(itemName.toLowerCase())) return item;
+		return null;
+	}
+	
 	public HashMap<Item, Integer> GetItems() {return this.items;}
 	public Integer GetItemAmount(Item item) {
 		Integer quantity = this.items.get(item);
@@ -35,6 +41,7 @@ public abstract class Inventory {
 	}
 	
 	public void AddItems(Item item, Integer itemAmount) {
+		if (itemAmount <= 0) return;
 		if (!this.items.containsKey(item)) this.items.put(item, 0);// add key if item isn't in inventory
 		this.items.put(item, this.GetItemAmount(item) + itemAmount);// add items amount to stack
 	}
@@ -59,6 +66,10 @@ public abstract class Inventory {
 	
 	public Boolean ContainsItem(Item item) {
 		return this.items.containsKey(item);
+	}
+	
+	public Boolean ContainsItemByName(String itemName) {
+		return this.GetItemByName(itemName) != null;
 	}
 	
 	public Boolean ContainsMoreThan(Item item, Integer itemAmount) {

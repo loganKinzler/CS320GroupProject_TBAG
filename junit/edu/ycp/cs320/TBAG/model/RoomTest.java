@@ -22,8 +22,8 @@ public class RoomTest {
 	
 	@Before
 	public void setUp() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
-		EnemyModel enemy2 = new EnemyModel(3.5, 1, 1);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Microwave", "MMMmmm... BEEP! BEEP! BEEP!");
+		EnemyModel enemy2 = new EnemyModel(3.5, 1, 1, "Table", "There's food on it.");
 		enemies.add(enemy1);
 		enemies.add(enemy2);
 		model = new Room(short_description, long_description, enemies);
@@ -131,18 +131,17 @@ public class RoomTest {
 		assertTrue(this.model.getMaxHealth(1) == 3.5);
 	}
 	
+	@Test
 	public void testgetAllEnemies() {
 		String enemies = model.getAllEnemies();
 		assertTrue(this.model.getAllEnemies().equals(enemies));
 	}
 	
+	@Test
 	public void testgetEnemy() {
 		EnemyModel enemy = this.model.getEnemy(1);
 		assertTrue(this.model.getEnemy(1).equals(enemy));
 	}
-	
-	
-	
 	
 	
 	@Test

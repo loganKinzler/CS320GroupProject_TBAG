@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -12,8 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import edu.ycp.cs320.TBAG.controller.*;
 // our imports
+import edu.ycp.cs320.TBAG.controller.*;
 import edu.ycp.cs320.TBAG.model.*;
 
 public class GameEngineServlet extends HttpServlet {
@@ -84,7 +85,6 @@ public class GameEngineServlet extends HttpServlet {
         // Get or create the session
         HttpSession session = req.getSession(true);
         
-    	PlayerController player = new PlayerController(new PlayerModel(100.0, 3, 0));
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
         // Retrieve the game history from the session (or create a new one if it doesn't exist)
@@ -95,13 +95,13 @@ public class GameEngineServlet extends HttpServlet {
         }
         
         //Check if player current room is in session history, set if yes, initialize if not
-        if (session.getAttribute("playerCurrentRoom") == null) {
-        	session.setAttribute("playerCurrentRoom", player.getCurrentRoomIndex());
+        PlayerModel playerModel = (PlayerModel)session.getAttribute("player");
+        if (playerModel == null) {
+        	playerModel = new PlayerModel(50, 3, 0);
         }
-        else {
-        	int roomIndex = ((Integer) session.getAttribute("playerCurrentRoom")).intValue();
-        	player.setCurrentRoomIndex(roomIndex);
-        }
+        
+        PlayerController player = new PlayerController(playerModel);
+        
         
         // get found commands
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
@@ -110,13 +110,10 @@ public class GameEngineServlet extends HttpServlet {
         	session.setAttribute("foundCommands", foundCommands);
         }
 
-        RoomContainer rooms = new RoomContainer();
-        if (session.getAttribute("rooms") == null) {
+        RoomContainer rooms = (RoomContainer)session.getAttribute("rooms");
+        if (rooms == null) {
         	rooms = new RoomContainer();
         	rooms.createHardcodedRooms();
-        }
-        else {
-        	//Do something to pull rooms info (it cant be cleanly pulled... may be better to just use database
         }
         
         if (session.getAttribute("sudoStage") == null) {
@@ -165,7 +162,7 @@ public class GameEngineServlet extends HttpServlet {
         		systemResponse = "<br>Segmentation fault (core melted)<br>";
         		break;
         	case 11:
-        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░ ░H░E░L░P░";
+        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░. . . ░H░E░L░P░";
         		break;
         	default:
         		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
@@ -223,18 +220,53 @@ public class GameEngineServlet extends HttpServlet {
             			systemResponse = String.format("Used %s...", params.get(0));
             		break;
             		
+            		// TYPE 3 COMMANDS
             		case "pickup":
             			if (!foundCommands.contains("pickup")) foundCommands.add("pickup");
-            			//insert code to have player pick up item
-            			//consider a map of all items in the game that can be grabbed using string input from the user input
-            			//then use player pickup() method
             			
-            			systemResponse = String.format("Picked up %s...", params.get(0));
+            			systemResponse = String.format("Picking up %s...<br><br>", params.get(1));
+            			
+            			Integer pickupQuantity;
+            			if (params.get(0).equals("all")) pickupQuantity = Integer.MAX_VALUE;
+            			else pickupQuantity = Integer.parseInt(params.get(0));
+            			
+            			Item pickupItem = rooms.getRoomInventory(player.getCurrentRoomIndex()).GetItemByName(params.get(1));
+            			if (pickupItem == null) {
+            				systemResponse = String.format("This room does not contain an item named %s.<br>",
+            						params.get(1));
+            				break;
+            			}
+            			
+            			Integer roomQuantity = player.PickUp(rooms, pickupItem, pickupQuantity);
+            			systemResponse += String.format("Picked up %d %s<br>",
+            					roomQuantity, params.get(1));
             		break;
             		
-            		case "describe":
-            			if (!foundCommands.contains("describe")) foundCommands.add("describe");
+            		case "drop":
+            			if (!foundCommands.contains("drop")) foundCommands.add("drop");
             			
+            			systemResponse = String.format("Dropping %s...<br><br>", params.get(1));
+            			
+            			Integer dropQuantity;
+            			if (params.get(0).equals("all")) dropQuantity = Integer.MAX_VALUE;
+            			else dropQuantity = Integer.parseInt(params.get(0));
+            			
+            			Item dropItem = player.getInventory().GetItemByName(params.get(1));
+            			if (dropItem == null) {
+            				systemResponse = String.format("This room does not contain an item named %s.<br>",
+            						params.get(1));
+            				break;
+            			}
+            			
+            			Integer playerQuantity = player.Drop(rooms, dropItem, dropQuantity);
+            			
+            			systemResponse += String.format("Dropped %d %s<br>",
+            					playerQuantity, params.get(1));
+            		break;
+            		
+            		
+            		// DESCRIBE COMMANDS
+            		case "describe":
             			switch (params.get(0)) {
             				case "room":
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
@@ -262,11 +294,70 @@ public class GameEngineServlet extends HttpServlet {
             				case "directions":
             					if (!foundCommands.contains("describe_directions")) foundCommands.add("describe_directions");
             					
-            					systemResponse = String.format("Describing directions...<br><br>Possible moves:<br>");
+            					systemResponse = String.format("Describing directions...<br><br>Possible directions:<br>");
             				
             					for (String direction : ConsoleInterpreter.MOVE_DIRECTIONS)
             						systemResponse += String.format(" - %s<br>",
             								direction.substring(0, 1).toUpperCase() + direction.substring(1));
+            				break;
+            				
+            				case "enemies":
+            					if (!foundCommands.contains("describe_enemies")) foundCommands.add("describe_enemies");
+                				
+            					ArrayList<EnemyModel> enemies = rooms.getEnemiesinRoom( player.getCurrentRoomIndex() );
+            					systemResponse = String.format("Describing enemies...<br><br>");
+            					
+            					// no enemies in room
+            					if (enemies.size() == 0) {
+            						systemResponse += String.format("There are no enemies in this room.");
+            						break;
+            					}
+            					
+            					systemResponse += String.format("Enemies in this room:");
+            					
+            					for (Integer i=0; i<enemies.size(); i++)
+            						systemResponse += String.format("<br>&num;%d: %s | Health: %.1f / %.1f<br> - %s<br>",
+            								i+1, enemies.get(i).getName(),
+            								enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
+            								enemies.get(i).getDescription());
+            				break;
+            				
+            				case "inventory":
+            					if (!foundCommands.contains("describe_inventory")) foundCommands.add("describe_inventory");
+                				
+            					HashMap<Item, Integer> playerItems = player.getInventory().GetItems();
+            					systemResponse = String.format("Describing inventory...<br><br>");
+            					
+            					// no enemies in room
+            					if (playerItems.size()== 0) {
+            						systemResponse += String.format("There are no items in your inventory.");
+            						break;
+            					}
+            					
+            					systemResponse += String.format("Items in your inventory:<br>");
+            					
+            					for (Item playerItem : playerItems.keySet())
+            						systemResponse += String.format(" - %s %s<br>",
+            								playerItems.get(playerItem), playerItem.GetName());
+            				break;
+            				
+            				case "items":
+            					if (!foundCommands.contains("describe_items")) foundCommands.add("describe_items");
+                				
+            					HashMap<Item, Integer> roomItems = rooms.getItems( player.getCurrentRoomIndex() );
+            					systemResponse = String.format("Describing items...<br><br>");
+            					
+            					// no enemies in room
+            					if (roomItems.size()== 0) {
+            						systemResponse += String.format("There are no items in this room.");
+            						break;
+            					}
+            					
+            					systemResponse += String.format("Items in this room:<br>");
+            					
+            					for (Item roomItem : roomItems.keySet())
+            						systemResponse += String.format(" - %s %s<br>",
+            								roomItems.get(roomItem), roomItem.GetName());
             				break;
             				
             				default:
@@ -277,7 +368,7 @@ public class GameEngineServlet extends HttpServlet {
             			
             		break;
             		
-            		// TYPE 2 COMMANDS
+            		// TYPE 3 COMMANDS
             		case "attack":
             			if (!foundCommands.contains("attack")) foundCommands.add("attack");
             			
@@ -293,7 +384,6 @@ public class GameEngineServlet extends HttpServlet {
             	}
             }
 
-            session.setAttribute("playerCurrentRoom", player.getCurrentRoomIndex());
             gameHistory.add(systemResponse);
 
             if (sudoStage == 0) {
@@ -304,6 +394,8 @@ public class GameEngineServlet extends HttpServlet {
         }
 
         // Set the game history as a request attribute for the JSP
+        session.setAttribute("player", playerModel);
+        session.setAttribute("rooms", rooms);
         req.setAttribute("gameHistory", gameHistory);
         req.setAttribute("foundCommands", foundCommands);
         req.setAttribute("sudoStage", sudoStage);

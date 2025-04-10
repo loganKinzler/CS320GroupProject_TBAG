@@ -1,7 +1,8 @@
 package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
-
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,31 +24,31 @@ public class GameEngineServlet extends HttpServlet {
         doPost(req, resp);
     }
 
-    //Use this section for when we end up having a database for storing the information
-    /*@Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String userInput = req.getParameter("userInput");
-        if (userInput != null && !userInput.trim().isEmpty()) {
-            // Simulate a system response
-            String systemResponse = "System: You entered '" + userInput + "'";
-
-            // Save to the database
-            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/game_db", "username", "password")) {
-                String sql = "INSERT INTO game_history (user_input, system_response) VALUES (?, ?)";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, userInput);
-                    stmt.setString(2, systemResponse);
-                    stmt.executeUpdate();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Forward to the JSP file
-        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+    
+    
+    
+  /*  @Override
+    protected void doDataPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+    	
+    	//need this to try to get the Derby thing
+    	try {
+			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+		} catch (Exception e) {
+			System.err.println("Could not load Derby JDBC driver");
+			System.err.println(e.getMessage());
+			System.exit(1);
+		}
+		
+		
+		Connection conn = null;
+		conn = DriverManager.getConnection("jdbc:derby:test.db;create=true");
+		Database_Interface DI = new Database_Interface;
+		
+		
     }
+    
     */
+    
     
     private RoomContainer createRooms() {
         RoomContainer rooms = new RoomContainer();

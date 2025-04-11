@@ -78,7 +78,7 @@ public class ConsoleInterpreter {
     		
     		case 2:
     			if (inputWords.size() == 1) return new Action("No parameters given.");// no params
-    			if (inputWords.size() == 2) return new Action("No item name given.");
+    			if (inputWords.size() == 2) return new Action("Not enough parameters.");
     			
     			String itemQuantity = inputWords.get(1).toLowerCase();
     			
@@ -89,9 +89,14 @@ public class ConsoleInterpreter {
 				}
     			
 
-    			if (inputWords.get(1).toLowerCase().equals("all"))
+    			if (inputWords.get(1).toLowerCase().equals("all")) {
+    				if (itemName.equals("items"))
+        				return new Action(inputWords.get(0), new ArrayList<String>(
+            					Arrays.asList(new String[]{"all", "items"})));
+    			
     				return new Action(inputWords.get(0), new ArrayList<String>(
-    					Arrays.asList(new String[]{itemQuantity, itemName})));
+    					Arrays.asList(new String[]{"all", itemName})));
+    			}
     			
     			try {
     				Integer.parseInt(itemQuantity);

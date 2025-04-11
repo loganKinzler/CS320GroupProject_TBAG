@@ -4,8 +4,10 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -162,7 +164,7 @@ public class GameEngineServlet extends HttpServlet {
         		systemResponse = "<br>Segmentation fault (core melted)<br>";
         		break;
         	case 11:
-        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░. . . ░H░E░L░P░";
+        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░. ░H░E░L░P░.";
         		break;
         	default:
         		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
@@ -230,6 +232,27 @@ public class GameEngineServlet extends HttpServlet {
             			if (params.get(0).equals("all")) pickupQuantity = Integer.MAX_VALUE;
             			else pickupQuantity = Integer.parseInt(params.get(0));
             			
+            			// pickup all items
+            			if (params.get(0).equals("all") && params.get(1).equals("items")) {
+            				
+            				
+            				Set<Item> roomInventoryKeys = new HashSet<Item>();
+            				roomInventoryKeys.addAll(rooms.getRoomInventory(player.getCurrentRoomIndex()).GetItems().keySet());
+            				
+            				if (roomInventoryKeys.isEmpty()){
+                				systemResponse = String.format("This room does not contain any items to pickup.<br>");
+                				break;
+                			}
+            				
+            				for (Item roomItem : roomInventoryKeys) {
+            					Integer itemQuantity = player.PickUp(rooms, roomItem, pickupQuantity);
+                    			systemResponse += String.format("Picked up %d %s<br>",
+                    					itemQuantity, roomItem.GetName());
+            				}
+            				
+            				break;
+            			}
+            			
             			Item pickupItem = rooms.getRoomInventory(player.getCurrentRoomIndex()).GetItemByName(params.get(1));
             			if (pickupItem == null) {
             				systemResponse = String.format("This room does not contain an item named %s.<br>",
@@ -250,6 +273,26 @@ public class GameEngineServlet extends HttpServlet {
             			Integer dropQuantity;
             			if (params.get(0).equals("all")) dropQuantity = Integer.MAX_VALUE;
             			else dropQuantity = Integer.parseInt(params.get(0));
+            			
+            			// pickup all items
+            			if (params.get(0).equals("all") && params.get(1).equals("items")) {
+            				
+            				Set<Item> playerInventoryKeys = new HashSet<Item>();
+            				playerInventoryKeys.addAll(player.getInventory().GetItems().keySet());
+            				
+            				if (playerInventoryKeys.isEmpty()){
+                				systemResponse = String.format("The player does not have any items to drop.<br>");
+                				break;
+                			}
+            				
+            				for (Item playerItem : playerInventoryKeys) {
+            					Integer itemQuantity = player.Drop(rooms, playerItem, dropQuantity);
+                    			systemResponse += String.format("Dropped %d %s<br>",
+                    					itemQuantity, playerItem.GetName());
+            				}
+            				
+            				break;
+            			}
             			
             			Item dropItem = player.getInventory().GetItemByName(params.get(1));
             			if (dropItem == null) {

@@ -1,6 +1,6 @@
 package edu.ycp.cs320.TBAG.controller;
 
-import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.*;
 
 public class EntityController {
 	private EntityModel model;
@@ -40,6 +40,11 @@ public class EntityController {
 		if (finalHealth < 0) finalHealth = 0;
 		this.model.setHealth(finalHealth);
 	}
+	public EntityInventory getInventory() {return this.model.getInventory();}
+	
+	public void AddToInventory(Item toAdd, int amount) {
+		this.model.getInventory().AddItems(toAdd, amount);
+	}
 
 	public void Attack(EntityController receiver) {
 		//TODO fill this in
@@ -47,7 +52,14 @@ public class EntityController {
 	public void Die() {
 		//TODO fill this in
 	}
-	public void PickUp() {
-		//TODO fill this in
+	public Integer PickUp(RoomContainer rooms, Item toPickUp, Integer quantity) {
+		Integer pickedUp = rooms.ExtractItems(toPickUp, quantity, getCurrentRoomIndex());
+		AddToInventory(toPickUp, pickedUp);
+		return pickedUp;
+	}
+	public Integer Drop(RoomContainer rooms, Item toDrop, Integer quantity) {
+		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
+		rooms.AddItems(toDrop, dropped, getCurrentRoomIndex());
+		return dropped;
 	}
 }

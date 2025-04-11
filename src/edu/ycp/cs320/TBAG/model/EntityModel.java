@@ -1,10 +1,10 @@
 package edu.ycp.cs320.TBAG.model;
 
 public abstract class EntityModel {
-	private double maxHealth, health;
-	private int lives;
-	private int currentRoomIndex;
-	private EntityInventory inventory;
+	protected double maxHealth, health;
+	protected int lives;
+	protected int currentRoomIndex;
+	protected EntityInventory inventory;
 	
 	public EntityModel(double health, int lives, int currentRoomIndex) {
 		this.maxHealth = health;
@@ -26,8 +26,10 @@ public abstract class EntityModel {
 			this.health = health;
 		}
 	}
+	
 	public int getLives() {return lives;}
 	public void setLives(int lives) {this.lives = lives;}
+	
 	public double getMaxHealth() {return maxHealth;}
 	public void setMaxHealth(double maxHealth) {
 		if (maxHealth < 0) {
@@ -37,7 +39,9 @@ public abstract class EntityModel {
 			this.maxHealth = maxHealth;
 		}
 	}
+	
 	public int getCurrentRoomIndex() {return currentRoomIndex;}
 	public void setCurrentRoomIndex(int currentRoomIndex) {this.currentRoomIndex = currentRoomIndex;}
+	
 	public EntityInventory getInventory() {return this.inventory;}
 }

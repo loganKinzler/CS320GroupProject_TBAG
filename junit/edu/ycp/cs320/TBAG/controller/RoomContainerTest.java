@@ -116,7 +116,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testgetHealth() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Spider", "It's Charllete!");
 		this.container.AddEnemy(0, enemy1);
 		this.container.setHealth(3.0, 0, 0);
 		assertTrue(this.container.getHealth(0, 0) == 3.0);
@@ -125,7 +125,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testgetLives() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Morbeus", "It's morbing time");
 		this.container.AddEnemy(0, enemy1);
 		this.container.setLives(3, 0, 0);
 		assertTrue(this.container.getLives(0, 0) == 3);
@@ -133,14 +133,14 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testgetMaxHealth() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Mouse", "It's looking for cheese.");
 		this.container.AddEnemy(0, enemy1);
 		this.container.setMaxHealth(5.0, 0, 0);
 	}
 	
 	@Test
 	public void testgetAllEnemies() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Evan", "What are they doing in here?");
 		this.container.AddEnemy(0, enemy1);
 		String enemies = this.container.getAllEnemies(0);
 		assertTrue(this.container.getAllEnemies(0).equals(enemies));
@@ -148,7 +148,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testgetEnemy() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Door", "No, you need a key.");
 		this.container.AddEnemy(0, enemy1);
 		EnemyModel enemy = this.container.getEnemy(0, 0);
 		assertTrue(this.container.getEnemy(0, 0).equals(enemy));
@@ -156,7 +156,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testgetEnemiesinRoom() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Cellphone", "It's poisoning our minds.");
 		this.container.AddEnemy(0, enemy1);
 		ArrayList<EnemyModel> enemy = this.container.getEnemiesinRoom(0);
 		assertTrue(this.container.getEnemiesinRoom(0).equals(enemy));
@@ -239,7 +239,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testAddHealth() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Semicolon", "You can never find them when you need them.");
 		this.container.AddEnemy(0, enemy1);
 		this.container.AddHealth(0,0,-2.0);
 		assertTrue(this.container.getHealth(0, 0) ==  2.0);
@@ -247,7 +247,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testAddHealthClamped() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Keyboard", "You can type things on it.");
 		this.container.AddEnemy(0, enemy1);
 		this.container.AddHealth(0, 0, -3.0);
 		this.container.AddHealthClamped(0, 0, 5.0);
@@ -257,7 +257,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testAddEnemy() {
-		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0);
+		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Mirror", "I can almost see myself in it.");
 		this.container.AddEnemy(0, enemy1);
 		assertTrue(this.container.getEnemy(0, 0).equals(enemy1));
 	}

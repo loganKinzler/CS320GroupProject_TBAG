@@ -19,7 +19,8 @@ public class InitialData {
 				if (tuple == null) break;
 				
 				Iterator<String> i = tuple.iterator();
-				Item item = new Item(i.next(), i.next());
+				
+				Item item = new Item(i.next(),i.next());
 				itemTypesList.add(item);
 			}
 			

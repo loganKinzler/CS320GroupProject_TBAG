@@ -54,7 +54,7 @@ public class DerbyDatabase implements IDatabase {
 					// retreive all attributes from both Books and Authors tables
 					stmt = conn.prepareStatement(
 							"select itemTypes.* " +
-							"  from itemTypes " +
+							" from itemTypes " + 
 							" where itemTypes.name = ?"
 					);
 					stmt.setString(1, itemName);
@@ -71,14 +71,14 @@ public class DerbyDatabase implements IDatabase {
 						
 						// create new Author object
 						// retrieve attributes from resultSet starting with index 1
-						Item item = loadItem(resultSet, 1);
+						Item item = loadItem(resultSet, 2);
 						
 						result.add(item);
 					}
 					
 					// check if the title was found
 					if (!found) {
-						System.out.println("<" + itemName + "> was not found in the books table");
+						System.out.println("<" + itemName + "> was not found in the items table");
 					}
 					
 					return result;
@@ -157,8 +157,8 @@ public class DerbyDatabase implements IDatabase {
 		return conn;
 	}
 	
-	public void createTables() {
-		executeTransaction(new Transaction<Boolean>() {
+	public Boolean createTables() {
+		return executeTransaction(new Transaction<Boolean>() {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
 				PreparedStatement stmt1 = null;
@@ -166,23 +166,28 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					stmt1 = conn.prepareStatement(
 						"create table itemTypes (" +
-						"	item_id integer primary key " +
-						"		generated always as identity (start with 1, increment by 1), " +									
-						"	name varchar(15)," +
-						"	description varchar(60)" +
-						")"
+							"	item_id int primary key" + 
+							"       generated always as identity (start with 1, increment by 1), " +									
+							"	name varchar(15), " +
+							"	description varchar(60) " +
+							")"
 					);
-					stmt1.executeUpdate();
 					
-					return true;
+					stmt1.executeUpdate();
+				} catch (Exception e) {
+					if (e.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) return false;
+					throw e;
+					
 				} finally {
 					DBUtil.closeQuietly(stmt1);
 				}
+				
+				return true;
 			}
 		});
 	}
 	
-	public void loadInitialData() {
+	public void loadInitialData(Boolean isNewDatabase) {
 		executeTransaction(new Transaction<Boolean>() {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
@@ -194,13 +199,20 @@ public class DerbyDatabase implements IDatabase {
 					throw new SQLException("Couldn't read initial data", e);
 				}
 
+				// if database already exists, clear it first and reset it
+				if (!isNewDatabase) {
+					PreparedStatement clearDatabase = conn.prepareStatement("delete from itemTypes");
+					clearDatabase.execute();
+				}
+				
 				
 				PreparedStatement insertItem = null;
 
 				try {
-					// populate authors table (do authors first, since author_id is foreign key in books table)
 					insertItem = conn.prepareStatement("insert into itemTypes (name, description) values (?, ?)");
+					
 					for (Item item : itemList) {
+						System.out.println(item.GetName());
 						insertItem.setString(1, item.GetName());
 						insertItem.setString(2, item.GetDescription());
 						insertItem.addBatch();
@@ -217,12 +229,13 @@ public class DerbyDatabase implements IDatabase {
 	
 	// The main method creates the database tables and loads the initial data.
 	public static void main(String[] args) throws IOException {
-		System.out.println("Creating tables...");
 		DerbyDatabase db = new DerbyDatabase();
-		db.createTables();
+		
+		System.out.println("Creating tables...");
+		Boolean isNewDatabase = db.createTables();
 		
 		System.out.println("Loading initial data...");
-		db.loadInitialData();
+		db.loadInitialData(isNewDatabase);
 		
 		System.out.println("Success!");
 	}

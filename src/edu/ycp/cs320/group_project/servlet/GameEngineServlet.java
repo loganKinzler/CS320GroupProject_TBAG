@@ -445,10 +445,6 @@ public class GameEngineServlet extends HttpServlet {
                 gameHistory.add("~-==============================-~");// end of turn line break
                 gameHistory.add("<br>");
             }
-            
-            for (String line : gameHistory) {
-            	System.out.println(line);
-            }
         }
 
         // Set the game history as a request attribute for the JSP

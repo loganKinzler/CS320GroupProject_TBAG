@@ -11,6 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.tbagdb.persist.InitialData;
+import edu.ycp.cs320.TBAG.tbagdb.persist.DBUtil;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
 public class DerbyDatabase implements IDatabase {
 	static {
 		try {
@@ -27,6 +42,67 @@ public class DerbyDatabase implements IDatabase {
 	private static final int MAX_ATTEMPTS = 10;
 	
 	
+	// OUR QUERIES / INSERTS GO HERE
+	public List<Item> ItemsByNameQuery(String itemName) {
+		return executeTransaction(new Transaction<List<Item>>() {
+			@Override
+			public List<Item> execute(Connection conn) throws SQLException {
+				PreparedStatement stmt = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					stmt = conn.prepareStatement(
+							"select itemTypes.* " +
+							"  from itemTypes " +
+							" where itemTypes.name = ?"
+					);
+					stmt.setString(1, itemName);
+					
+					List<Item> result = new ArrayList<Item>();
+					
+					resultSet = stmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						Item item = loadItem(resultSet, 1);
+						
+						result.add(item);
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("<" + itemName + "> was not found in the books table");
+					}
+					
+					return result;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(stmt);
+				}
+			}
+		});
+	}
+	
+	
+	// END OF QUERIES / INSERTS
+
+	
+	// OUR CLASS LOADING METHODS GO HERE
+	private Item loadItem(ResultSet resultSet, int index) throws SQLException {
+		return new Item(
+			resultSet.getString(index++),
+			resultSet.getString(index++)
+		);
+	}
+	
+	// END OF CLASS LOADING METHODS
 	
 	public<ResultType> ResultType executeTransaction(Transaction<ResultType> txn) {
 		try {
@@ -86,35 +162,21 @@ public class DerbyDatabase implements IDatabase {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
 				PreparedStatement stmt1 = null;
-				PreparedStatement stmt2 = null;
 				
 				try {
 					stmt1 = conn.prepareStatement(
-						"create table authors (" +
-						"	author_id integer primary key " +
+						"create table itemTypes (" +
+						"	item_id integer primary key " +
 						"		generated always as identity (start with 1, increment by 1), " +									
-						"	lastname varchar(40)," +
-						"	firstname varchar(40)" +
+						"	name varchar(15)," +
+						"	description varchar(60)" +
 						")"
-					);	
-					stmt1.executeUpdate();
-					
-					stmt2 = conn.prepareStatement(
-							"create table books (" +
-							"	book_id integer primary key " +
-							"		generated always as identity (start with 1, increment by 1), " +
-							"	author_id integer constraint author_id references authors, " +
-							"	title varchar(70)," +
-							"	isbn varchar(15)," +
-							"   published integer " +
-							")"
 					);
-					stmt2.executeUpdate();
+					stmt1.executeUpdate();
 					
 					return true;
 				} finally {
 					DBUtil.closeQuietly(stmt1);
-					DBUtil.closeQuietly(stmt2);
 				}
 			}
 		});
@@ -124,7 +186,31 @@ public class DerbyDatabase implements IDatabase {
 		executeTransaction(new Transaction<Boolean>() {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
-				return true;
+				List<Item> itemList;
+				
+				try {
+					itemList = InitialData.getItemTypes();
+				} catch (IOException e) {
+					throw new SQLException("Couldn't read initial data", e);
+				}
+
+				
+				PreparedStatement insertItem = null;
+
+				try {
+					// populate authors table (do authors first, since author_id is foreign key in books table)
+					insertItem = conn.prepareStatement("insert into itemTypes (name, description) values (?, ?)");
+					for (Item item : itemList) {
+						insertItem.setString(1, item.GetName());
+						insertItem.setString(2, item.GetDescription());
+						insertItem.addBatch();
+					}
+					insertItem.executeBatch();
+					
+					return true;
+				} finally {
+					DBUtil.closeQuietly(insertItem);
+				}
 			}
 		});
 	}

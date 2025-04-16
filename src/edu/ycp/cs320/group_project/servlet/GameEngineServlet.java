@@ -1,13 +1,14 @@
 package edu.ycp.cs320.group_project.servlet;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,8 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 // our imports
-import edu.ycp.cs320.TBAG.controller.*;
-import edu.ycp.cs320.TBAG.model.*;
+import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
+import edu.ycp.cs320.TBAG.controller.PlayerController;
+import edu.ycp.cs320.TBAG.controller.RoomContainer;
+import edu.ycp.cs320.TBAG.model.Action;
+import edu.ycp.cs320.TBAG.model.EnemyModel;
+import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.PlayerModel;
 
 public class GameEngineServlet extends HttpServlet {
     @Override
@@ -158,7 +164,7 @@ public class GameEngineServlet extends HttpServlet {
         		systemResponse = "[INFO] Corrupting game files...<br>";
         		break;
         	case 9:
-        		systemResponse = "[INFO] Game integrity: 0%<br>";
+        		systemResponse = "<span class=\"ascii--art\">[INFO] Game integrity: 0%</span><br>";
         		break;
         	case 10:
         		systemResponse = "<br>Segmentation fault (core melted)<br>";
@@ -194,6 +200,11 @@ public class GameEngineServlet extends HttpServlet {
 	        			sudoStage = 1;
 	        	        session.setAttribute("sudoStage", sudoStage);
         			break;
+        			
+        			//hake easter egg test
+	        		case "hakeTest" :
+	        			systemResponse = hakeEasterEgg();
+	        		break;
             	
             		// TYPE 1 COMMANDS:
             		case "move":
@@ -434,6 +445,10 @@ public class GameEngineServlet extends HttpServlet {
                 gameHistory.add("~-==============================-~");// end of turn line break
                 gameHistory.add("<br>");
             }
+            
+            for (String line : gameHistory) {
+            	System.out.println(line);
+            }
         }
 
         // Set the game history as a request attribute for the JSP
@@ -446,5 +461,31 @@ public class GameEngineServlet extends HttpServlet {
         // Forward to the JSP file
 //        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
         resp.sendRedirect("game");
+    }
+    
+    public String hakeEasterEgg() {
+    	String toOut = "";
+    	try {
+    		InputStream in = getServletContext().getResourceAsStream("/recs/djHake.txt");
+			Scanner reader = new Scanner(in);
+			toOut += "<div class=\"hake-ascii-art\">";
+			while (reader.hasNextLine()) {
+				String asciiLine = reader.nextLine();
+				
+				//ChatGPT recommended that i do this to avoid any issues with formatting
+				asciiLine = asciiLine
+						  .replace("&", "&amp;")
+						  .replace("<", "&lt;")
+						  .replace(">", "&gt;");
+				
+				toOut += asciiLine + "\n";
+			}
+			toOut += "</div>";
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return toOut;
     }
 }

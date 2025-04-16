@@ -25,6 +25,9 @@ public class ConsoleInterpreter {
     	if (userInput.equals("sudo rm -rf \\")) {
     		return new Action("sudoEasterEgg", new ArrayList<String>( Arrays.asList("sudo rm -rf \\") ));
     	}
+    	else if (userInput.equals("hake")) {
+    		return new Action("hakeTest", new ArrayList<String>(Arrays.asList("hakeypoo")));
+    	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
     	

@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+
+import edu.ycp.cs320.TBAG.controller.EnemyController;
+import edu.ycp.cs320.TBAG.controller.EntityController;
+import edu.ycp.cs320.TBAG.model.EntityInventory;
+import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.Item;
 
 public class DerbyDatabase implements IDatabase {
 	static {
@@ -139,5 +141,101 @@ public class DerbyDatabase implements IDatabase {
 		db.loadInitialData();
 		
 		System.out.println("Success!");
+	}
+	
+	public void updateAllPlayerInfo(int currentRoom, double maxHealth, double health, int lives, EntityInventory inventory) {
+		
+	}
+	
+	public void insertIntoPlayerInventory(Item item) {
+		
+	}
+	
+	public EntityInventory getPlayerInventory() {
+		String getStatement = 
+		"select entities.inventoryId, inventories.* "
+		+ "where entities.inventoryId = inventories.id "
+		+ "and entities.id = 1";
+		return null;
+	}
+	
+	public Item getItemFromPlayerInventory(Item toGet) {
+		//Get item name from param and get from inventory by item name
+		String nameToGetBy = toGet.GetName();
+		String getStatement = 
+		"";
+		return null;
+	}
+	
+	public double getPlayerHealth() {
+		String getStatement = 
+		"select health from entities "
+		+ "where entities.id = 1";
+		return 0.0;
+	}
+	
+	public double getPlayerMaxHealth() {
+		String getStatement = 
+		"select maxHealth from entities "
+		+ "where entities.id = 1";
+		return 0.0;
+	}
+	
+	public int getPlayerLives() {
+		String getStatement = 
+		"select lives from entities "
+		+ "where entities.id = 1";
+		return 0;
+	}
+	
+	public int getPlayerCurrentRoom() {
+		String getStatement = 
+		"select currentRoom from entities "
+		+ "where entities.id = 1";
+		return 0;
+	}
+	
+	public void updatePlayerHealth(EntityModel player) {
+		String updateStatement = 
+		"update entities " + 
+		"set health = ?";
+	}
+	
+	public void updatePlayerMaxHealth(EntityModel player) {
+		String updateStatement = 
+		"update entities "
+		+ "set maxHealth = ? "
+		+ "wher eentities.id = 1";
+	}
+	
+	public void updatePlayerCurrentRoom(EntityModel player) {
+		String updateStatement = 
+		"update entities " + 
+		"set currentRoom = ? "
+		+ "where entities.id = 1";
+	}
+	
+	public void updatePlayerLives(EntityModel player) {
+		String updateStatement = 
+		"update entities "
+		+ "set lives = ? "
+		+ "where entities.id = 1";
+	}
+	
+	public EnemyController getEnemyByName(String name) {
+		String getStatement = 
+		"select * from entities " + 
+		"where enemies.name = ?";
+		return null;
+	}
+	public ArrayList<EntityController> getEnemiesByRoomId(int roomId) {
+		ArrayList<EntityController> enemies = new ArrayList<>();
+		
+		String getStatement = 
+		"select * from entities "
+		+ "where entities.currentRoom = ? "
+		+ "and entities.id != 1";
+		
+		return null;
 	}
 }

@@ -8,23 +8,17 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
+import edu.ycp.cs320.TBAG.comparator.ItemPassComparator;
 import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.Weapon;
+
 import edu.ycp.cs320.TBAG.tbagdb.persist.InitialData;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DBUtil;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
 public class DerbyDatabase implements IDatabase {
 	static {
@@ -90,6 +84,48 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
+	
+	public Integer GetItemIDQuery(String itemName, String itemDescription) {
+		return executeTransaction(new Transaction<Integer>() {
+			@Override
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement stmt = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					stmt = conn.prepareStatement(
+							"select itemTypes.* " +
+							" from itemTypes " + 
+							" where itemTypes.name = ?" + 
+							" and itemTypes.description = ?"
+					);
+					
+					stmt.setString(1, itemName);
+					stmt.setString(2, itemDescription);
+					
+					List<Item> result = new ArrayList<Item>();
+					
+					resultSet = stmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					if (resultSet.next()) {
+						found = true;
+						return resultSet.getInt(1);
+					}
+					
+					System.out.println("<" + itemName + "> was not found in the items table");
+					return -1;
+
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(stmt);
+				}
+			}
+		});
+	}
 	
 	// END OF QUERIES / INSERTS
 
@@ -160,29 +196,143 @@ public class DerbyDatabase implements IDatabase {
 	public Boolean createTables() {
 		return executeTransaction(new Transaction<Boolean>() {
 			@Override
-			public Boolean execute(Connection conn) throws SQLException {
-				PreparedStatement stmt1 = null;
+			public Boolean execute(Connection conn) throws SQLException {				
+				Boolean isNewDatabase = true;
 				
-				try {
-					stmt1 = conn.prepareStatement(
+				// ITEM TYPES				
+				PreparedStatement itemStmt = conn.prepareStatement(
 						"create table itemTypes (" +
-							"	item_id int primary key" + 
-							"       generated always as identity (start with 1, increment by 1), " +									
-							"	name varchar(15), " +
-							"	description varchar(60) " +
-							")"
-					);
+								"	item_id int primary key" + 
+								"       generated always as identity (start with 1, increment by 1), " +									
+								"	name varchar(16), " +
+								"	description varchar(64) " +
+								")"
+						);
+
+				try {
+					itemStmt.executeUpdate();
 					
-					stmt1.executeUpdate();
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					
 				} catch (Exception e) {
-					if (e.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) return false;
 					throw e;
 					
 				} finally {
-					DBUtil.closeQuietly(stmt1);
+					DBUtil.closeQuietly(itemStmt);
 				}
 				
-				return true;
+				
+				
+				// WEAPON TYPES
+				PreparedStatement weaponStmt = conn.prepareStatement(
+					"create table weaponTypes (" +
+							"	weapon_id int primary key" + 
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"   item_id int constraint item_id references itemTypes, " + 
+							"	damage double" +
+							")"
+				);
+				
+				try {
+					weaponStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(weaponStmt);
+				}
+				
+
+				
+//				// ROOMS
+//				try {
+//					stmt = conn.prepareStatement(
+//						"create table rooms (" +
+//							"	room_id int primary key" + 
+//							"       generated always as identity (start with 1, increment by 1), " +									
+//							"   name varchar(16)," + 
+//							"   description varchar(16)" + 
+//							")"
+//					);
+//					
+//					stmt.executeUpdate();
+//					
+//				} catch (SQLException sql) {
+//					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+//						isNewDatabase = false;
+//					
+//				} catch (Exception e) {
+//					throw e;
+//					
+//				} finally {
+//					DBUtil.closeQuietly(stmt);
+//					stmt = null;
+//				}
+//				
+//				
+//				
+//				// CONNECTIONS
+//				try {
+//					stmt = conn.prepareStatement(
+//						"create table connections (" +
+//							"	room_id int constraint room_id references rooms, " + 
+//							"   direction varchar(8)," + 
+//							"	destination_id int constraint room_id references rooms" +
+//							")"
+//					);
+//					
+//					stmt.executeUpdate();
+//					
+//				} catch (SQLException sql) {
+//					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+//						isNewDatabase = false;
+//					
+//				} catch (Exception e) {
+//					throw e;
+//					
+//				} finally {
+//					DBUtil.closeQuietly(stmt);
+//					stmt = null;
+//				}
+				
+				
+				return isNewDatabase;
+			}
+		});
+	}
+	
+	public void resetTable(String tableName, String primaryKeyName, Integer startingNum) {
+		executeTransaction(new Transaction<Boolean>() {
+			@Override
+			public Boolean execute(Connection conn) throws SQLException {
+				PreparedStatement clearDatabase = conn.prepareStatement("delete from " + tableName);
+				
+				try {
+					clearDatabase.execute();
+					DBUtil.closeQuietly(clearDatabase);
+		
+					clearDatabase = conn.prepareStatement(
+							"alter table " + tableName + 
+							" alter column " + primaryKeyName + 
+							" restart with " + startingNum.toString()
+					);
+					
+					clearDatabase.execute();
+					
+					return true;
+				} catch(Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(clearDatabase);
+				}
 			}
 		});
 	}
@@ -192,37 +342,66 @@ public class DerbyDatabase implements IDatabase {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
 				List<Item> itemList;
+				Map<Weapon, Integer> weaponMap;
 				
 				try {
 					itemList = InitialData.getItemTypes();
+					weaponMap = InitialData.getWeaponTypes();
 				} catch (IOException e) {
 					throw new SQLException("Couldn't read initial data", e);
 				}
 
-				// if database already exists, clear it first and reset it
+				
+				// if database already exists, reset it first
 				if (!isNewDatabase) {
-					PreparedStatement clearDatabase = conn.prepareStatement("delete from itemTypes");
-					clearDatabase.execute();
+					resetTable("weaponTypes", "weapon_id", 1);// reset dependency first (item_id)
+					resetTable("itemTypes", "item_id", 1);
 				}
 				
 				
-				PreparedStatement insertItem = null;
+				// INSERT ITEMS
+				PreparedStatement insertItem = conn.prepareStatement(
+						"insert into itemTypes (name, description) values (?, ?)");
 
 				try {
-					insertItem = conn.prepareStatement("insert into itemTypes (name, description) values (?, ?)");
-					
 					for (Item item : itemList) {
-						System.out.println(item.GetName());
 						insertItem.setString(1, item.GetName());
 						insertItem.setString(2, item.GetDescription());
 						insertItem.addBatch();
 					}
+					
 					insertItem.executeBatch();
 					
-					return true;
+				} catch(Exception e) {
+					throw e;
+					
 				} finally {
 					DBUtil.closeQuietly(insertItem);
 				}
+				
+				
+				// INSERT WEAPONS
+				PreparedStatement insertWeapon = conn.prepareStatement(
+						"insert into weaponTypes (item_id, damage) values (?, ?)");
+				
+				try {
+					for (Weapon weapon : weaponMap.keySet()) {
+						insertWeapon.setInt(1, weaponMap.get(weapon));
+						insertWeapon.setDouble(2, weapon.GetDamage());
+						
+						insertWeapon.addBatch();
+					}
+
+					insertWeapon.executeBatch();
+					
+				} catch(Exception e) { 
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertWeapon);
+				}
+				
+				return true;
 			}
 		});
 	}

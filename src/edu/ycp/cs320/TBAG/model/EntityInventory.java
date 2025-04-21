@@ -1,9 +1,14 @@
 package edu.ycp.cs320.TBAG.model;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class EntityInventory extends Inventory {
-
+	public static final List<String> WeaponSlots = new ArrayList<String>(Arrays.asList(new String[]{
+		"left hand", "right hand"}));
+	
 	//vars
 	private HashMap<String, Weapon> weapons;
 	
@@ -31,6 +36,12 @@ public class EntityInventory extends Inventory {
 	
 	public void EquipWeapon(String weaponSlot, Weapon weapon) {this.weapons.put(weaponSlot, weapon);}
 	public Weapon DropWeaponInSlot(String weaponSlot) {return this.weapons.remove(weaponSlot);}
+
+	public Weapon UnequipWeaponInSlot(String weaponSlot) {
+		Weapon weapon = this.weapons.remove(weaponSlot);
+		this.AddItem(weapon);
+		return weapon;
+	}
 	
 	public Boolean WeaponIsEquiped(Weapon weapon) {return this.weapons.containsValue( weapon );}
 	public Boolean WeaponSlotIsFull(String weaponSlot) {return this.weapons.containsKey( weaponSlot );}

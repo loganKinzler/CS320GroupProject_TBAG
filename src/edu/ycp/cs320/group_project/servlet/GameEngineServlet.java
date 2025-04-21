@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -307,6 +308,74 @@ public class GameEngineServlet extends HttpServlet {
             					playerQuantity, params.get(1));
             		break;
             		
+            		case "equip":
+            			if (!foundCommands.contains("equip")) foundCommands.add("equip");
+            			
+            			systemResponse = String.format("Equipping %s...<br><br>", params.get(0));
+            			
+            			Weapon equipItem = (Weapon) player.getInventory().GetWeaponByName(params.get(0));
+            			if (equipItem == null) {
+            				systemResponse = String.format("The player does not have a weapon named %s.<br>",
+            						params.get(0));
+            				break;
+            			}
+            			
+            			String weaponSlot = params.get(1);
+            			if (!EntityInventory.WeaponSlots.contains(weaponSlot)) {
+            				systemResponse = String.format("The player does not have a weapon slot named %s.<br>",
+            						params.get(1));
+            				break;
+            			}
+            			
+            			player.getInventory().ExtractItem(equipItem);
+            			player.getInventory().EquipWeapon(weaponSlot, equipItem);
+            			
+            			systemResponse += String.format("Equipped %s into %s.<br>",
+            					params.get(0), weaponSlot);
+            		break;
+            		
+            		case "unequip":
+            			if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
+            			
+            			Map<String, Weapon> weaponSlots = player.getInventory().GetWeaponsAsSlots();
+            			String unequipName = params.get(0);
+            			
+            			// fully correct
+            			if (weaponSlots.containsKey(unequipName)) {            				
+            				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
+            				
+            				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
+            						unequippedWeapon.GetName(), params.get(0));
+            				break;
+            			}
+            			
+            			// no weapon in slot
+            			if (EntityInventory.WeaponSlots.contains(unequipName)) {
+            				systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
+            						params.get(0));
+        					break;
+            			}
+            			
+            			// name could be the name of a weapon
+        				for (String slotName : weaponSlots.keySet()) {
+        					if (weaponSlots.get(slotName).GetName().toLowerCase().equals(unequipName)) {
+        						unequipName = slotName;
+        						break;
+        					}
+        				}
+        				
+        				// if name of weapon
+        				if (weaponSlots.containsKey(unequipName)) {
+            				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
+            				
+            				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
+            						unequippedWeapon.GetName(), params.get(0));
+            				break;
+        				}
+            			
+            			systemResponse = String.format("There is no weapon equipped or slot named '%s'.",
+            					params.get(0));
+            		break;
             		
             		// DESCRIBE COMMANDS
             		case "describe":

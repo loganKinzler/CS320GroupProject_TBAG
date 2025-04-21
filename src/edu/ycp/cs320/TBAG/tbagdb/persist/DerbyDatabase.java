@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import edu.ycp.cs320.TBAG.controller.EnemyController;
-import edu.ycp.cs320.TBAG.controller.EntityController;
+import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Weapon;
 
 public class DerbyDatabase implements IDatabase {
@@ -135,6 +135,39 @@ public class DerbyDatabase implements IDatabase {
 		);
 	}
 	
+	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
+		int index = 2;
+		
+		double health = resultSet.getDouble(index++);
+		double maxHealth = resultSet.getDouble(index++);
+		int lives = resultSet.getInt(index++);
+		int currentRoom = resultSet.getInt(index++);
+		
+		PlayerModel toOut = new PlayerModel(health, lives, currentRoom);
+		toOut.setMaxHealth(maxHealth);
+		
+		//TODO: Use sql controller to get player inventory
+		
+		return toOut;
+	}
+	
+	private EnemyModel loadEnemy(ResultSet resultSet) throws SQLException {
+		int index = 2;
+		
+		double health = resultSet.getDouble(index++);
+		double maxHealth = resultSet.getDouble(index++);
+		int lives = resultSet.getInt(index++);
+		int currentRoom = resultSet.getInt(index++);
+		String name = resultSet.getString(index++);
+		String description = resultSet.getString(index++);
+		
+		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
+		toOut.setMaxHealth(maxHealth);
+		
+		//TODO: Use sql controller to get enemy inventory
+		
+		return toOut;
+	}
 	// END OF CLASS LOADING METHODS
 	
 	public<ResultType> ResultType executeTransaction(Transaction<ResultType> txn) {
@@ -246,6 +279,19 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(weaponStmt);
 				}
 				
+				PreparedStatement entitiesStatement = conn.prepareStatement(
+						"crate table entities ("
+						+ "id int primary key "
+						+ "	generated always as identity (start with 1, increment by 2), "
+						+ "health double, "
+						+ "maxHealth double, "
+						+ "lives int, "
+						+ "currentRoom int, "
+						+ "name varchar(16), "
+						+ "description varchar(64)"
+						+ ")"
+						);
+				
 
 				
 //				// ROOMS
@@ -340,10 +386,15 @@ public class DerbyDatabase implements IDatabase {
 			public Boolean execute(Connection conn) throws SQLException {
 				List<Item> itemList;
 				Map<Weapon, Integer> weaponMap;
+				PlayerModel player;
+				List<EnemyModel> enemies;
 				
 				try {
 					itemList = InitialData.getItemTypes();
 					weaponMap = InitialData.getWeaponTypes();
+					player = InitialData.getPlayer();
+					enemies = InitialData.getEnemies();
+					
 				} catch (IOException e) {
 					throw new SQLException("Couldn't read initial data", e);
 				}
@@ -353,6 +404,7 @@ public class DerbyDatabase implements IDatabase {
 				if (!isNewDatabase) {
 					resetTable("weaponTypes", "weapon_id", 1);// reset dependency first (item_id)
 					resetTable("itemTypes", "item_id", 1);
+					resetTable("entities", "id", 1);
 				}
 				
 				
@@ -398,6 +450,32 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(insertWeapon);
 				}
 				
+				//Insert entities
+				PreparedStatement insertEntityStatement = conn.prepareStatement(
+						"insert into entities (health, maxHealth, lives, currentRoom, name, description) values (?, ?, ?, ?, ?, ?)");
+				//Player
+				insertEntityStatement.setDouble(1, player.getHealth());
+				insertEntityStatement.setDouble(2, player.getMaxHealth());
+				insertEntityStatement.setInt(3, player.getLives());
+				insertEntityStatement.setInt(4, player.getCurrentRoomIndex());
+				insertEntityStatement.setString(5, "");
+				insertEntityStatement.setString(6, "");
+				
+				insertEntityStatement.executeUpdate();
+				
+				//Enemies
+				for (EnemyModel enemy : enemies) {
+					insertEntityStatement.setDouble(1, enemy.getHealth());
+					insertEntityStatement.setDouble(2, enemy.getMaxHealth());
+					insertEntityStatement.setInt(3, enemy.getLives());
+					insertEntityStatement.setInt(4, enemy.getCurrentRoomIndex());
+					insertEntityStatement.setString(5, enemy.getName());
+					insertEntityStatement.setString(6, enemy.getDescription());
+					
+					insertEntityStatement.executeUpdate();
+				}
+				
+				
 				return true;
 			}
 		});
@@ -415,100 +493,193 @@ public class DerbyDatabase implements IDatabase {
 		
 		System.out.println("Success!");
 	}
-	
-	public void updateAllPlayerInfo(int currentRoom, double maxHealth, double health, int lives, EntityInventory inventory) {
-		
+
+	@Override
+	public PlayerModel GetPlayer() {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			@Override
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement getPlayerStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getPlayerStatement = conn.prepareStatement(
+							"select entities.* " +
+							" where entities.id = 1"
+					);
+					
+					PlayerModel player = null;
+					
+					resultSet = getPlayerStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						player = loadPlayer(resultSet);
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Player was not found in the entities table");
+					}
+					
+					return player;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getPlayerStatement);
+				}
+			}
+		});
+	}
+
+
+	@Override
+	public ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex) {
+		return executeTransaction(new Transaction<ArrayList<EnemyModel>>() {
+			@Override
+			public ArrayList<EnemyModel> execute(Connection conn) throws SQLException {
+				PreparedStatement getEnemiesStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getEnemiesStatement = conn.prepareStatement(
+							"select entities* " +
+							" where entities.id > 1 "
+							+ "and entities.currentRoom = ?"
+					);
+					getEnemiesStatement.setInt(1, roomIndex);
+					
+					ArrayList<EnemyModel> enemies = new ArrayList<>();
+					
+					resultSet = getEnemiesStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						enemies.add(loadEnemy(resultSet));
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("No enemies were found in the entities table");
+					}
+					
+					return enemies;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getEnemiesStatement);
+				}
+			}
+		});
 	}
 	
-	public void insertIntoPlayerInventory(Item item) {
+
+	@Override
+	public PlayerModel UpdatePlayerHealth(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set health = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setDouble(1, player.getHealth());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
+	}
+
+
+	@Override
+	public PlayerModel UpdatePlayerRoom(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set currentRoom = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setInt(1, player.getCurrentRoomIndex());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
 		
 	}
-	
+
+
+	@Override
+	public PlayerModel UpdatePlayerMaxHealth(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set maxHealth = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setDouble(1, player.getMaxHealth());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
+		
+	}
+
+
+	@Override
+	public PlayerModel UpdatePlayerLives(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set lives = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setInt(1, player.getLives());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
+		
+	}
+
+
+	@Override
 	public EntityInventory getPlayerInventory() {
-		String getStatement = 
-		"select entities.inventoryId, inventories.* "
-		+ "where entities.inventoryId = inventories.id "
-		+ "and entities.id = 1";
-		return null;
-	}
-	
-	public Item getItemFromPlayerInventory(Item toGet) {
-		//Get item name from param and get from inventory by item name
-		String nameToGetBy = toGet.GetName();
-		String getStatement = 
-		"";
-		return null;
-	}
-	
-	public double getPlayerHealth() {
-		String getStatement = 
-		"select health from entities "
-		+ "where entities.id = 1";
-		return 0.0;
-	}
-	
-	public double getPlayerMaxHealth() {
-		String getStatement = 
-		"select maxHealth from entities "
-		+ "where entities.id = 1";
-		return 0.0;
-	}
-	
-	public int getPlayerLives() {
-		String getStatement = 
-		"select lives from entities "
-		+ "where entities.id = 1";
-		return 0;
-	}
-	
-	public int getPlayerCurrentRoom() {
-		String getStatement = 
-		"select currentRoom from entities "
-		+ "where entities.id = 1";
-		return 0;
-	}
-	
-	public void updatePlayerHealth(EntityModel player) {
-		String updateStatement = 
-		"update entities " + 
-		"set health = ?";
-	}
-	
-	public void updatePlayerMaxHealth(EntityModel player) {
-		String updateStatement = 
-		"update entities "
-		+ "set maxHealth = ? "
-		+ "wher eentities.id = 1";
-	}
-	
-	public void updatePlayerCurrentRoom(EntityModel player) {
-		String updateStatement = 
-		"update entities " + 
-		"set currentRoom = ? "
-		+ "where entities.id = 1";
-	}
-	
-	public void updatePlayerLives(EntityModel player) {
-		String updateStatement = 
-		"update entities "
-		+ "set lives = ? "
-		+ "where entities.id = 1";
-	}
-	
-	public EnemyController getEnemyByName(String name) {
-		String getStatement = 
-		"select * from entities " + 
-		"where enemies.name = ?";
-		return null;
-	}
-	public ArrayList<EntityController> getEnemiesByRoomId(int roomId) {
-		ArrayList<EntityController> enemies = new ArrayList<>();
-		
-		String getStatement = 
-		"select * from entities "
-		+ "where entities.currentRoom = ? "
-		+ "and entities.id != 1";
-		
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

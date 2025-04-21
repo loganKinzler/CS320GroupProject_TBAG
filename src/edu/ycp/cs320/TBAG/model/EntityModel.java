@@ -5,6 +5,7 @@ public abstract class EntityModel {
 	protected int lives;
 	protected int currentRoomIndex;
 	protected EntityInventory inventory;
+	protected int id;
 	
 	public EntityModel(double health, int lives, int currentRoomIndex) {
 		this.maxHealth = health;
@@ -44,4 +45,7 @@ public abstract class EntityModel {
 	public void setCurrentRoomIndex(int currentRoomIndex) {this.currentRoomIndex = currentRoomIndex;}
 	
 	public EntityInventory getInventory() {return this.inventory;}
+	
+	public void setId(int id) {this.id = id;}
+	public int getId() {return this.id;}
 }

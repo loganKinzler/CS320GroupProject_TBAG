@@ -13,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import edu.ycp.cs320.TBAG.comparator.ItemPassComparator;
+import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.Weapon;
+import edu.ycp.cs320.TBAG.model.Inventory;
 
 import edu.ycp.cs320.TBAG.tbagdb.persist.InitialData;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DBUtil;
@@ -249,7 +250,60 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(weaponStmt);
 				}
 				
+				
 
+				// INVENTORY
+				PreparedStatement inventoryStmt = conn.prepareStatement(
+					"create table inventories (" +
+							"   inventory_id int primary key" +
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"	inventory_source int, " + 
+							"   item_id int constraint item_id references itemTypes, " + 
+							"	item_quantity int" +
+							")"
+				);
+				
+				try {
+					inventoryStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(weaponStmt);
+				}
+				
+				
+				
+				// WEAPON SLOTS
+				PreparedStatement weaponSlotsStmt = conn.prepareStatement(
+						"create table weaponSlots (" +
+								"   slot_id int primary key" +
+								"       generated always as identity (start with 1, increment by 1), " + 
+								"	inventory_source int constraint inventory_source references inventories, " + 
+								"   slot_name varchar(16), " + 
+								"	item_id int constraint item_id references itemTypes" +
+								")"
+					);
+					
+					try {
+						inventoryStmt.executeUpdate();
+						
+					} catch (SQLException sql) {
+						if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+							isNewDatabase = false;
+						
+					} catch (Exception e) {
+						throw e;
+						
+					} finally {
+						DBUtil.closeQuietly(weaponStmt);
+					}
+				
 				
 //				// ROOMS
 //				try {
@@ -342,11 +396,13 @@ public class DerbyDatabase implements IDatabase {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
 				List<Item> itemList;
-				Map<Weapon, Integer> weaponMap;
+				List<Weapon> weaponList;
+				Map<Integer, Inventory> inventoryMap;
 				
 				try {
 					itemList = InitialData.getItemTypes();
-					weaponMap = InitialData.getWeaponTypes();
+					weaponList = InitialData.getWeaponTypes();
+					inventoryMap = InitialData.getInventories();
 				} catch (IOException e) {
 					throw new SQLException("Couldn't read initial data", e);
 				}
@@ -354,8 +410,9 @@ public class DerbyDatabase implements IDatabase {
 				
 				// if database already exists, reset it first
 				if (!isNewDatabase) {
-					resetTable("weaponTypes", "weapon_id", 1);// reset dependency first (item_id)
-					resetTable("itemTypes", "item_id", 1);
+					resetTable("inventories", "inventory_id", 1);
+					resetTable("weaponTypes", "weapon_id", 1);
+					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
 				}
 				
 				
@@ -385,10 +442,9 @@ public class DerbyDatabase implements IDatabase {
 						"insert into weaponTypes (item_id, damage) values (?, ?)");
 				
 				try {
-					for (Weapon weapon : weaponMap.keySet()) {
-						insertWeapon.setInt(1, weaponMap.get(weapon));
+					for (Weapon weapon : weaponList) {
+						insertWeapon.setInt(1, weapon.GetID());
 						insertWeapon.setDouble(2, weapon.GetDamage());
-						
 						insertWeapon.addBatch();
 					}
 
@@ -400,6 +456,40 @@ public class DerbyDatabase implements IDatabase {
 				} finally {
 					DBUtil.closeQuietly(insertWeapon);
 				}
+				
+				
+				
+				// INSERT INVENTORIES
+				PreparedStatement insertInventory = conn.prepareStatement(
+						"insert into inventories (inventory_source, item_id, quantity) values (?, ?)");
+				
+				try {
+					for (Integer inventory_source : inventoryMap.keySet()) {
+						Map<Item, Integer> inventoryItems = inventoryMap.get(inventory_source).GetItems();
+						
+						// loop through inventory items
+						for (Item item : inventoryItems.keySet()) {
+							
+							// sources are split by 2 (even: entities, odd: rooms)
+							// the source should be shifted left by 1 to read from the database
+							// and be subsequently shifted right by 1 and added by 1 accordingly to push to the database
+							insertInventory.setInt(1, inventory_source);
+							insertInventory.setInt(2, item.GetID());
+							insertInventory.setInt(3, inventoryItems.get(item));
+							insertInventory.addBatch();
+						}
+					}
+
+					insertWeapon.executeBatch();
+					
+				} catch(Exception e) { 
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertWeapon);
+				}
+				
+				
 				
 				return true;
 			}

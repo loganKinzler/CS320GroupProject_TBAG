@@ -9,8 +9,10 @@ import java.util.Set;
 
 import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
+import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.Room;
 
 public class RoomContainer {
@@ -280,9 +282,14 @@ public class RoomContainer {
 		AddItems(Inventory.SHWARMA, 5, 0);
 
 		//Add Enemies
-		AddEnemy(0, new EnemyModel(5, 1, 0, "Vaccum Cleaner", "vrrrrrrrrrrrmmmmmmmm......"));
-		AddEnemy(0, new EnemyModel(8, 1, 0, "Mechanical Bat", "SQUUEAAK! SQUEEAAAK!!!"));
-
+		EnemyModel vaccumCleaner = new EnemyModel(5, 1, 0, "Vaccum Cleaner", "vrrrrrrrrrrrmmmmmmmm......");
+		new EntityController(vaccumCleaner).EquipWeapon("Right Hand", new Weapon(4, "Tackle", "OOugh!", 1.0));
+		AddEnemy(0, vaccumCleaner);
+		
+		EnemyModel mechBat = new EnemyModel(8, 1, 0, "Mechanical Bat", "SQUUEAAK! SQUEEAAAK!!!");
+		new EntityController(mechBat).EquipWeapon("Right Hand", new Weapon(4, "Tackle", "OOugh!", 1.0));
+		AddEnemy(0, mechBat);
+		
 		//Start room
 	}
 	
@@ -312,7 +319,7 @@ public class RoomContainer {
 	}
 	
 	//This will return all of the enemies as a String in room_index
-	public String getAllEnemies(Integer room_index) {
+	public ArrayList<EnemyModel> getAllEnemies(Integer room_index) {
 		return this.rooms.get(room_index).getAllEnemies();
 	}
 	

@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class EntityInventory extends Inventory {
 	public static final List<String> WeaponSlots = new ArrayList<String>(Arrays.asList(new String[]{
-		"left hand", "right hand"}));
+		"Left Hand", "Right Hand"}));
 	
 	//vars
 	private HashMap<String, Weapon> weapons;
@@ -54,6 +54,22 @@ public class EntityInventory extends Inventory {
 		return this.items.containsKey(item);// weapon could potentially be in regular inventory
 	}
 	
+	@Override
+	public HashMap<Item, Integer> GetItems() {
+		HashMap<Item, Integer> totalItems = (HashMap<Item, Integer>) this.items.clone();
+		
+		// add weapons in their slots to total items
+		for (String slot : this.weapons.keySet()) {
+			Weapon weapon = this.weapons.get(slot);
+			Integer currentCount = totalItems.get(weapon);
+			
+			if (currentCount == null) continue;
+			totalItems.put(weapon, currentCount + 1);
+		}
+			
+		return totalItems;
+	}
+
 	@Override
 	public Integer GetItemAmount(Item item) {
 		Integer quantity = super.GetItemAmount(item);// inventory item amount

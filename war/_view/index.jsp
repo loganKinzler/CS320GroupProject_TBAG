@@ -36,33 +36,38 @@
 			
 			
 			<!-- Move -->
-			<c:if test="${fn:contains(foundCommands, 'move')}">
+			<c:if test="${foundCommands.contains('move')}">
 			    <p>move [direction]</p>
 			</c:if>
 			
 			
 			<!-- Describe Group: Room-->
-			<c:if test="${foundCommands.contains('describeGroup_room')}"><p>describe [ </c:if>
-			<c:if test="${foundCommands.contains('describe_room')}">room </c:if>
+			<c:if test="${foundCommands.contains('describeGroup_room')}"><p>describe [</c:if>
+			<c:if test="${foundCommands.contains('describe_room')}">room</c:if>
 			<c:if test="${foundCommands.contains('describe_room') &&
-						foundCommands.contains('describe_enemies')}">/ </c:if>
-			<c:if test="${foundCommands.contains('describe_enemies')}">enemies </c:if>
+						(foundCommands.contains('describe_moves') || 
+						foundCommands.contains('describe_direction'))}"> / </c:if>
+			<c:if test="${foundCommands.contains('describe_moves')}">moves</c:if>
+			<c:if test="${(foundCommands.contains('describe_room') ||
+						foundCommands.contains('describe_moves')) && 
+						foundCommands.contains('describe_directions')}"> / </c:if>
+			<c:if test="${foundCommands.contains('describe_directions')}">directions</c:if>
 			<c:if test="${foundCommands.contains('describeGroup_room')}">]</p></c:if>
 			
-			<!-- Describe Group: Moves-->
-			<c:if test="${foundCommands.contains('describeGroup_moves')}"><p>describe [ </c:if>
-			<c:if test="${foundCommands.contains('describe_moves')}">moves </c:if>
-			<c:if test="${foundCommands.contains('describe_moves') &&
-						foundCommands.contains('describe_directions')}">/ </c:if>
-			<c:if test="${foundCommands.contains('describe_directions')}">directions </c:if>
-			<c:if test="${foundCommands.contains('describeGroup_moves')}">]</p></c:if>
+			<!-- Describe Group Attack -->
+			<c:if test="${foundCommands.contains('describeGroup_attack')}"><p>describe [</c:if>
+			<c:if test="${foundCommands.contains('describe_enemies')}">enemies</c:if>
+			<c:if test="${foundCommands.contains('describe_enemies') &&
+						foundCommands.contains('describe_stats')}"> / </c:if>
+			<c:if test="${foundCommands.contains('describe_stats')}">stats</c:if>
+			<c:if test="${foundCommands.contains('describeGroup_attack')}">]</p></c:if>
 			
 			<!-- Describe Group: Items-->
-			<c:if test="${foundCommands.contains('describeGroup_items')}"><p>describe [ </c:if>
-			<c:if test="${foundCommands.contains('describe_items')}">items </c:if>
+			<c:if test="${foundCommands.contains('describeGroup_items')}"><p>describe [</c:if>
+			<c:if test="${foundCommands.contains('describe_items')}">items</c:if>
 			<c:if test="${foundCommands.contains('describe_items') &&
-						foundCommands.contains('describe_inventory')}">/ </c:if>
-			<c:if test="${foundCommands.contains('describe_inventory')}">inventory </c:if>
+						foundCommands.contains('describe_inventory')}"> / </c:if>
+			<c:if test="${foundCommands.contains('describe_inventory')}">inventory</c:if>
 			<c:if test="${foundCommands.contains('describeGroup_items')}">]</p></c:if>
 			
 			
@@ -75,23 +80,23 @@
 			<!-- Pickup & Drop -->
 			<c:if test="${foundCommands.contains('pickup') ||
 						foundCommands.contains('drop')}"><p></c:if>
-			<c:if test="${foundCommands.contains('pickup')}">pickup </c:if>
+			<c:if test="${foundCommands.contains('pickup')}">pickup</c:if>
 			<c:if test="${foundCommands.contains('pickup') &&
-						foundCommands.contains('drop')}">/ </c:if>
-			<c:if test="${foundCommands.contains('drop')}">drop </c:if>
+						foundCommands.contains('drop')}"> / </c:if>
+			<c:if test="${foundCommands.contains('drop')}">drop</c:if>
 			<c:if test="${foundCommands.contains('pickup') ||
-						foundCommands.contains('drop')}">[quantity] [item]</p></c:if>
+						foundCommands.contains('drop')}"> [quantity] [item]</p></c:if>
 			
 			<!-- Equip & Unequip] -->
 			<c:if test="${foundCommands.contains('equip')}">
 			    <p>equip [weapon] into [slot]</p>
 			</c:if>
 			
-			<c:if test="${foundCommands.contains('unequip')}"><p>unequip [ </c:if>
-			<c:if test="${foundCommands.contains('unequip_weapon')}">weapon </c:if>
+			<c:if test="${foundCommands.contains('unequip')}"><p>unequip [</c:if>
+			<c:if test="${foundCommands.contains('unequip_weapon')}">weapon</c:if>
 			<c:if test="${foundCommands.contains('unequip_weapon') &&
-						foundCommands.contains('unequip_slot')}">/ </c:if>
-			<c:if test="${foundCommands.contains('unequip_slot')}">slot  </c:if>
+						foundCommands.contains('unequip_slot')}"> / </c:if>
+			<c:if test="${foundCommands.contains('unequip_slot')}">slot</c:if>
 			<c:if test="${foundCommands.contains('unequip')}">]</p></c:if>
 			
 			

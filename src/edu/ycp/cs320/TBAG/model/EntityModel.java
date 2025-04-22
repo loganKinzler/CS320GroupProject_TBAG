@@ -43,5 +43,6 @@ public abstract class EntityModel {
 	public int getCurrentRoomIndex() {return currentRoomIndex;}
 	public void setCurrentRoomIndex(int currentRoomIndex) {this.currentRoomIndex = currentRoomIndex;}
 	
+	public void setInventory(EntityInventory inventory) {this.inventory = inventory;}
 	public EntityInventory getInventory() {return this.inventory;}
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
 import java.util.Map;
@@ -313,6 +314,7 @@ public class GameEngineServlet extends HttpServlet {
             			
             			systemResponse = String.format("Equipping %s...<br><br>", params.get(0));
             			
+            			
             			Weapon equipItem = (Weapon) player.getInventory().GetWeaponByName(params.get(0));
             			if (equipItem == null) {
             				systemResponse = String.format("The player does not have a weapon named %s.<br>",
@@ -320,7 +322,11 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             			}
             			
-            			String weaponSlot = params.get(1);
+            			String weaponSlot = "";
+               			for (String word : params.get(1).split(" "))
+               				weaponSlot += word.substring(0, 1).toUpperCase() + word.substring(1) + " ";
+               			weaponSlot = weaponSlot.trim();
+            			
             			if (!EntityInventory.WeaponSlots.contains(weaponSlot)) {
             				systemResponse = String.format("The player does not have a weapon slot named %s.<br>",
             						params.get(1));
@@ -335,13 +341,19 @@ public class GameEngineServlet extends HttpServlet {
             		break;
             		
             		case "unequip":
-            			if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
-            			
             			Map<String, Weapon> weaponSlots = player.getInventory().GetWeaponsAsSlots();
-            			String unequipName = params.get(0);
+            			String unequipName = "";
             			
-            			// fully correct
-            			if (weaponSlots.containsKey(unequipName)) {            				
+            			// make camel case
+            			for (String word : params.get(0).split(" "))
+            				unequipName += word.substring(0, 1).toUpperCase() + word.substring(1) + " ";
+            			unequipName = unequipName.trim();
+            			
+            			// using slot name
+            			if (weaponSlots.containsKey(unequipName)) {
+            				if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
+            				if (!foundCommands.contains("unequip_slot")) foundCommands.add("unequip_slot");
+            				
             				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
             				
             				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
@@ -351,6 +363,9 @@ public class GameEngineServlet extends HttpServlet {
             			
             			// no weapon in slot
             			if (EntityInventory.WeaponSlots.contains(unequipName)) {
+            				if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
+            				if (!foundCommands.contains("unequip_slot")) foundCommands.add("unequip_slot");
+            				
             				systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
             						params.get(0));
         					break;
@@ -364,8 +379,11 @@ public class GameEngineServlet extends HttpServlet {
         					}
         				}
         				
-        				// if name of weapon
+        				// using weapon name
         				if (weaponSlots.containsKey(unequipName)) {
+        					if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
+        					if (!foundCommands.contains("unequip_weapon")) foundCommands.add("unequip_weapon");
+        					
             				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
             				
             				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
@@ -381,6 +399,7 @@ public class GameEngineServlet extends HttpServlet {
             		case "describe":
             			switch (params.get(0)) {
             				case "room":
+            					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
             					
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
@@ -388,32 +407,18 @@ public class GameEngineServlet extends HttpServlet {
                     					rooms.getLongRoomDescription( player.getCurrentRoomIndex() ));
             				break;
             				
-            				case "moves":
-            					if (!foundCommands.contains("describe_moves")) foundCommands.add("describe_moves");
+            				case "stats":
+            					if (!foundCommands.contains("describeGroup_attack")) foundCommands.add("describeGroup_attack");
+            					if (!foundCommands.contains("describe_stats")) foundCommands.add("describe_stats");
             					
-            					systemResponse = String.format("Describing moves...<br><br>Possible moves:<br>");
-            					
-            					for (String direction : rooms.getAllKeys( player.getCurrentRoomIndex() )) {
-            						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1);
-            						
-            						systemResponse += String.format(" - %s &mdash;&mdash;&#62; %s<br>", camelCaseDirection,
-            								rooms.getShortRoomDescription(
-            									rooms.nextConnection(player.getCurrentRoomIndex(), direction)
-            								));
-            					}
-            				break;
-            				
-            				case "directions":
-            					if (!foundCommands.contains("describe_directions")) foundCommands.add("describe_directions");
-            					
-            					systemResponse = String.format("Describing directions...<br><br>Possible directions:<br>");
-            				
-            					for (String direction : ConsoleInterpreter.MOVE_DIRECTIONS)
-            						systemResponse += String.format(" - %s<br>",
-            								direction.substring(0, 1).toUpperCase() + direction.substring(1));
+            					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: %.1f / %.1f",
+            							player.getLives(),
+            							player.getHealth(),
+            							player.getMaxHealth());
             				break;
             				
             				case "enemies":
+            					if (!foundCommands.contains("describeGroup_attack")) foundCommands.add("describeGroup_attack");
             					if (!foundCommands.contains("describe_enemies")) foundCommands.add("describe_enemies");
                 				
             					ArrayList<EnemyModel> enemies = rooms.getEnemiesinRoom( player.getCurrentRoomIndex() );
@@ -427,53 +432,102 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse += String.format("Enemies in this room:");
             					
-            					for (Integer i=0; i<enemies.size(); i++)
+            					Integer numEnemies = 0;
+            					for (int i=0; i<enemies.size(); i++) {
+            						if (enemies.get(i).getHealth() == 0) continue;
+            						numEnemies++;
+            						
             						systemResponse += String.format("<br>&num;%d: %s | Health: %.1f / %.1f<br> - %s<br>",
-            								i+1, enemies.get(i).getName(),
+            								numEnemies, enemies.get(i).getName(),
             								enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
             								enemies.get(i).getDescription());
+            					}
+            					
+            					// all enemies are dead
+            					if (numEnemies == 0) {
+            						systemResponse = String.format("Describing enemies...<br><br>");
+            						systemResponse += String.format("There are no enemies in this room.");
+            					}
+            				break;
+            				
+            				case "moves":
+            					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
+            					if (!foundCommands.contains("describe_moves")) foundCommands.add("describe_moves");
+            					
+            					systemResponse = String.format("Describing moves...<br><br>Possible moves:<br>");
+            					
+            					for (String direction : rooms.getAllKeys( player.getCurrentRoomIndex() )) {
+            						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
+            						
+            						systemResponse += String.format(" - %s &mdash;&mdash;&#62; %s<br>", camelCaseDirection,
+            								rooms.getShortRoomDescription(
+            									rooms.nextConnection(player.getCurrentRoomIndex(), direction)
+            								));
+            					}
+            				break;
+            				
+            				case "directions":
+            					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
+            					if (!foundCommands.contains("describe_directions")) foundCommands.add("describe_directions");
+            					
+            					systemResponse = String.format("Describing directions...<br><br>Possible directions:<br>");
+            				
+            					for (String direction : ConsoleInterpreter.MOVE_DIRECTIONS)
+            						systemResponse += String.format(" - %s<br>",
+            								direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase());
             				break;
             				
             				case "inventory":
+            					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
             					if (!foundCommands.contains("describe_inventory")) foundCommands.add("describe_inventory");
                 				
             					HashMap<Item, Integer> playerItems = player.getInventory().GetItems();
+            					HashMap<String, Weapon> playerEquips = player.getInventory().GetWeaponsAsSlots();
             					systemResponse = String.format("Describing inventory...<br><br>");
+
             					
-            					// no enemies in room
-            					if (playerItems.size()== 0) {
+            					// no items in inventory
+            					if (playerItems.size() == 0 && playerEquips.size() == 0) {
             						systemResponse += String.format("There are no items in your inventory.");
             						break;
             					}
             					
-            					systemResponse += String.format("Items in your inventory:<br>");
+            					systemResponse += String.format("Items in your inventory:");
+            					
+            					for (String slot : playerEquips.keySet()) 
+            						systemResponse += String.format("<br><br>%s: %s<br> - %s",
+            								slot, playerEquips.get(slot).GetName(),
+            								playerEquips.get(slot).GetDescription());
             					
             					for (Item playerItem : playerItems.keySet())
-            						systemResponse += String.format(" - %s %s<br>",
-            								playerItems.get(playerItem), playerItem.GetName());
+            						systemResponse += String.format("<br><br>%s: %d<br> - %s",
+            								playerItem.GetName(), playerItems.get(playerItem),
+            								playerItem.GetDescription());
             				break;
             				
             				case "items":
+            					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
             					if (!foundCommands.contains("describe_items")) foundCommands.add("describe_items");
                 				
             					HashMap<Item, Integer> roomItems = rooms.getItems( player.getCurrentRoomIndex() );
             					systemResponse = String.format("Describing items...<br><br>");
             					
             					// no enemies in room
-            					if (roomItems.size()== 0) {
+            					if (roomItems.size() == 0) {
             						systemResponse += String.format("There are no items in this room.");
             						break;
             					}
             					
-            					systemResponse += String.format("Items in this room:<br>");
+            					systemResponse += String.format("Items in this room:");
             					
             					for (Item roomItem : roomItems.keySet())
-            						systemResponse += String.format(" - %s %s<br>",
-            								roomItems.get(roomItem), roomItem.GetName());
+            						systemResponse += String.format("<br><br>%s: %d<br> - %s",
+            								roomItem.GetName(), roomItems.get(roomItem),
+            								roomItem.GetDescription());
             				break;
             				
             				default:
-            					systemResponse = String.format("Cannot describe %s",
+            					systemResponse = String.format("Cannot describe %s.<br>",
             							params.get(0));
             				break;
             			}
@@ -484,14 +538,105 @@ public class GameEngineServlet extends HttpServlet {
             		case "attack":
             			if (!foundCommands.contains("attack")) foundCommands.add("attack");
             			
-            			//  using %s
-            			// , userAction.GetParams().get(2)
-            			systemResponse = String.format("Attacked %s with %s.", userAction.GetParams().get(0),
-            					userAction.GetParams().get(1));
+            			weaponSlots = player.getInventory().GetWeaponsAsSlots();
+            			String attackName = "";
+            			
+            			// make camel case
+            			for (String word : params.get(1).split(" "))
+            				attackName += word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase() + " ";
+            			attackName = attackName.trim();
+            			
+            			
+            			// get weapon slot
+            			if (!weaponSlots.containsKey(attackName)) {
+            				if (EntityInventory.WeaponSlots.contains(attackName.toLowerCase())) {
+            					systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
+            						attackName);
+        						break;
+            				}
+            				
+            				// name could be the name of a weapon
+            				for (String slotName : weaponSlots.keySet()) {
+            					if (weaponSlots.get(slotName).GetName().toLowerCase().equals(attackName.toLowerCase())) {
+            						attackName = slotName;
+            						break;
+            					}
+            				}
+            			}
+            			
+            			if (!weaponSlots.containsKey(attackName)) {
+        					systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
+            						attackName);
+        						break;
+            			}
+            			
+            			ArrayList<EnemyModel> roomEnemies = rooms.getRoom(player.getCurrentRoomIndex()).getAllEnemies();
+            			ArrayList<EntityModel> fighters = new ArrayList<EntityModel>();
+            			fighters.add(player.getModel());
+            			fighters.addAll(roomEnemies);
+
+            			Integer attackIndex = -1;         			
+            			try {
+            				attackIndex = Integer.parseInt(params.get(0));
+            			} catch (Exception e) {
+            				
+            				// index might be the name of an enemy
+            				for (EnemyModel enemy : roomEnemies) 
+            					if (enemy.getName().toLowerCase().equals(params.get(0).toLowerCase()))
+            						attackIndex = fighters.indexOf(enemy);
+            			}
+            			
+            			if (attackIndex == -1) {
+        					systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
+            						params.get(0));
+            				break;
+            			}
+            			
+            			
+            			FightController fightController = new FightController(fighters);
+            			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
+        					systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
+            						params.get(0));
+            				break;
+            			}
+
+            			String attackedName = ((EnemyModel) fightController.GetFighter(attackIndex)).getName();
+            			
+            			Double attackDamage = fightController.TakePlayerTurn(0, attackIndex, attackName);
+            			systemResponse = String.format("Attacked %s with %s.<br><br>%s took %.1f damage.<br>",
+            					attackedName,
+            					userAction.GetParams().get(1),
+            					attackedName,
+            					attackDamage
+            					);
+            			
+            			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
+            				new EntityController(fightController.GetFighter(attackIndex)).Die(rooms);
+            				
+            				systemResponse += String.format("%s has died.<br>",
+            						attackedName);
+            			}
+            			
+            			for (int i=0; i<roomEnemies.size(); i++) {
+            				if (i != 0) systemResponse += "<br>";
+            				
+            				if (player.getHealth() == 0) {
+            					// TODO: DEATH METHOD GOES HERE
+            					break;
+            				}
+            				
+            				if (roomEnemies.get(i).getHealth() == 0) continue;
+            				Double enemyDamage = fightController.TakeEnemyTurn(i + 1);
+            				
+            				if (enemyDamage == 0) continue;
+            				systemResponse += String.format("%s attacked. You took %.1f damage.",
+            						((EnemyModel) fightController.GetFighter(i + 1)).getName(),
+            						enemyDamage);
+            			}
             		break;
             		
             		default:
-            			systemResponse = String.format("User inputted valid command of type: %s", userAction.GetMethod());
+            			systemResponse = String.format("User inputted valid command of type: %s<br>", userAction.GetMethod());
             		break;
             	}
             }

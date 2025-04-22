@@ -72,13 +72,6 @@
 			<c:if test="${foundCommands.contains('describe_inventory')}">inventory</c:if>
 			<c:if test="${foundCommands.contains('describeGroup_items')}">]</p></c:if>
 			
-			
-			<!-- Use -->
-			<c:if test="${foundCommands.contains('use')}">
-			    <p>use [item]</p>
-			</c:if>
-			
-			
 			<!-- Pickup & Drop -->
 			<c:if test="${foundCommands.contains('pickup') ||
 						foundCommands.contains('drop')}"><p></c:if>
@@ -105,6 +98,11 @@
 			<!-- Attack -->
 			<c:if test="${foundCommands.contains('attack')}">
 			    <p>attack [enemy] with [weapon]</p><!-- using [attack] -->
+			</c:if>
+			
+			<!-- Use -->
+			<c:if test="${foundCommands.contains('use')}">
+			    <p>use [item]</p>
 			</c:if>
           </div>
         </div>

@@ -265,6 +265,12 @@ box-sizing:border-box;
 	line-height: .75;
 }
 
+.babcock-ascii-art {
+	font-size: var(--hake-ascii-font-size) !important;
+	white-space: pre;
+	line-height: 1;
+}
+
 .ipear-logo {
 	position: absolute;
 	height: 6vh;

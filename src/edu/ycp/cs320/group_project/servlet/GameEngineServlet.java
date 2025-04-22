@@ -203,7 +203,10 @@ public class GameEngineServlet extends HttpServlet {
         			
         			//hake easter egg test
 	        		case "hakeTest" :
-	        			systemResponse = hakeEasterEgg();
+	        			systemResponse = profAsciiEasterEgg("hake");
+	        		break;
+	        		case "babcockTest":
+	        			systemResponse = profAsciiEasterEgg("babcock");
 	        		break;
             	
             		// TYPE 1 COMMANDS:
@@ -459,12 +462,14 @@ public class GameEngineServlet extends HttpServlet {
         resp.sendRedirect("game");
     }
     
-    public String hakeEasterEgg() {
+    public String profAsciiEasterEgg(String prof) {
+    	System.out.println(prof);
     	String toOut = "";
     	try {
-    		InputStream in = getServletContext().getResourceAsStream("/recs/djHake.txt");
+    		InputStream in = getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
 			Scanner reader = new Scanner(in);
-			toOut += "<div class=\"hake-ascii-art\">";
+			if (prof.equals("hake")) toOut += "<div class=\"hake-ascii-art\">";
+			else if (prof.equals("babcock")) toOut += "<div class=\"babcock-ascii-art\">";
 			while (reader.hasNextLine()) {
 				String asciiLine = reader.nextLine();
 				

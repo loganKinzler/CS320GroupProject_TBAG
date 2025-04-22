@@ -31,6 +31,9 @@ public class ConsoleInterpreter {
     	else if (userInput.equals("hake")) {
     		return new Action("hakeTest", new ArrayList<String>(Arrays.asList("hakeypoo")));
     	}
+    	else if (userInput.equals("babcock")) {
+    		return new Action("babcockTest", new ArrayList<String>(Arrays.asList("hakeypoo")));
+    	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
     	

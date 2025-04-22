@@ -286,7 +286,7 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement entitiesStatement = conn.prepareStatement(
 						"crate table entities ("
 						+ "id int primary key "
-						+ "	generated always as identity (start with 1, increment by 2), "
+						+ "	generated always as identity (start with 1, increment by 1), "
 						+ "health double, "
 						+ "maxHealth double, "
 						+ "lives int, "

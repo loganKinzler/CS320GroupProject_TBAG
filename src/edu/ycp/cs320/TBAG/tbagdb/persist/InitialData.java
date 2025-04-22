@@ -1,20 +1,20 @@
 package edu.ycp.cs320.TBAG.tbagdb.persist;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 
+import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.Inventory;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
-
-import edu.ycp.cs320.TBAG.tbagdb.persist.ReadCSV;
 
 public class InitialData {
 	private static List<Item> itemTypes;
@@ -92,7 +92,7 @@ public class InitialData {
 				
 				// add new inventory
 				if (inventories.get(inventorySource) == null) {
-					inventories.put(inventorySource, new Inventory());
+//					inventories.put(inventorySource, new Inventory());
 				}
 				
 			}	
@@ -102,5 +102,66 @@ public class InitialData {
 		
 		
 		return inventories;
+	}
+	
+	public static PlayerModel getPlayer() throws IOException {
+		PlayerModel toOut = new PlayerModel(100,3,1);
+		ReadCSV readPlayer = new ReadCSV("entityTypes.csv");
+		
+		try {
+			List<String> tuple = readPlayer.next();
+			
+			Iterator<String> i = tuple.iterator();
+			
+			Double health = Double.parseDouble(i.next());
+			Double maxHealth = Double.parseDouble(i.next());
+			Integer lives = Integer.parseInt(i.next());
+			Integer currentRoom = Integer.parseInt(i.next());
+			
+			toOut = new PlayerModel(health, lives, currentRoom);
+			
+		}
+		finally {
+			readPlayer.close();
+		}
+		
+		
+		return toOut;
+	}
+	
+	public static List<EnemyModel> getEnemies() throws IOException {
+		List<EnemyModel> enemies = new ArrayList<>();
+		ReadCSV readEnemies = new ReadCSV("entityTypes.csv");
+		
+		try {
+			
+			readEnemies.next();
+			
+			while (true) {
+				List<String> tuple = readEnemies.next();
+				
+				if (tuple == null) break;
+				
+				Iterator<String> i = tuple.iterator();
+				
+				Double health = Double.parseDouble(i.next());
+				Double maxHealth = Double.parseDouble(i.next());
+				Integer lives = Integer.parseInt(i.next());
+				Integer currentRoom = Integer.parseInt(i.next());
+				String name = i.next();
+				String desc = i.next();
+				
+				EnemyModel enemy = new EnemyModel(health, 1, currentRoom, name, desc);
+				
+				enemies.add(enemy);
+			}
+			
+		}
+		finally {
+			readEnemies.close();
+		}
+		
+		
+		return enemies;
 	}
 }

@@ -6,6 +6,7 @@
 <head>
     <title>Game</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/recs/favicon.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +28,7 @@
 		</div>
 		<div class="buttons">
 			<button class="monitor-button" onclick="passed" style="display: none;">Clear Console</button>
+			<img src="${pageContext.request.contextPath}/recs/iPearDropShadow.png" class="ipear-logo">
 		</div>
 	</div>
 	<div class=sticky-note-container>

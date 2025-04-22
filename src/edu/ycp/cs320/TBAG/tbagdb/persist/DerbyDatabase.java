@@ -5,21 +5,19 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
+import edu.ycp.cs320.TBAG.model.EnemyModel;
+import edu.ycp.cs320.TBAG.model.EntityInventory;
+import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.Inventory;
-
-import edu.ycp.cs320.TBAG.tbagdb.persist.InitialData;
-import edu.ycp.cs320.TBAG.tbagdb.persist.DBUtil;
 
 public class DerbyDatabase implements IDatabase {
 	static {
@@ -60,14 +58,15 @@ public class DerbyDatabase implements IDatabase {
 					
 					// for testing that a result was returned
 					Boolean found = false;
+					Integer itemID = 0;
 					
 					while (resultSet.next()) {
 						found = true;
+						itemID++;
 						
 						// create new Author object
 						// retrieve attributes from resultSet starting with index 1
-						Item item = loadItem(resultSet, 2);
-						
+						Item item = loadItem(resultSet, 2, itemID);
 						result.add(item);
 					}
 					
@@ -132,13 +131,47 @@ public class DerbyDatabase implements IDatabase {
 
 	
 	// OUR CLASS LOADING METHODS GO HERE
-	private Item loadItem(ResultSet resultSet, int index) throws SQLException {
+	private Item loadItem(ResultSet resultSet, int index, int itemID) throws SQLException {
 		return new Item(
+			itemID,
 			resultSet.getString(index++),
 			resultSet.getString(index++)
 		);
 	}
 	
+	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
+		int index = 2;
+		
+		double health = resultSet.getDouble(index++);
+		double maxHealth = resultSet.getDouble(index++);
+		int lives = resultSet.getInt(index++);
+		int currentRoom = resultSet.getInt(index++);
+		
+		PlayerModel toOut = new PlayerModel(health, lives, currentRoom);
+		toOut.setMaxHealth(maxHealth);
+		
+		//TODO: Use sql controller to get player inventory
+		
+		return toOut;
+	}
+	
+	private EnemyModel loadEnemy(ResultSet resultSet) throws SQLException {
+		int index = 2;
+		
+		double health = resultSet.getDouble(index++);
+		double maxHealth = resultSet.getDouble(index++);
+		int lives = resultSet.getInt(index++);
+		int currentRoom = resultSet.getInt(index++);
+		String name = resultSet.getString(index++);
+		String description = resultSet.getString(index++);
+		
+		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
+		toOut.setMaxHealth(maxHealth);
+		
+		//TODO: Use sql controller to get enemy inventory
+		
+		return toOut;
+	}
 	// END OF CLASS LOADING METHODS
 	
 	public<ResultType> ResultType executeTransaction(Transaction<ResultType> txn) {
@@ -250,7 +283,18 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(weaponStmt);
 				}
 				
-				
+				PreparedStatement entitiesStatement = conn.prepareStatement(
+						"crate table entities ("
+						+ "id int primary key "
+						+ "	generated always as identity (start with 1, increment by 2), "
+						+ "health double, "
+						+ "maxHealth double, "
+						+ "lives int, "
+						+ "currentRoom int, "
+						+ "name varchar(16), "
+						+ "description varchar(64)"
+						+ ")"
+						);
 
 				// INVENTORY
 				PreparedStatement inventoryStmt = conn.prepareStatement(
@@ -398,11 +442,17 @@ public class DerbyDatabase implements IDatabase {
 				List<Item> itemList;
 				List<Weapon> weaponList;
 				Map<Integer, Inventory> inventoryMap;
+				PlayerModel player;
+				List<EnemyModel> enemies;
 				
 				try {
 					itemList = InitialData.getItemTypes();
 					weaponList = InitialData.getWeaponTypes();
 					inventoryMap = InitialData.getInventories();
+
+					player = InitialData.getPlayer();
+					enemies = InitialData.getEnemies();
+					
 				} catch (IOException e) {
 					throw new SQLException("Couldn't read initial data", e);
 				}
@@ -458,7 +508,6 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 				
-				
 				// INSERT INVENTORIES
 				PreparedStatement insertInventory = conn.prepareStatement(
 						"insert into inventories (inventory_source, item_id, quantity) values (?, ?)");
@@ -490,6 +539,30 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 				
+				//Insert entities
+				PreparedStatement insertEntityStatement = conn.prepareStatement(
+						"insert into entities (health, maxHealth, lives, currentRoom, name, description) values (?, ?, ?, ?, ?, ?)");
+				//Player
+				insertEntityStatement.setDouble(1, player.getHealth());
+				insertEntityStatement.setDouble(2, player.getMaxHealth());
+				insertEntityStatement.setInt(3, player.getLives());
+				insertEntityStatement.setInt(4, player.getCurrentRoomIndex());
+				insertEntityStatement.setString(5, "");
+				insertEntityStatement.setString(6, "");
+				
+				insertEntityStatement.executeUpdate();
+				
+				//Enemies
+				for (EnemyModel enemy : enemies) {
+					insertEntityStatement.setDouble(1, enemy.getHealth());
+					insertEntityStatement.setDouble(2, enemy.getMaxHealth());
+					insertEntityStatement.setInt(3, enemy.getLives());
+					insertEntityStatement.setInt(4, enemy.getCurrentRoomIndex());
+					insertEntityStatement.setString(5, enemy.getName());
+					insertEntityStatement.setString(6, enemy.getDescription());
+					
+					insertEntityStatement.executeUpdate();
+				}
 				
 				return true;
 			}
@@ -507,5 +580,194 @@ public class DerbyDatabase implements IDatabase {
 		db.loadInitialData(isNewDatabase);
 		
 		System.out.println("Success!");
+	}
+
+	@Override
+	public PlayerModel GetPlayer() {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			@Override
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement getPlayerStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getPlayerStatement = conn.prepareStatement(
+							"select entities.* " +
+							" where entities.id = 1"
+					);
+					
+					PlayerModel player = null;
+					
+					resultSet = getPlayerStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						player = loadPlayer(resultSet);
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Player was not found in the entities table");
+					}
+					
+					return player;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getPlayerStatement);
+				}
+			}
+		});
+	}
+
+
+	@Override
+	public ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex) {
+		return executeTransaction(new Transaction<ArrayList<EnemyModel>>() {
+			@Override
+			public ArrayList<EnemyModel> execute(Connection conn) throws SQLException {
+				PreparedStatement getEnemiesStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getEnemiesStatement = conn.prepareStatement(
+							"select entities* " +
+							" where entities.id > 1 "
+							+ "and entities.currentRoom = ?"
+					);
+					getEnemiesStatement.setInt(1, roomIndex);
+					
+					ArrayList<EnemyModel> enemies = new ArrayList<>();
+					
+					resultSet = getEnemiesStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						enemies.add(loadEnemy(resultSet));
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("No enemies were found in the entities table");
+					}
+					
+					return enemies;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getEnemiesStatement);
+				}
+			}
+		});
+	}
+	
+
+	@Override
+	public PlayerModel UpdatePlayerHealth(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set health = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setDouble(1, player.getHealth());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
+	}
+
+
+	@Override
+	public PlayerModel UpdatePlayerRoom(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set currentRoom = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setInt(1, player.getCurrentRoomIndex());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
+		
+	}
+
+
+	@Override
+	public PlayerModel UpdatePlayerMaxHealth(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set maxHealth = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setDouble(1, player.getMaxHealth());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
+		
+	}
+
+
+	@Override
+	public PlayerModel UpdatePlayerLives(PlayerModel player) {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set lives = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setInt(1, player.getLives());
+				
+				insertStatement.executeUpdate();
+				
+				return GetPlayer();
+			}
+		});
+		
+	}
+
+
+	@Override
+	public EntityInventory getPlayerInventory() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

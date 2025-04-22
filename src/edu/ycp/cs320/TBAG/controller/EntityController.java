@@ -53,16 +53,6 @@ public class EntityController {
 	public void EquipWeapon(String weaponSlot, Weapon weapon) {
 		this.model.getInventory().EquipWeapon(weaponSlot, weapon);
 	}
-	
-	public void Die(RoomContainer rooms) {
-		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
-		
-		// drop all enemy items
-		for (Item item : items)
-			this.Drop(rooms, item, Integer.MAX_VALUE);
-		
-		this.model.setLives( Math.min(0, this.model.getLives() - 1) );
-	}
 
 	public Integer PickUp(RoomContainer rooms, Item toPickUp, Integer quantity) {
 		Integer pickedUp = rooms.ExtractItems(toPickUp, quantity, getCurrentRoomIndex());
@@ -74,5 +64,18 @@ public class EntityController {
 		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
 		rooms.AddItems(toDrop, dropped, getCurrentRoomIndex());
 		return dropped;
+	}
+	
+	
+	public boolean Die(RoomContainer rooms) {
+		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
+		
+		// drop all enemy items
+		for (Item item : items)
+			this.Drop(rooms, item, Integer.MAX_VALUE);
+		
+		this.model.setLives( Math.min(0, this.model.getLives() - 1) );
+		
+		return this.model.getLives() == 0;
 	}
 }

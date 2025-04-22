@@ -6,6 +6,9 @@ window.addEventListener('load', () => {
 });
 
 
-function passed() {
+function debugLoop() {
+	requestAnimationFrame(debugLoop);
 	console.log("Passed");
+	console.log(document.querySelector(".ascii-art"));
 }
+debugLoop();

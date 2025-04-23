@@ -1,6 +1,10 @@
 package edu.ycp.cs320.TBAG.controller;
 
+import java.util.Set;
+import java.util.HashSet;
+
 import edu.ycp.cs320.TBAG.model.*;
+import edu.ycp.cs320.TBAG.controller.*;
 
 public class EntityController {
 	private EntityModel model;
@@ -45,39 +49,30 @@ public class EntityController {
 	public void AddToInventory(Item toAdd, int amount) {
 		this.model.getInventory().AddItems(toAdd, amount);
 	}
-
-	public void Attack(EntityController receiver) {
-		//TODO fill this in
+	
+	public void EquipWeapon(String weaponSlot, Weapon weapon) {
+		this.model.getInventory().EquipWeapon(weaponSlot, weapon);
 	}
+	
+	public void Die(RoomContainer rooms) {
+		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
+		
+		// drop all enemy items
+		for (Item item : items)
+			this.Drop(rooms, item, Integer.MAX_VALUE);
+		
+		this.model.setLives( Math.min(0, this.model.getLives() - 1) );
+	}
+
 	public Integer PickUp(RoomContainer rooms, Item toPickUp, Integer quantity) {
 		Integer pickedUp = rooms.ExtractItems(toPickUp, quantity, getCurrentRoomIndex());
 		AddToInventory(toPickUp, pickedUp);
 		return pickedUp;
 	}
+	
 	public Integer Drop(RoomContainer rooms, Item toDrop, Integer quantity) {
 		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
 		rooms.AddItems(toDrop, dropped, getCurrentRoomIndex());
 		return dropped;
-	}
-	
-	public boolean Die(RoomContainer rooms) {
-		boolean outOfLives = false; //Player will have more than one life but enemies will not
-		
-		if (this.getLives() == 1) {
-			outOfLives = true;
-			this.setCurrentRoomIndex(-1);
-		}
-		else {
-			//Empty inventory out into room
-			RoomInventory roomInv = rooms.getRoomInventory(this.getCurrentRoomIndex()); //Get inventory of current room inside of
-			
-			//Transfer items from entity inventory to room inventory (maybe add a method for doing that to inventory
-			
-			this.setCurrentRoomIndex(0); //Put back in starting room
-		}
-		
-		this.setLives(this.getLives() - 1);
-		
-		return outOfLives;
 	}
 }

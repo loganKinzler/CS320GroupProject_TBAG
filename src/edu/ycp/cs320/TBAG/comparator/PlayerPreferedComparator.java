@@ -16,10 +16,10 @@ public class PlayerPreferedComparator implements Comparator<EntityModel> {
 		if (firstIsPlayer && secondIsPlayer) return 0;
 		
 		// first is a Player (greater than)
-		if (firstIsPlayer && !secondIsPlayer) return 1;
+		if (firstIsPlayer && !secondIsPlayer) return -1;
 		
 		// second is a Player (less than)
-		if (!firstIsPlayer && secondIsPlayer) return -1;
+		if (!firstIsPlayer && secondIsPlayer) return 1;
 		
 		// both are not Players (equal)
 		return 0;

@@ -7,8 +7,8 @@ public class Weapon extends Item {
 	
 	
 	// contstructors
-	public Weapon(String name, String description, Double damage) {
-		super(name, description);
+	public Weapon(Integer weaponID, String name, String description, Double damage) {
+		super(weaponID, name, description);
 		this.damage = damage;
 	}
 	

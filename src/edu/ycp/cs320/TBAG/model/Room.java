@@ -123,8 +123,8 @@ public class Room {
 	}
 	
 	//This will return all of the enemies as a String
-	public String getAllEnemies(){
-		return this.enemies.toString();
+	public ArrayList<EnemyModel> getAllEnemies(){
+		return this.enemies;
 	}
 	
 	//This will return the enemy at index in the ArrayList

@@ -15,6 +15,9 @@ public class ConsoleInterpreter {
 	public static final String DESCRIBE = "describe";
 	public static final String USE = "use";
 	public static final String ATTACK = "attack";
+	public static final String EQUIP = "equip";
+	public static final String UNEQUIP = "unequip";
+	
 	public static final Set<String> MOVE_DIRECTIONS = new HashSet<String>(Arrays.asList(
 			new String[]{"north", "east", "south", "west"}));
 	
@@ -46,6 +49,9 @@ public class ConsoleInterpreter {
     		case DROP: commandType = 2; break;
     		
     		case ATTACK: commandType = 3; break;
+
+    		case EQUIP: commandType = 4; break;
+    		case UNEQUIP: commandType = 5; break;
     	}
   	
     	
@@ -163,6 +169,41 @@ public class ConsoleInterpreter {
     			// , attackType
     			return new Action("attack", new ArrayList<String>(
     					Arrays.asList(new String[]{target, weapon})));
+    			
+    		case 4:
+    			if (inputWords.size() == 1) return new Action("No parameters given.");// no params
+    			if (inputWords.size() <= 3) return new Action("Not enough parameters.");
+    			
+    			if (inputWords.indexOf("into") < 0) return new Action("Keyword 'into' is missing.");
+    			
+    			
+    			String weaponName = inputWords.get(1).toLowerCase();
+				for (int i=2; i<inputWords.indexOf("into"); i++) {
+					weaponName += " " + inputWords.get(2).toLowerCase();
+					inputWords.remove(2);
+				}
+				
+				
+				String slotName = inputWords.get(3).toLowerCase();
+				for (int i=4; i<inputWords.size(); i++) {
+					slotName += " " + inputWords.get(4).toLowerCase();
+					inputWords.remove(4);
+				}
+    			
+				return new Action(inputWords.get(0), new ArrayList<String>(
+    					Arrays.asList(new String[]{weaponName, slotName})));
+				
+    		case 5:
+    			if (inputWords.size() == 1) return new Action("No parameters given.");
+    			
+    			String unequipName = inputWords.get(1).toLowerCase();
+				for (int i=2; i<inputWords.size(); i++) {
+					unequipName += " " + inputWords.get(2).toLowerCase();
+					inputWords.remove(2);
+				}
+				
+				return new Action(inputWords.get(0), new ArrayList<String>(
+    					Arrays.asList(new String[]{unequipName})));
     	}
     	
     	// command doesn't exist

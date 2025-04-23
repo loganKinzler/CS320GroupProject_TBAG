@@ -3,13 +3,14 @@ package edu.ycp.cs320.TBAG.model;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class WeaponTest {
 	private Weapon model;
 	
 	@Before
 	public void SetUp() {
-		this.model = new Weapon("Baseball Bat", "Swing, batta-batta! | Deals 5 dmg", new Double(5));
+		this.model = new Weapon(1, "Baseball Bat", "Swing, batta-batta! | Deals 5 dmg", 5.0);
 	}
 
 	@Test
@@ -25,8 +26,14 @@ public class WeaponTest {
 	}
 	
 	@Test
+	public void IDTest() {
+		this.model.SetID(3);
+		assertTrue(this.model.GetID() == 3);
+	}
+	
+	@Test
 	public void DamageTest() {
-		this.model.SetDamage(new Double(2));
-		assertEquals(this.model.GetDamage(), new Double(2));
+		this.model.SetDamage(2.0);
+		assertTrue(this.model.GetDamage() == 2.0);
 	}
 }

@@ -157,6 +157,7 @@ public class DerbyDatabase implements IDatabase {
 					while (resultSet.next()) {
 						found = true;
 						
+						
 						// create new Room object
 						// retrieve attributes from resultSet starting with index 1
 						Room room = loadRoom(resultSet);
@@ -225,7 +226,7 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private Room loadRoom(ResultSet resultSet) throws SQLException {
-		int index = 1;
+		int index = 2;
 		String name = resultSet.getString(index++);
 		String description = resultSet.getString(index++);
 		Room toOut = new Room(name, description);

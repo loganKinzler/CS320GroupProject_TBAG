@@ -25,4 +25,22 @@ public class PlayerDbController {
 		EntityInventory inv = db.getPlayerInventory();
 		return inv;
 	}
+	
+	public PlayerModel getPlayer(IDatabase db) {
+		return db.GetPlayer();
+	}
+	
+	public void updatePlayerHealth(IDatabase db, PlayerModel player) {
+		db.UpdatePlayerHealth(player);
+	}
+	
+	public void updatePlayerMaxHealth(IDatabase db, PlayerModel player) {
+		db.UpdatePlayerMaxHealth(player);
+	}
+	public void updatePlayerLives(IDatabase db, PlayerModel player) {
+		db.UpdatePlayerLives(player);
+	}
+	public void updatePlayerRoom(IDatabase db, PlayerModel player) {
+		db.UpdatePlayerRoom(player);
+	}
 }

@@ -176,13 +176,13 @@ public class GameEngineServlet extends HttpServlet {
         		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
         		break;
         	}
-        	gameHistory.add(systemResponse);
+        	addToGameHistory(gameHistory, systemResponse);
         }
         
         if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
             // Add user input to the game history
 
-        	gameHistory.add("C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
+        	addToGameHistory(gameHistory, "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
             
             Action userAction = interpreter.ValidateInput(userInput);
             systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
@@ -441,12 +441,12 @@ public class GameEngineServlet extends HttpServlet {
             	}
             }
 
-            gameHistory.add(systemResponse);
+            addToGameHistory(gameHistory, systemResponse);
 
             if (sudoStage == 0) {
-            	gameHistory.add("<br>");
-                gameHistory.add("~-==============================-~");// end of turn line break
-                gameHistory.add("<br>");
+            	addToGameHistory(gameHistory, "<br>");
+            	addToGameHistory(gameHistory, "~-==============================-~");
+            	addToGameHistory(gameHistory, "<br>");
             }
         }
 
@@ -460,6 +460,12 @@ public class GameEngineServlet extends HttpServlet {
         // Forward to the JSP file
 //        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
         resp.sendRedirect("game");
+    }
+    
+    public void addToGameHistory(List<String> gameHistory, String toAdd) {
+    	gameHistory.add(toAdd);
+    	
+    	//Add db insert method here
     }
     
     public String profAsciiEasterEgg(String prof) {

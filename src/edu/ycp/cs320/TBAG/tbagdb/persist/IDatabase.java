@@ -21,4 +21,12 @@ public interface IDatabase {
 	
 	
 	public abstract ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex);
+	
+	public Double UpdateEnemyHealthById(int id, double health);
+	public Double UpdateEnemyMaxHealthById(int id, double maxHealth);
+	public Integer UpdateEnemyLivesById(int id, int lives);
+	public Integer UpdateEnemyRoomById(int id, int roomId);
+	public String UpdateEnemyNameById(int id, String name);
+	public String UpdateEnemyDescriptionById(int id, String description);
+	public EnemyModel getEnemyById(int id);
 }

@@ -69,7 +69,7 @@ public class InitialData {
 	
 	public static PlayerModel getPlayer() throws IOException {
 		PlayerModel toOut = new PlayerModel(100,3,1);
-		ReadCSV readPlayer = new ReadCSV("entityTypes.csv");
+		ReadCSV readPlayer = new ReadCSV("entities.csv");
 		
 		try {
 			List<String> tuple = readPlayer.next();
@@ -94,7 +94,7 @@ public class InitialData {
 	
 	public static List<EnemyModel> getEnemies() throws IOException {
 		List<EnemyModel> enemies = new ArrayList<>();
-		ReadCSV readEnemies = new ReadCSV("entityTypes.csv");
+		ReadCSV readEnemies = new ReadCSV("entities.csv");
 		
 		try {
 			

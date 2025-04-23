@@ -553,7 +553,6 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 
-
 	@Override
 	public ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex) {
 		return executeTransaction(new Transaction<ArrayList<EnemyModel>>() {
@@ -600,7 +599,6 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-
 	@Override
 	public PlayerModel UpdatePlayerHealth(PlayerModel player) {
 		return executeTransaction(new Transaction<PlayerModel>() {
@@ -627,7 +625,6 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-
 
 	@Override
 	public PlayerModel UpdatePlayerRoom(PlayerModel player) {
@@ -657,7 +654,6 @@ public class DerbyDatabase implements IDatabase {
 		
 	}
 
-
 	@Override
 	public PlayerModel UpdatePlayerMaxHealth(PlayerModel player) {
 		return executeTransaction(new Transaction<PlayerModel>() {
@@ -685,7 +681,6 @@ public class DerbyDatabase implements IDatabase {
 		});
 		
 	}
-
 
 	@Override
 	public PlayerModel UpdatePlayerLives(PlayerModel player) {
@@ -715,6 +710,7 @@ public class DerbyDatabase implements IDatabase {
 		
 	}
 	
+	@Override
 	public Double UpdateEnemyHealthById(int id, double health) {
 		return executeTransaction(new Transaction<Double>() {
 			public Double execute(Connection conn) throws SQLException {
@@ -741,7 +737,8 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
+	@Override
 	public Double UpdateEnemyMaxHealthById(int id, double maxHealth) {
 		return executeTransaction(new Transaction<Double>() {
 			public Double execute(Connection conn) throws SQLException {
@@ -768,7 +765,8 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-		
+
+	@Override
 	public Integer UpdateEnemyLivesById(int id, int lives) {
 		return executeTransaction(new Transaction<Integer>() {
 			public Integer execute(Connection conn) throws SQLException {
@@ -795,7 +793,8 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
+	@Override
 	public Integer UpdateEnemyRoomById(int id, int roomId) {
 		return executeTransaction(new Transaction<Integer>() {
 			public Integer execute(Connection conn) throws SQLException {
@@ -822,7 +821,8 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	
+
+	@Override
 	public EnemyModel getEnemyById(int id) {
 		return executeTransaction(new Transaction<EnemyModel>() {
 			@Override
@@ -866,13 +866,11 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 
-
 	@Override
 	public EntityInventory getPlayerInventory() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 	@Override
 	public String UpdateEnemyNameById(int id, String name) {
@@ -901,7 +899,6 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-
 
 	@Override
 	public String UpdateEnemyDescriptionById(int id, String description) {

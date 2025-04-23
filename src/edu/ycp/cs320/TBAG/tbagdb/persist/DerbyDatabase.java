@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
@@ -17,6 +18,7 @@ import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.Weapon;
+import edu.ycp.cs320.TBAG.model.Inventory;
 
 public class DerbyDatabase implements IDatabase {
 	static {
@@ -57,14 +59,15 @@ public class DerbyDatabase implements IDatabase {
 					
 					// for testing that a result was returned
 					Boolean found = false;
+					Integer itemID = 0;
 					
 					while (resultSet.next()) {
 						found = true;
+						itemID++;
 						
 						// create new Author object
 						// retrieve attributes from resultSet starting with index 1
-						Item item = loadItem(resultSet, 2);
-						
+						Item item = loadItem(resultSet, 2, itemID);
 						result.add(item);
 					}
 					
@@ -179,8 +182,9 @@ public class DerbyDatabase implements IDatabase {
 
 	
 	// OUR CLASS LOADING METHODS GO HERE
-	private Item loadItem(ResultSet resultSet, int index) throws SQLException {
+	private Item loadItem(ResultSet resultSet, int index, int itemID) throws SQLException {
 		return new Item(
+			itemID,
 			resultSet.getString(index++),
 			resultSet.getString(index++)
 		);
@@ -305,6 +309,7 @@ public class DerbyDatabase implements IDatabase {
 				} catch (SQLException sql) {
 					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
 						isNewDatabase = false;
+					else throw sql;
 					
 				} catch (Exception e) {
 					throw e;
@@ -320,7 +325,8 @@ public class DerbyDatabase implements IDatabase {
 					"create table weaponTypes (" +
 							"	weapon_id int primary key" + 
 							"       generated always as identity (start with 1, increment by 1), " + 
-							"   item_id int constraint item_id references itemTypes, " + 
+							"   item_id int unique, " + 
+							"		constraint item_id foreign key (item_id) references itemTypes(item_id), " + 
 							"	damage double" +
 							")"
 				);
@@ -331,6 +337,7 @@ public class DerbyDatabase implements IDatabase {
 				} catch (SQLException sql) {
 					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
 						isNewDatabase = false;
+					else throw sql;
 					
 				} catch (Exception e) {
 					throw e;
@@ -339,6 +346,8 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(weaponStmt);
 				}
 				
+				
+				// ENTITIES
 				PreparedStatement entitiesStatement = conn.prepareStatement(
 						"create table entities ("
 						+ "id int primary key "
@@ -351,8 +360,79 @@ public class DerbyDatabase implements IDatabase {
 						+ "description varchar(64)"
 						+ ")"
 						);
+				try {
+					entitiesStatement.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(entitiesStatement);
+				}
 				
-
+				
+				
+				// INVENTORY
+				PreparedStatement inventoryStmt = conn.prepareStatement(
+					"create table inventories (" +
+							"   inventory_id int primary key" +
+							"       generated always as identity (start with 2, increment by 1), " + 
+							"	inventory_source int unique, " + 
+							"   item_id int, " + 
+							"		constraint inv_itemID foreign key (item_id) references itemTypes(item_id), " + 
+							"	item_quantity int" +
+					")"
+				);
+				
+				try {
+					inventoryStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(inventoryStmt);
+				}
+				
+				
+				
+				// WEAPON SLOTS
+				PreparedStatement weaponSlotsStmt = conn.prepareStatement(
+						"create table weaponSlots (" +
+								"   slot_id int primary key" +
+								"       generated always as identity (start with 1, increment by 1), " + 
+								"	inventory_source int, " +  
+								"   slot_name varchar(16), " + 
+								"	weapon_id int, " + 
+								"		constraint weaponID foreign key (weapon_id) references itemTypes(item_id)" +
+						")"
+					);
+					
+					try {
+						weaponSlotsStmt.executeUpdate();
+						
+					} catch (SQLException sql) {
+						if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+							isNewDatabase = false;
+						else throw sql;
+						
+					} catch (Exception e) {
+						throw e;
+						
+					} finally {
+						DBUtil.closeQuietly(weaponSlotsStmt);
+					}
+				
 				
 				// ROOMS
 				PreparedStatement roomsStatement = conn.prepareStatement(
@@ -364,6 +444,20 @@ public class DerbyDatabase implements IDatabase {
 						+ ")"
 						);
 				
+				try {
+					roomsStatement.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(roomsStatement);
+				}
 				
 				return isNewDatabase;
 			}
@@ -387,14 +481,14 @@ public class DerbyDatabase implements IDatabase {
 					);
 					
 					clearDatabase.execute();
-					
-					return true;
 				} catch(Exception e) {
 					throw e;
 					
 				} finally {
 					DBUtil.closeQuietly(clearDatabase);
 				}
+				
+				return true;
 			}
 		});
 	}
@@ -404,14 +498,17 @@ public class DerbyDatabase implements IDatabase {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
 				List<Item> itemList;
-				Map<Weapon, Integer> weaponMap;
+				List<Weapon> weaponList;
+				Map<Integer, Inventory> inventoryMap;
 				PlayerModel player;
 				List<EnemyModel> enemies;
 				List<Room> rooms;
 				
 				try {
 					itemList = InitialData.getItemTypes();
-					weaponMap = InitialData.getWeaponTypes();
+					weaponList = InitialData.getWeaponTypes();
+					inventoryMap = InitialData.getInventories();
+
 					player = InitialData.getPlayer();
 					enemies = InitialData.getEnemies();
 					rooms = InitialData.getRooms();
@@ -423,10 +520,12 @@ public class DerbyDatabase implements IDatabase {
 				
 				// if database already exists, reset it first
 				if (!isNewDatabase) {
-					resetTable("weaponTypes", "weapon_id", 1);// reset dependency first (item_id)
-					resetTable("itemTypes", "item_id", 1);
-					resetTable("entities", "id", 1);
 					resetTable("rooms", "room_id", 1);
+					resetTable("weaponSlots", "slot_id", 2);// reset dependencies first (inventory_source)
+					resetTable("inventories", "inventory_id", 2);
+					resetTable("weaponTypes", "weapon_id", 1);
+					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
+
 				}
 				
 				
@@ -456,10 +555,9 @@ public class DerbyDatabase implements IDatabase {
 						"insert into weaponTypes (item_id, damage) values (?, ?)");
 				
 				try {
-					for (Weapon weapon : weaponMap.keySet()) {
-						insertWeapon.setInt(1, weaponMap.get(weapon));
+					for (Weapon weapon : weaponList) {
+						insertWeapon.setInt(1, weapon.GetID());
 						insertWeapon.setDouble(2, weapon.GetDamage());
-						
 						insertWeapon.addBatch();
 					}
 
@@ -471,6 +569,54 @@ public class DerbyDatabase implements IDatabase {
 				} finally {
 					DBUtil.closeQuietly(insertWeapon);
 				}
+				
+				
+				// INSERT INVENTORIES
+				PreparedStatement insertInventory = conn.prepareStatement(
+						"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)");
+				
+				PreparedStatement insertWeaponSlot = conn.prepareStatement(
+						"insert into weaponSlots (inventory_source, slot_name, weapon_id) values (?, ?, ?)");
+				
+				try {
+					for (Integer inventory_source : inventoryMap.keySet()) {
+						Map<Item, Integer> inventoryItems = inventoryMap.get(inventory_source).GetItems();
+						
+						// loop through inventory items
+						for (Item item : inventoryItems.keySet()) {
+							
+							// sources are split by 2 (even: entities, odd: rooms)
+							// the source should be shifted left by 1 to read from the database
+							// and be subsequently shifted right by 1 and added by 1 (accordingly) to push to the database
+							insertInventory.setInt(1, inventory_source);
+							insertInventory.setInt(2, item.GetID());
+							insertInventory.setInt(3, inventoryItems.get(item));
+							insertInventory.addBatch();
+						}
+						
+						// add equipped weapons
+						if (inventory_source % 2 == 1) {
+							Map<String, Weapon> weaponSlots = ((EntityInventory) inventoryMap.get(inventory_source)).GetWeaponsAsSlots();
+							
+							for (String slot : weaponSlots.keySet()) {									
+								insertWeaponSlot.setInt(1, inventory_source);
+								insertWeaponSlot.setString(2, slot);
+								insertWeaponSlot.setInt(3, weaponSlots.get(slot).GetID());
+								insertWeaponSlot.addBatch();
+							}
+						}
+					}
+
+					insertInventory.executeBatch();
+					insertWeaponSlot.executeBatch();
+					
+				} catch(Exception e) { 
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertWeapon);
+				}
+				
 				
 				//Insert entities
 				PreparedStatement insertEntityStatement = conn.prepareStatement(
@@ -497,10 +643,11 @@ public class DerbyDatabase implements IDatabase {
 					insertEntityStatement.executeUpdate();
 				}
 				
+
 				//Insert Rooms
 				PreparedStatement insertRoomStatement = conn.prepareStatement(
-						"insert into rooms (name, description) "
-						+ "values(?, ?)");
+						"insert into rooms (name, description) values (?, ?)");
+						
 				
 				for(Room room : rooms) {
 					insertRoomStatement.setString(1, room.getShortRoomDescription());
@@ -509,6 +656,7 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 				
+
 				return true;
 			}
 		});

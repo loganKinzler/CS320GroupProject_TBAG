@@ -53,9 +53,11 @@ public class EntityInventory extends Inventory {
 		if (this.WeaponIsEquiped((Weapon) item)) return true;// weapon could potentially be equipped
 		return this.items.containsKey(item);// weapon could potentially be in regular inventory
 	}
-	
+
 	@Override
 	public HashMap<Item, Integer> GetItems() {
+		
+		@SuppressWarnings("unchecked")
 		HashMap<Item, Integer> totalItems = (HashMap<Item, Integer>) this.items.clone();
 		
 		// add weapons in their slots to total items

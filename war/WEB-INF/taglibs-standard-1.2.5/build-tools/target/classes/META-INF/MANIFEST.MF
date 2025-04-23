@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Built-By: logan
+Build-Jdk: 21.0.2
+Specification-Title: Apache Standard Taglib Build Tools
+Specification-Version: 1.2.5
+Specification-Vendor: The Apache Software Foundation
+Implementation-Title: Apache Standard Taglib Build Tools
+Implementation-Version: 1.2.5
+Implementation-Vendor-Id: org.apache.taglibs
+Implementation-Vendor: The Apache Software Foundation
+Created-By: Maven Integration for Eclipse
+

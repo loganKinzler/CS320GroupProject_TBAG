@@ -23,7 +23,7 @@ public class RoomsByIdQuery {
 		database = new DerbyDatabase();
 		
 		// prompt user for item name
-		System.out.print("Item name to query: ");
+		System.out.print("Room id to query: ");
 		int room_id = keyboard.nextInt();
 		
 		List<Room> roomsWithId = RoomsByIdQuery.queryDatabase(room_id);

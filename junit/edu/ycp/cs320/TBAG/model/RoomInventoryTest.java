@@ -8,10 +8,10 @@ import static org.junit.Assert.assertTrue;
 public class RoomInventoryTest {
 	private RoomInventory model;
 	
-	private Item moss = new Item("Moss", "Green and fluffy! | Heals 10hp");
-	private Item hotChocolate = new Item("Hot Chocolate", "Steamy & cozy.");
-	private Weapon baseballBat = new Weapon("Baseball Bat", "Swing, batta-batta! | Deals 5 dmg", new Double(5));
-	private Weapon umbrella = new Weapon("Umbrella", "Keeps you dry. | Deals 2 dmg", new Double(2));
+	private Item moss = new Item(1, "Moss", "Green and fluffy! | Heals 10hp");
+	private Item hotChocolate = new Item(2, "Hot Chocolate", "Steamy & cozy.");
+	private Weapon baseballBat = new Weapon(3, "Baseball Bat", "Swing, batta-batta! | Deals 5 dmg", 5.0);
+	private Weapon umbrella = new Weapon(4, "Umbrella", "Keeps you dry. | Deals 2 dmg", 2.0);
 	
 	@Before
 	public void SetUp() {

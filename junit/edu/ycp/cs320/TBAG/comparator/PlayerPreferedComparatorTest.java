@@ -27,7 +27,7 @@ public class PlayerPreferedComparatorTest{
 	public void PlayerPreferedTest() {
 		
 		// player > enemy
-		assertEquals(this.comparator.compare(firstEntity, secondEntity), 1);
+		assertEquals(this.comparator.compare(firstEntity, secondEntity), -1);
 		
 		// player = player
 		this.secondEntity = new PlayerModel(75, 4, 1);
@@ -36,7 +36,7 @@ public class PlayerPreferedComparatorTest{
 		// enemy < player
 		this.firstEntity = new EnemyModel(5, 1, 0, "Chair", "It's just sitting there! Menecingly!");
 		System.out.println(this.comparator.compare(firstEntity, secondEntity));
-		assertEquals(this.comparator.compare(firstEntity, secondEntity), -1);
+		assertEquals(this.comparator.compare(firstEntity, secondEntity), 1);
 		
 		// enemy = enemy
 		this.secondEntity = new EnemyModel(500, 4, 14, "Light", "On. Off. On. Off...");

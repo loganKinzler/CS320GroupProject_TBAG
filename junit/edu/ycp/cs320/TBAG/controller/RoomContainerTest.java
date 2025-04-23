@@ -100,7 +100,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testgetItems() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItem(carrot, 0);
 		HashMap<Item, Integer> items = this.container.getItems(0);
 		
@@ -109,7 +109,7 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testgetItemAmount() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItem(carrot, 0);
 		assertTrue(1 == this.container.getItemAmount(carrot, 0));
 	}
@@ -142,7 +142,7 @@ public class RoomContainerTest {
 	public void testgetAllEnemies() {
 		EnemyModel enemy1 = new EnemyModel(4.0, 2, 0, "Evan", "What are they doing in here?");
 		this.container.AddEnemy(0, enemy1);
-		String enemies = this.container.getAllEnemies(0);
+		ArrayList<EnemyModel> enemies = this.container.getAllEnemies(0);
 		assertTrue(this.container.getAllEnemies(0).equals(enemies));
 	}
 	
@@ -183,56 +183,56 @@ public class RoomContainerTest {
 	
 	@Test
 	public void testAddItem() {
-		Item coin = new Item("coin", "it's made out of copper");
+		Item coin = new Item(2, "coin", "it's made out of copper");
 		container.AddItem(coin, 0);
 		assertTrue(container.ContainsExactly(coin, 1, 0));
 	}
 	
 	@Test
 	public void testAddItems() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItems(carrot, 4, 0);
 		assertTrue(container.ContainsExactly(carrot, 4, 0));
 	}
 	
 	@Test
 	public void testExtractItem() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItem(carrot, 0);
 		assertTrue(1 == container.ExtractItem(carrot, 0));
 	}
 	
 	@Test
 	public void testExtractItems() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItems(carrot, 2, 0);
 		assertTrue(2 == container.ExtractItems(carrot, 2, 0));
 	}
 	
 	@Test
 	public void testContainsItem() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItem(carrot, 0);
 		assertTrue(true == container.ContainsItem(carrot, 0));
 	}
 	
 	@Test
 	public void testContainsMoreThan() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItem(carrot, 0);
 		assertTrue(true == container.ContainsMoreThan(carrot, 0, 0));
 	}
 	
 	@Test
 	public void testContainsLessThan() {
-		Item carrot = new Item("carrot", "It's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "It's shaped like a cane");
 		container.AddItem(carrot, 0);
 		assertTrue(true == container.ContainsLessThan(carrot, 2, 0));
 	}
 	
 	@Test
 	public void testContainsExactly() {
-		Item carrot = new Item("carrot", "it's shaped like a cane");
+		Item carrot = new Item(1, "carrot", "it's shaped like a cane");
 		container.AddItem(carrot, 0);
 		assertTrue(true == container.ContainsExactly(carrot, 1, 0));
 	}

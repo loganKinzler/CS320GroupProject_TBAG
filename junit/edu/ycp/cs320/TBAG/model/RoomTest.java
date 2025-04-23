@@ -99,7 +99,7 @@ public class RoomTest {
 	
 	@Test
 	public void testgetItems() {
-		Item coin = new Item("coin", "it's a coin!");
+		Item coin = new Item(2, "coin", "it's a coin!");
 		model.getRoomInventory().AddItem(coin);
 		HashMap<Item, Integer> items = this.model.getItems();
 		assertTrue(items.equals(this.model.getItems()));
@@ -107,7 +107,7 @@ public class RoomTest {
 	
 	@Test
 	public void testgetItemAmount() {
-		Item coin = new Item("coin", "it's a coin!");
+		Item coin = new Item(2, "coin", "it's a coin!");
 		model.getRoomInventory().AddItems(coin, 2);
 		assertTrue(this.model.getItemAmount(coin) == 2);
 	}
@@ -133,7 +133,7 @@ public class RoomTest {
 	
 	@Test
 	public void testgetAllEnemies() {
-		String enemies = model.getAllEnemies();
+		ArrayList<EnemyModel> enemies = model.getAllEnemies();
 		assertTrue(this.model.getAllEnemies().equals(enemies));
 	}
 	

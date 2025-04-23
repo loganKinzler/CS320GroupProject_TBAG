@@ -431,12 +431,20 @@ public class GameEngineServlet extends HttpServlet {
                     					rooms.getLongRoomDescription( player.getCurrentRoomIndex() ));
             				break;
             				
+            				//  [######--]
+            				
             				case "stats":
             					if (!foundCommands.contains("describeGroup_attack")) foundCommands.add("describeGroup_attack");
             					if (!foundCommands.contains("describe_stats")) foundCommands.add("describe_stats");
             					
-            					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: %.1f / %.1f",
+            					Integer healthBarSize = 10;
+            					Double lifeRatio = player.getHealth() / player.getMaxHealth();
+            					Integer healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
+            					
+            					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: [%s%s] (%.1f / %.1f)",
             							player.getLives(),
+            							"#".repeat(healthBarLength),
+            							"-".repeat(healthBarSize - healthBarLength),
             							player.getHealth(),
             							player.getMaxHealth());
             				break;
@@ -448,6 +456,11 @@ public class GameEngineServlet extends HttpServlet {
             					ArrayList<EnemyModel> enemies = rooms.getEnemiesinRoom( player.getCurrentRoomIndex() );
             					systemResponse = String.format("Describing enemies...<br><br>");
             					
+            					// remove dead enemies
+            					for (int i=enemies.size()-1; i>=0; i--)
+            						if (enemies.get(i).getHealth() == 0)
+            							enemies.remove(i);
+            					
             					// no enemies in room
             					if (enemies.size() == 0) {
             						systemResponse += String.format("There are no enemies in this room.");
@@ -456,19 +469,23 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse += String.format("Enemies in this room:");
             					
-            					Integer numEnemies = 0;
             					for (int i=0; i<enemies.size(); i++) {
             						if (enemies.get(i).getHealth() == 0) continue;
-            						numEnemies++;
             						
-            						systemResponse += String.format("<br>&num;%d: %s | Health: %.1f / %.1f<br> - %s<br>",
-            								numEnemies, enemies.get(i).getName(),
+                					healthBarSize = 10;
+                					lifeRatio = enemies.get(i).getHealth() / enemies.get(i).getMaxHealth();
+                					healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
+            						
+            						systemResponse += String.format("<br>&num;%d: %s<br> - Health: [%s%s] (%.1f / %.1f)<br> - %s<br>",
+            								enemies.size(), enemies.get(i).getName(),
+                							"#".repeat(healthBarLength),
+                							"-".repeat(healthBarSize - healthBarLength),
             								enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
             								enemies.get(i).getDescription());
             					}
             					
             					// all enemies are dead
-            					if (numEnemies == 0) {
+            					if (enemies.size() == 0) {
             						systemResponse = String.format("Describing enemies...<br><br>");
             						systemResponse += String.format("There are no enemies in this room.");
             					}
@@ -478,12 +495,12 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
             					if (!foundCommands.contains("describe_moves")) foundCommands.add("describe_moves");
             					
-            					systemResponse = String.format("Describing moves...<br><br>Possible moves:<br>");
+            					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
             					
             					for (String direction : rooms.getAllKeys( player.getCurrentRoomIndex() )) {
             						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
             						
-            						systemResponse += String.format(" - %s &mdash;&mdash;&#62; %s<br>", camelCaseDirection,
+            						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
             								rooms.getShortRoomDescription(
             									rooms.nextConnection(player.getCurrentRoomIndex(), direction)
             								));
@@ -551,7 +568,7 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             				
             				default:
-            					systemResponse = String.format("Cannot describe %s.<br>",
+            					systemResponse = String.format("Cannot describe %s.",
             							params.get(0));
             				break;
             			}
@@ -645,7 +662,7 @@ public class GameEngineServlet extends HttpServlet {
             				if (i != 0) systemResponse += "<br>";
             				
             				if (player.getHealth() == 0) {
-            					// TODO: DEATH METHOD GOES HERE
+            					player.Die(rooms);
             					break;
             				}
             				

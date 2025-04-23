@@ -249,6 +249,7 @@ public class DerbyDatabase implements IDatabase {
 				} catch (SQLException sql) {
 					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
 						isNewDatabase = false;
+					else throw sql;
 					
 				} catch (Exception e) {
 					throw e;
@@ -264,7 +265,8 @@ public class DerbyDatabase implements IDatabase {
 					"create table weaponTypes (" +
 							"	weapon_id int primary key" + 
 							"       generated always as identity (start with 1, increment by 1), " + 
-							"   item_id int constraint item_id references itemTypes, " + 
+							"   item_id int unique, " + 
+							"		constraint item_id foreign key (item_id) references itemTypes(item_id), " + 
 							"	damage double" +
 							")"
 				);
@@ -275,6 +277,7 @@ public class DerbyDatabase implements IDatabase {
 				} catch (SQLException sql) {
 					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
 						isNewDatabase = false;
+					else throw sql;
 					
 				} catch (Exception e) {
 					throw e;
@@ -283,8 +286,10 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(weaponStmt);
 				}
 				
+				
+				// ENTITIES
 				PreparedStatement entitiesStatement = conn.prepareStatement(
-						"crate table entities ("
+						"create table entities ("
 						+ "id int primary key "
 						+ "	generated always as identity (start with 1, increment by 1), "
 						+ "health double, "
@@ -295,16 +300,33 @@ public class DerbyDatabase implements IDatabase {
 						+ "description varchar(64)"
 						+ ")"
 						);
-
+				try {
+					entitiesStatement.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(entitiesStatement);
+				}
+				
+				
+				
 				// INVENTORY
 				PreparedStatement inventoryStmt = conn.prepareStatement(
 					"create table inventories (" +
 							"   inventory_id int primary key" +
-							"       generated always as identity (start with 1, increment by 1), " + 
-							"	inventory_source int, " + 
-							"   item_id int constraint item_id references itemTypes, " + 
+							"       generated always as identity (start with 2, increment by 1), " + 
+							"	inventory_source int unique, " + 
+							"   item_id int, " + 
+							"		constraint inv_itemID foreign key (item_id) references itemTypes(item_id), " + 
 							"	item_quantity int" +
-							")"
+					")"
 				);
 				
 				try {
@@ -313,12 +335,13 @@ public class DerbyDatabase implements IDatabase {
 				} catch (SQLException sql) {
 					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
 						isNewDatabase = false;
+					else throw sql;
 					
 				} catch (Exception e) {
 					throw e;
 					
 				} finally {
-					DBUtil.closeQuietly(weaponStmt);
+					DBUtil.closeQuietly(inventoryStmt);
 				}
 				
 				
@@ -328,24 +351,26 @@ public class DerbyDatabase implements IDatabase {
 						"create table weaponSlots (" +
 								"   slot_id int primary key" +
 								"       generated always as identity (start with 1, increment by 1), " + 
-								"	inventory_source int constraint inventory_source references inventories, " + 
+								"	inventory_source int, " +  
 								"   slot_name varchar(16), " + 
-								"	item_id int constraint item_id references itemTypes" +
-								")"
+								"	weapon_id int, " + 
+								"		constraint weaponID foreign key (weapon_id) references itemTypes(item_id)" +
+						")"
 					);
 					
 					try {
-						inventoryStmt.executeUpdate();
+						weaponSlotsStmt.executeUpdate();
 						
 					} catch (SQLException sql) {
 						if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
 							isNewDatabase = false;
+						else throw sql;
 						
 					} catch (Exception e) {
 						throw e;
 						
 					} finally {
-						DBUtil.closeQuietly(weaponStmt);
+						DBUtil.closeQuietly(weaponSlotsStmt);
 					}
 				
 				
@@ -423,14 +448,14 @@ public class DerbyDatabase implements IDatabase {
 					);
 					
 					clearDatabase.execute();
-					
-					return true;
 				} catch(Exception e) {
 					throw e;
 					
 				} finally {
 					DBUtil.closeQuietly(clearDatabase);
 				}
+				
+				return true;
 			}
 		});
 	}
@@ -460,7 +485,8 @@ public class DerbyDatabase implements IDatabase {
 				
 				// if database already exists, reset it first
 				if (!isNewDatabase) {
-					resetTable("inventories", "inventory_id", 1);
+					resetTable("weaponSlots", "slot_id", 2);// reset dependencies first (inventory_source)
+					resetTable("inventories", "inventory_id", 2);
 					resetTable("weaponTypes", "weapon_id", 1);
 					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
 				}
@@ -510,7 +536,10 @@ public class DerbyDatabase implements IDatabase {
 				
 				// INSERT INVENTORIES
 				PreparedStatement insertInventory = conn.prepareStatement(
-						"insert into inventories (inventory_source, item_id, quantity) values (?, ?)");
+						"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)");
+				
+				PreparedStatement insertWeaponSlot = conn.prepareStatement(
+						"insert into weaponSlots (inventory_source, slot_name, weapon_id) values (?, ?, ?)");
 				
 				try {
 					for (Integer inventory_source : inventoryMap.keySet()) {
@@ -521,15 +550,28 @@ public class DerbyDatabase implements IDatabase {
 							
 							// sources are split by 2 (even: entities, odd: rooms)
 							// the source should be shifted left by 1 to read from the database
-							// and be subsequently shifted right by 1 and added by 1 accordingly to push to the database
+							// and be subsequently shifted right by 1 and added by 1 (accordingly) to push to the database
 							insertInventory.setInt(1, inventory_source);
 							insertInventory.setInt(2, item.GetID());
 							insertInventory.setInt(3, inventoryItems.get(item));
 							insertInventory.addBatch();
 						}
+						
+						// add equipped weapons
+						if (inventory_source % 2 == 1) {
+							Map<String, Weapon> weaponSlots = ((EntityInventory) inventoryMap.get(inventory_source)).GetWeaponsAsSlots();
+							
+							for (String slot : weaponSlots.keySet()) {									
+								insertWeaponSlot.setInt(1, inventory_source);
+								insertWeaponSlot.setString(2, slot);
+								insertWeaponSlot.setInt(3, weaponSlots.get(slot).GetID());
+								insertWeaponSlot.addBatch();
+							}
+						}
 					}
 
-					insertWeapon.executeBatch();
+					insertInventory.executeBatch();
+					insertWeaponSlot.executeBatch();
 					
 				} catch(Exception e) { 
 					throw e;

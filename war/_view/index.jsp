@@ -39,7 +39,7 @@
 			
 			<!-- Move -->
 			<c:if test="${foundCommands.contains('move')}">
-			    <p>move [direction]</p>
+			    <p>move [ direction ]</p>
 			</c:if>
 			
 			
@@ -80,11 +80,11 @@
 						foundCommands.contains('drop')}"> / </c:if>
 			<c:if test="${foundCommands.contains('drop')}">drop</c:if>
 			<c:if test="${foundCommands.contains('pickup') ||
-						foundCommands.contains('drop')}"> [quantity] [item]</p></c:if>
+						foundCommands.contains('drop')}"> [ quantity ] [ item ]</p></c:if>
 			
 			<!-- Equip & Unequip] -->
 			<c:if test="${foundCommands.contains('equip')}">
-			    <p>equip [weapon] into [slot]</p>
+			    <p>equip [ weapon ] into [ slot ]</p>
 			</c:if>
 			
 			<c:if test="${foundCommands.contains('unequip')}"><p>unequip [</c:if>
@@ -97,12 +97,12 @@
 			
 			<!-- Attack -->
 			<c:if test="${foundCommands.contains('attack')}">
-			    <p>attack [enemy] with [weapon]</p><!-- using [attack] -->
+			    <p>attack [ enemy ] with [ weapon ]</p><!-- using [attack] -->
 			</c:if>
 			
 			<!-- Use -->
 			<c:if test="${foundCommands.contains('use')}">
-			    <p>use [item]</p>
+			    <p>use [ item ]</p>
 			</c:if>
           </div>
         </div>

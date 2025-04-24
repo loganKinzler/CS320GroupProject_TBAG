@@ -3,6 +3,3 @@
 .classpath
 .project
 .settings/
-/bin/*
-/test.db/*
-/bin/

@@ -14,10 +14,10 @@ public interface IDatabase {
 	public abstract PlayerModel GetPlayer();
 	public abstract EntityInventory getPlayerInventory();
 	
-	public abstract PlayerModel UpdatePlayerHealth(PlayerModel player);
-	public abstract PlayerModel UpdatePlayerRoom(PlayerModel player);
-	public abstract PlayerModel UpdatePlayerMaxHealth(PlayerModel player);
-	public abstract PlayerModel UpdatePlayerLives(PlayerModel player);
+	public abstract Double UpdatePlayerHealth(double health);
+	public abstract Integer UpdatePlayerRoom(int room);
+	public abstract Double UpdatePlayerMaxHealth(double maxHealth);
+	public abstract Integer UpdatePlayerLives(int lives);
 	
 	
 	public abstract ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex);

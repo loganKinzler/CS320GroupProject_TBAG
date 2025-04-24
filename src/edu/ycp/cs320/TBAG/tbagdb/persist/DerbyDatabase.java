@@ -496,12 +496,12 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	// The main method creates the database tables and loads the initial data.
-	public static void main(String[] args) throws IOException {
+	public void create() {
 		DerbyDatabase db = new DerbyDatabase();
 		
 		System.out.println("Creating tables...");
 		Boolean isNewDatabase = db.createTables();
+		System.out.println(isNewDatabase);
 		
 		System.out.println("Loading initial data...");
 		db.loadInitialData(isNewDatabase);
@@ -520,8 +520,8 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					// retreive all attributes from both Books and Authors tables
 					getPlayerStatement = conn.prepareStatement(
-							"select entities.* " +
-							" where entities.id = 1"
+							"select entities.* from entities " +
+							"where entities.id = 1"
 					);
 					
 					PlayerModel player = null;
@@ -600,9 +600,9 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	@Override
-	public PlayerModel UpdatePlayerHealth(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Double UpdatePlayerHealth(double health) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -611,7 +611,7 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setDouble(1, player.getHealth());
+				insertStatement.setDouble(1, health);
 				
 				try {
 					insertStatement.executeUpdate();
@@ -621,15 +621,15 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(insertStatement);
 				}
 				
-				return GetPlayer();
+				return health;
 			}
 		});
 	}
 
 	@Override
-	public PlayerModel UpdatePlayerRoom(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Integer UpdatePlayerRoom(int room) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -638,7 +638,7 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setInt(1, player.getCurrentRoomIndex());
+				insertStatement.setInt(1, room);
 				
 				try {
 					insertStatement.executeUpdate();
@@ -648,16 +648,16 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(insertStatement);
 				}
 				
-				return GetPlayer();
+				return room;
 			}
 		});
 		
 	}
 
 	@Override
-	public PlayerModel UpdatePlayerMaxHealth(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Double UpdatePlayerMaxHealth(double maxHealth) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -666,7 +666,7 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setDouble(1, player.getMaxHealth());
+				insertStatement.setDouble(1, maxHealth);
 				
 				try {
 					insertStatement.executeUpdate();
@@ -676,16 +676,16 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(insertStatement);
 				}
 				
-				return GetPlayer();
+				return maxHealth;
 			}
 		});
 		
 	}
 
 	@Override
-	public PlayerModel UpdatePlayerLives(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Integer UpdatePlayerLives(int lives) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -694,7 +694,7 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setInt(1, player.getLives());
+				insertStatement.setInt(1, lives);
 				
 				try {
 					insertStatement.executeUpdate();
@@ -704,7 +704,7 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(insertStatement);
 				}
 				
-				return GetPlayer();
+				return lives;
 			}
 		});
 		
@@ -736,6 +736,10 @@ public class DerbyDatabase implements IDatabase {
 				return health;
 			}
 		});
+	}
+	
+	public static void main(String[] args) {
+		
 	}
 
 	@Override

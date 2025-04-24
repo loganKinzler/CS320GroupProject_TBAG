@@ -1,6 +1,5 @@
 package edu.ycp.cs320.group_project.servlet;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,6 +23,8 @@ import edu.ycp.cs320.TBAG.model.Action;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
+import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class GameEngineServlet extends HttpServlet {
     @Override
@@ -59,39 +60,13 @@ public class GameEngineServlet extends HttpServlet {
 //        }
         req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
     }
-
-    //Use this section for when we end up having a database for storing the information
-    /*@Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String userInput = req.getParameter("userInput");
-        if (userInput != null && !userInput.trim().isEmpty()) {
-            // Simulate a system response
-            String systemResponse = "System: You entered '" + userInput + "'";
-
-            // Save to the database
-            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/game_db", "username", "password")) {
-                String sql = "INSERT INTO game_history (user_input, system_response) VALUES (?, ?)";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, userInput);
-                    stmt.setString(2, systemResponse);
-                    stmt.executeUpdate();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Forward to the JSP file
-        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
-    }
-    */
-    
-    
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Get or create the session
         HttpSession session = req.getSession(true);
+        
+        DerbyDatabase db = new DerbyDatabase();
         
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
@@ -102,10 +77,13 @@ public class GameEngineServlet extends HttpServlet {
             session.setAttribute("gameHistory", gameHistory);
         }
         
+        System.out.println("fhsegfysgfjesgfulewsbhfirsbhiufsguyis:     " + db.GetPlayer().getHealth());
+//        db.UpdatePlayerHealth(new PlayerModel(150.0,1,1));
+        
         //Check if player current room is in session history, set if yes, initialize if not
         PlayerModel playerModel = (PlayerModel)session.getAttribute("player");
         if (playerModel == null) {
-        	playerModel = new PlayerModel(50, 3, 0);
+        	playerModel = db.GetPlayer();
         }
         
         PlayerController player = new PlayerController(playerModel);
@@ -223,6 +201,7 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			player.setCurrentRoomIndex(nextRoom);
+            			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
             			
             			systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
             					params.get(0),
@@ -329,8 +308,8 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
             					
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
-                    					rooms.getShortRoomDescription( player.getCurrentRoomIndex() ),
-                    					rooms.getLongRoomDescription( player.getCurrentRoomIndex() ));
+                    					rooms.getShortRoomDescription( db.GetPlayer().getCurrentRoomIndex() ),
+                    					rooms.getLongRoomDescription( db.GetPlayer().getCurrentRoomIndex() ));
             				break;
             				
             				case "moves":
@@ -382,6 +361,7 @@ public class GameEngineServlet extends HttpServlet {
             				case "inventory":
             					if (!foundCommands.contains("describe_inventory")) foundCommands.add("describe_inventory");
                 				
+//            					HashMap<Item, Integer> playerItems = db.getPlayerInventory();
             					HashMap<Item, Integer> playerItems = player.getInventory().GetItems();
             					systemResponse = String.format("Describing inventory...<br><br>");
             					

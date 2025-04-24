@@ -35,18 +35,18 @@ public class DBController {
 		return db.GetPlayer();
 	}
 	
-	public static void updatePlayerHealth(IDatabase db, PlayerModel player) {
-		db.UpdatePlayerHealth(player);
+	public static void updatePlayerHealth(IDatabase db, double health) {
+		db.UpdatePlayerHealth(health);
 	}
 	
-	public static void updatePlayerMaxHealth(IDatabase db, PlayerModel player) {
-		db.UpdatePlayerMaxHealth(player);
+	public static void updatePlayerMaxHealth(IDatabase db, double maxHealth) {
+		db.UpdatePlayerMaxHealth(maxHealth);
 	}
-	public static void updatePlayerLives(IDatabase db, PlayerModel player) {
-		db.UpdatePlayerLives(player);
+	public static void updatePlayerLives(IDatabase db, int lives) {
+		db.UpdatePlayerLives(lives);
 	}
-	public static void updatePlayerRoom(IDatabase db, PlayerModel player) {
-		db.UpdatePlayerRoom(player);
+	public static void updatePlayerRoom(IDatabase db, int room) {
+		db.UpdatePlayerRoom(room);
 	}
 	
 	//Enemy methods

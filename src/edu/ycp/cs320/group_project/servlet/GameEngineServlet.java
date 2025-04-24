@@ -446,8 +446,8 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: [%s%s] (%.1f / %.1f)",
             							player.getLives(),
-            							"#".repeat(healthBarLength),
-            							"-".repeat(healthBarSize - healthBarLength),
+            							repeatString("#", healthBarLength),
+										repeatString("-", healthBarSize - healthBarLength),
             							player.getHealth(),
             							player.getMaxHealth());
             				break;
@@ -481,8 +481,8 @@ public class GameEngineServlet extends HttpServlet {
             						
             						systemResponse += String.format("<br>&num;%d: %s<br> - Health: [%s%s] (%.1f / %.1f)<br> - %s<br>",
             								enemies.size(), enemies.get(i).getName(),
-                							"#".repeat(healthBarLength),
-                							"-".repeat(healthBarSize - healthBarLength),
+            								repeatString("#", healthBarLength),
+    										repeatString("-", healthBarSize - healthBarLength),
             								enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
             								enemies.get(i).getDescription());
             					}
@@ -737,6 +737,14 @@ public class GameEngineServlet extends HttpServlet {
 			e.printStackTrace();
 		}
     	
+    	return toOut;
+    }
+    
+    public String repeatString(String toRepeat, int amount) {
+    	String toOut = "";
+    	for (int i = 0; i < amount; i++) {
+    		toOut += toRepeat;
+    	}
     	return toOut;
     }
 }

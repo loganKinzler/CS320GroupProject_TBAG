@@ -14,15 +14,15 @@ public class DBController {
 		PlayerModel player = db.GetPlayer();
 		return player.getLives();
 	}
-	public static double getHealth(IDatabase db) {
+	public static double getPlayerHealth(IDatabase db) {
 		PlayerModel player = db.GetPlayer();
 		return player.getHealth();
 	}
-	public static double getMaxHealth(IDatabase db) {
+	public static double getPlayerMaxHealth(IDatabase db) {
 		PlayerModel player = db.GetPlayer();
 		return player.getMaxHealth();
 	}
-	public static double getCurrentRoom(IDatabase db) {
+	public static int getPlayerCurrentRoom(IDatabase db) {
 		PlayerModel player = db.GetPlayer();
 		return player.getCurrentRoomIndex();
 	}

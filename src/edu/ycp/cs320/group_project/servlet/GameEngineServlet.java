@@ -34,6 +34,7 @@ import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
@@ -424,17 +425,19 @@ public class GameEngineServlet extends HttpServlet {
             					Integer healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
             					
             					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: [%s%s] (%.1f / %.1f)",
-            							player.getLives(),
+            							DBController.getPlayerLives(db),
             							repeatString("#", healthBarLength),
 										repeatString("-", healthBarSize - healthBarLength),
-            							player.getHealth(),
-            							player.getMaxHealth());
+										DBController.getPlayerHealth(db),
+            							DBController.getPlayerMaxHealth(db));
             				break;
             				
             				case "enemies":
             					if (!foundCommands.contains("describeGroup_attack")) foundCommands.add("describeGroup_attack");
             					if (!foundCommands.contains("describe_enemies")) foundCommands.add("describe_enemies");
                 				
+            					//TODO: Use this method once set up
+//            					ArrayList<EnemyModel> enemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
             					ArrayList<EnemyModel> enemies = rooms.getEnemiesinRoom( player.getCurrentRoomIndex() );
             					systemResponse = String.format("Describing enemies...<br><br>");
             					
@@ -479,7 +482,7 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
             					
-            					for (String direction : rooms.getAllKeys( player.getCurrentRoomIndex() )) {
+            					for (String direction : rooms.getAllKeys(DBController.getPlayerCurrentRoom(db))) {
             						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
             						
             						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
@@ -594,9 +597,11 @@ public class GameEngineServlet extends HttpServlet {
         						break;
             			}
             			
+            			//TODO: Use this method once set up
+//            			ArrayList<EnemyModel> roomEnemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
             			ArrayList<EnemyModel> roomEnemies = rooms.getRoom(player.getCurrentRoomIndex()).getAllEnemies();
             			ArrayList<EntityModel> fighters = new ArrayList<EntityModel>();
-            			fighters.add(player.getModel());
+            			fighters.add(db.GetPlayer());
             			fighters.addAll(roomEnemies);
 
             			Integer attackIndex = -1;         			
@@ -635,7 +640,7 @@ public class GameEngineServlet extends HttpServlet {
             					);
             			
             			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
-            				new EntityController(fightController.GetFighter(attackIndex)).Die(rooms);
+            				new EntityController(fightController.GetFighter(attackIndex)).Die(db, rooms);
             				
             				systemResponse += String.format("%s has died.<br>",
             						attackedName);
@@ -644,8 +649,8 @@ public class GameEngineServlet extends HttpServlet {
             			for (int i=0; i<roomEnemies.size(); i++) {
             				if (i != 0) systemResponse += "<br>";
             				
-            				if (player.getHealth() == 0) {
-            					player.Die(rooms);
+            				if (DBController.getPlayerHealth(db) == 0) {
+            					player.Die(db, rooms);
             					break;
             				}
             				

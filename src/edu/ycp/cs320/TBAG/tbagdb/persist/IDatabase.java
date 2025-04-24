@@ -7,9 +7,11 @@ import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.model.Room;
 
 public interface IDatabase {
 	public abstract List<Item> ItemsByNameQuery(String itemName);
+	public abstract List<Room> RoomsByIdQuery(int id);
 	
 	public abstract PlayerModel GetPlayer();
 	public abstract EntityInventory getPlayerInventory();

@@ -1,9 +1,14 @@
 package edu.ycp.cs320.TBAG.model;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class EntityInventory extends Inventory {
-
+	public static final List<String> WeaponSlots = new ArrayList<String>(Arrays.asList(new String[]{
+		"Left Hand", "Right Hand"}));
+	
 	//vars
 	private HashMap<String, Weapon> weapons;
 	
@@ -31,6 +36,12 @@ public class EntityInventory extends Inventory {
 	
 	public void EquipWeapon(String weaponSlot, Weapon weapon) {this.weapons.put(weaponSlot, weapon);}
 	public Weapon DropWeaponInSlot(String weaponSlot) {return this.weapons.remove(weaponSlot);}
+
+	public Weapon UnequipWeaponInSlot(String weaponSlot) {
+		Weapon weapon = this.weapons.remove(weaponSlot);
+		this.AddItem(weapon);
+		return weapon;
+	}
 	
 	public Boolean WeaponIsEquiped(Weapon weapon) {return this.weapons.containsValue( weapon );}
 	public Boolean WeaponSlotIsFull(String weaponSlot) {return this.weapons.containsKey( weaponSlot );}
@@ -42,7 +53,25 @@ public class EntityInventory extends Inventory {
 		if (this.WeaponIsEquiped((Weapon) item)) return true;// weapon could potentially be equipped
 		return this.items.containsKey(item);// weapon could potentially be in regular inventory
 	}
-	
+
+	@Override
+	public HashMap<Item, Integer> GetItems() {
+		
+		@SuppressWarnings("unchecked")
+		HashMap<Item, Integer> totalItems = (HashMap<Item, Integer>) this.items.clone();
+		
+		// add weapons in their slots to total items
+		for (String slot : this.weapons.keySet()) {
+			Weapon weapon = this.weapons.get(slot);
+			Integer currentCount = totalItems.get(weapon);
+			
+			if (currentCount == null) continue;
+			totalItems.put(weapon, currentCount + 1);
+		}
+			
+		return totalItems;
+	}
+
 	@Override
 	public Integer GetItemAmount(Item item) {
 		Integer quantity = super.GetItemAmount(item);// inventory item amount

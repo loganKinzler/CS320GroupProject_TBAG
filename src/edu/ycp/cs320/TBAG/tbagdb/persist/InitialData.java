@@ -240,7 +240,7 @@ public class InitialData {
 		ReadCSV readConnections = new ReadCSV("connections.csv"); 
 		
 		try {
-			
+			//readConnections.next();
 			
 			while (true) {
 				List<String> tuple = readConnections.next();
@@ -249,12 +249,20 @@ public class InitialData {
 				
 				Iterator<String> i = tuple.iterator();
 				
-				int room_id = Integer.parseInt(i.next());
-				String direction = i.next();
-				int connection_id = Integer.parseInt(i.next());
+				//int room_id = Integer.parseInt(i.next());
+				int connection_north = Integer.parseInt(i.next());
+				int connection_east = Integer.parseInt(i.next());
+				int connection_south = Integer.parseInt(i.next());
+				int connection_west = Integer.parseInt(i.next());
+			
 				
-				Room room = new Room(room_id);
-				room.setConnectedRoom(direction, connection_id);
+				Room room = new Room();
+				
+				room.setConnectedRoom("north", connection_north);
+				room.setConnectedRoom("east", connection_east);
+				room.setConnectedRoom("south", connection_south);
+				room.setConnectedRoom("west", connection_west);
+				
 				rooms.add(room);
 			}
 		}

@@ -41,6 +41,10 @@ public class Room {
 		*/
 	}
 	
+	public Room() {
+		
+	}
+	
 	//This constructor is a LOCKED room that requires a certain amount of an item to open
 	public Room(int room_id, Item item) {
 		if(this.room_id_set.add(room_id)) {

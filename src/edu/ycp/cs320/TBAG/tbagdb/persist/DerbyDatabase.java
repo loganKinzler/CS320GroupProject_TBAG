@@ -180,7 +180,7 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	
+	/*
 	public List<String> DirectionsByRoomIdQuery(int id) {
 		return executeTransaction(new Transaction<List<String>>() {
 			@Override
@@ -227,6 +227,7 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
+	*/
 	
 	// END OF QUERIES / INSERTS
 
@@ -519,14 +520,13 @@ public class DerbyDatabase implements IDatabase {
 				
 				
 				//CONNECTIONS
+				//north|east|south|west
+				//0 = no room connection
 				PreparedStatement connectionsStatement = conn.prepareStatement(
 						"Create table connections ("
-						+ "index int primary key"
-						+ " generated always as identity (start with 1, increment by 1), "
-						+ "room_id int, "
-						+ "	constraint roomID foreign key (room_id) references rooms(room_id), "
-						+ "direction varchar(16), "
-						+ "connection_id int)"
+						+ "room_id int primary key "
+						+ "generated always as identity (start with 1, increment by 1), "
+						+ "north int, east int, south int, west int)"
 						);
 				
 				
@@ -611,7 +611,7 @@ public class DerbyDatabase implements IDatabase {
 				
 				// if database already exists, reset it first
 				if (!isNewDatabase) {
-					resetTable("connections", "index", 1);
+					resetTable("connections", "room_id", 1);
 					resetTable("rooms", "room_id", 1);
 					resetTable("weaponSlots", "slot_id", 2);// reset dependencies first (inventory_source)
 					resetTable("inventories", "inventory_id", 2);
@@ -748,18 +748,30 @@ public class DerbyDatabase implements IDatabase {
 				
 				//Insert Connections
 				PreparedStatement insertConnectionsStatement = conn.prepareStatement(
-						"insert into connections (room_id, direction, connection_id) values (?, ?, ?)");
+						"insert into connections (north, east, south, west) values (?, ?, ?, ?)");
 						
 				
 				
 				for(Room room : connections) {
-					for(String connection : room.getAllKeys()) {
-						
-						insertConnectionsStatement.setInt(1, room.getRoomId());
-						insertConnectionsStatement.setString(2, connection);
-						insertConnectionsStatement.setInt(3, room.getConnectedRoom(connection));
-						insertConnectionsStatement.executeUpdate();
-					}
+					insertConnectionsStatement.setInt(1, room.getConnectedRoom("north"));
+					insertConnectionsStatement.setInt(2, room.getConnectedRoom("east"));
+					insertConnectionsStatement.setInt(3, room.getConnectedRoom("south"));
+					insertConnectionsStatement.setInt(4, room.getConnectedRoom("west"));
+					insertConnectionsStatement.executeUpdate();
+
+//					for(String connection : room.getAllKeys()) {
+//						insertConnectionsStatement.setInt(1, room.getConnectedRoom(connection));
+//						insertConnectionsStatement.setInt(2, room.getConnectedRoom(connection));
+//						insertConnectionsStatement.setInt(3, room.getConnectedRoom(connection));
+//						insertConnectionsStatement.setInt(4, room.getConnectedRoom(connection));
+//						/*
+//						insertConnectionsStatement.setInt(1, room.getRoomId());
+//						insertConnectionsStatement.setString(2, connection);
+//						insertConnectionsStatement.setInt(3, room.getConnectedRoom(connection));
+//						insertConnectionsStatement.executeUpdate();
+//						*/
+//				
+//					}
 				}
 				return true;
 			}

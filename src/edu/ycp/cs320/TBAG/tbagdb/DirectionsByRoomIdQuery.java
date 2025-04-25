@@ -1,4 +1,4 @@
-/*package edu.ycp.cs320.TBAG.tbagdb;
+package edu.ycp.cs320.TBAG.tbagdb;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class DirectionsByRoomIdQuery {
 		database = db;
 	}
 	
-	public static List<String> queryDatabase(int id) {
+	public static List<Room> queryDatabase(int id) {
 		return database.DirectionsByRoomIdQuery(id);
 	}
 	
@@ -27,13 +27,13 @@ public class DirectionsByRoomIdQuery {
 		System.out.print("Room id to query: ");
 		int room_id = keyboard.nextInt();
 		
-		List<String> roomsWithId = new ArrayList<>();
+		List<Room> roomsWithId = new ArrayList<>();
 		roomsWithId = DirectionsByRoomIdQuery.queryDatabase(room_id);
 		
-		System.out.println("   NAME   | DESCRIPTION ");
-		for (int i = 0; i<roomsWithId.size(); i++) {
-			System.out.println(String.format("%10s", roomsWithId.get(i)));
+		System.out.println("   ROOM_ID   |   NORTH   |     EAST    |   SOUTH   |    WEST");
+		for (Room room : roomsWithId) {
+			System.out.println(String.format("%d|%d|%d|%d|%d", room.getRoomId(), room.getConnectedRoom("north"), room.getConnectedRoom("east"), room.getConnectedRoom("south"), room.getConnectedRoom("west")));
 		}
 	}
 }
-*/
+

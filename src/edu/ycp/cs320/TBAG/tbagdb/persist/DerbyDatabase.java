@@ -180,24 +180,24 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	/*
-	public List<String> DirectionsByRoomIdQuery(int id) {
-		return executeTransaction(new Transaction<List<String>>() {
+	
+	public List<Room> DirectionsByRoomIdQuery(int id) {
+		return executeTransaction(new Transaction<List<Room>>() {
 			@Override
-			public List<String> execute(Connection conn) throws SQLException {
+			public List<Room> execute(Connection conn) throws SQLException {
 				PreparedStatement stmt = null;
 				ResultSet resultSet = null;
 				
 				try {
 					// Get all rooms with the same room id as id
 					stmt = conn.prepareStatement(
-							"select connections.direction " +
-							" from connections " + 
+							"select connections.* " +
+							"from connections " + 
 							" where connections.room_id = ?"
 					);
 					stmt.setInt(1, id);
 					
-					List<String> result = new ArrayList<>();
+					List<Room> result = new ArrayList<Room>();
 					
 					resultSet = stmt.executeQuery();
 					
@@ -206,9 +206,10 @@ public class DerbyDatabase implements IDatabase {
 					
 					while (resultSet.next()) {
 						found = true;
-						String direction = loadConnection(resultSet); 
-						result.add(direction);
+						Room connect = loadConnection(resultSet); 
+						result.add(connect);
 					}
+//					System.out.print(result);
 					
 					// check if a room with the id was found
 					if(!found) {
@@ -227,7 +228,7 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	*/
+	
 	
 	// END OF QUERIES / INSERTS
 
@@ -284,10 +285,24 @@ public class DerbyDatabase implements IDatabase {
 		return toOut;
 	}
 	
-	private String loadConnection(ResultSet resultSet) throws SQLException{
+	private Room loadConnection(ResultSet resultSet) throws SQLException{
 		int index = 1;
-		String direction = resultSet.getString(index++);
-		return direction;
+		int roomID = resultSet.getInt(index++);
+		int north = resultSet.getInt(index++);
+		int east = resultSet.getInt(index++);
+		int south = resultSet.getInt(index++);
+		int west = resultSet.getInt(index++);
+		
+		Room toOut = new Room(roomID);
+		toOut.setConnectedRoom("north", north);
+		toOut.setConnectedRoom("east", east);
+		toOut.setConnectedRoom("south", south);
+		toOut.setConnectedRoom("west", west);
+		System.out.println(resultSet);
+		System.out.println(toOut.getConnectedRoom("north") + ", " + toOut.getConnectedRoom("east") + ", " + toOut.getConnectedRoom("south") + ", " + toOut.getConnectedRoom("west"));
+		
+		return toOut;
+		
 	}
 	
 	
@@ -758,20 +773,6 @@ public class DerbyDatabase implements IDatabase {
 					insertConnectionsStatement.setInt(3, room.getConnectedRoom("south"));
 					insertConnectionsStatement.setInt(4, room.getConnectedRoom("west"));
 					insertConnectionsStatement.executeUpdate();
-
-//					for(String connection : room.getAllKeys()) {
-//						insertConnectionsStatement.setInt(1, room.getConnectedRoom(connection));
-//						insertConnectionsStatement.setInt(2, room.getConnectedRoom(connection));
-//						insertConnectionsStatement.setInt(3, room.getConnectedRoom(connection));
-//						insertConnectionsStatement.setInt(4, room.getConnectedRoom(connection));
-//						/*
-//						insertConnectionsStatement.setInt(1, room.getRoomId());
-//						insertConnectionsStatement.setString(2, connection);
-//						insertConnectionsStatement.setInt(3, room.getConnectedRoom(connection));
-//						insertConnectionsStatement.executeUpdate();
-//						*/
-//				
-//					}
 				}
 				return true;
 			}

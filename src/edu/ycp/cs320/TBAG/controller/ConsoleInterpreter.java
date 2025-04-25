@@ -32,7 +32,10 @@ public class ConsoleInterpreter {
     		return new Action("hakeTest", new ArrayList<String>(Arrays.asList("hakeypoo")));
     	}
     	else if (userInput.equals("babcock")) {
-    		return new Action("babcockTest", new ArrayList<String>(Arrays.asList("hakeypoo")));
+    		return new Action("babcockTest", new ArrayList<String>(Arrays.asList("babeypoo")));
+    	}
+    	else if (userInput.equals("new save")) {
+    		return new Action("newSave", new ArrayList<String>(Arrays.asList("newsaveypoo")));
     	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	

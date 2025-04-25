@@ -30,6 +30,7 @@ import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
+import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 
 
@@ -161,13 +162,13 @@ public class GameEngineServlet extends HttpServlet {
         		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
         		break;
         	}
-        	addToGameHistory(gameHistory, systemResponse);
+        	addToGameHistory(db, gameHistory, systemResponse);
         }
         
         if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
             // Add user input to the game history
 
-        	addToGameHistory(gameHistory, "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
+        	addToGameHistory(db, gameHistory, "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
             
             Action userAction = interpreter.ValidateInput(userInput);
             systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
@@ -192,6 +193,11 @@ public class GameEngineServlet extends HttpServlet {
 	        		break;
 	        		case "babcockTest":
 	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
+	        		break;
+	        		case "newSave":
+	        			db = new DerbyDatabase();
+	        			db.create();
+	        			systemResponse = "Creating new save...";
 	        		break;
             	
             		// TYPE 1 COMMANDS:
@@ -661,12 +667,12 @@ public class GameEngineServlet extends HttpServlet {
             	}
             }
 
-            addToGameHistory(gameHistory, systemResponse);
+            addToGameHistory(db, gameHistory, systemResponse);
 
             if (sudoStage == 0) {
-            	addToGameHistory(gameHistory, "<br>");
-            	addToGameHistory(gameHistory, "~-==============================-~");
-            	addToGameHistory(gameHistory, "<br>");
+            	addToGameHistory(db, gameHistory, "<br>");
+            	addToGameHistory(db, gameHistory, "~-==============================-~");
+            	addToGameHistory(db, gameHistory, "<br>");
             }
         }
 
@@ -682,10 +688,9 @@ public class GameEngineServlet extends HttpServlet {
         resp.sendRedirect("game");
     }
     
-    public void addToGameHistory(List<String> gameHistory, String toAdd) {
+    public void addToGameHistory(IDatabase db, List<String> gameHistory, String toAdd) {
     	gameHistory.add(toAdd);
-    	
-    	//Add db insert method here
+    	db.addToHistory(toAdd);
     }
  
     

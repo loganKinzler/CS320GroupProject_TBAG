@@ -1,5 +1,6 @@
 package edu.ycp.cs320.TBAG.tbagdb.persist;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,15 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
-import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.Weapon;
-import edu.ycp.cs320.TBAG.model.Inventory;
 
 public class DerbyDatabase implements IDatabase {
 	static {
@@ -663,7 +662,7 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	public static void create() {
+	public void create() {
 		DerbyDatabase db = new DerbyDatabase();
 		
 		System.out.println("Creating tables...");
@@ -906,7 +905,7 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	public static void main(String[] args) {
-		create();
+//		create();
 	}
 
 	@Override
@@ -1098,4 +1097,115 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	//--------Change Made By Andrew ----- It deletes the DB
+	@Override
+	public void deleteDb(String dbName, String dblocation) {
+		// Set Derby system home if specified
+       if (dblocation != null && !dblocation.isEmpty()) {
+           System.setProperty("derby.system.home", dblocation);
+       }
+       try {
+           // Load Derby driver
+           Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+          
+           // Derby uses a special shutdown URL to close the database
+           String shutdownUrl = "jdbc:derby:;shutdown=true";
+           try {
+               DriverManager.getConnection(shutdownUrl);
+           } catch (SQLException e) {
+               // Expected exception when shutting down Derby
+               if (!e.getSQLState().equals("08006")) {
+                   throw e;
+               }
+           }
+          
+           // Delete the directory path
+           String dbPath = (dblocation == null) ? dbName : dblocation + "/" + dbName;
+           deleteDirectory(new java.io.File(dbPath));
+          
+           System.out.println("Derby database '" + dbName + "' deleted successfully");
+          
+       } catch (ClassNotFoundException e) {
+           System.err.println("Derby driver not found: " + e.getMessage());
+       } catch (SQLException e) {
+           System.err.println("Error deleting Derby database: " + e.getMessage());
+       }
+   }
+	private static boolean deleteDirectory(File directory) {
+       if (directory.exists()) {
+           File[] files = directory.listFiles();
+           if (files != null) {
+               for (File file : files) {
+                   if (file.isDirectory()) {
+                       deleteDirectory(file);
+                   } else {
+                       file.delete();
+                   }
+               }
+           }
+           return directory.delete();
+       }
+       return false;
+   }
+	
+	//----Change Made by Andrew --- it gets the history from the DB and returns a list of strings for the printout stuff
+		public List<String> loadHistory(){
+			Connection conn = null;
+			PreparedStatement getHistoryStmt = null;
+			ResultSet resultSet = null;
+			List<String> history = new ArrayList<>();
+			try {
+				conn = connect();
+			getHistoryStmt = conn.prepareStatement(
+					"SELECT * FROM GameHistory"
+					);
+			resultSet = getHistoryStmt.executeQuery();
+			
+			
+			while(resultSet.next()) {
+				String rowinfo = resultSet.getString(1);
+			history.add(rowinfo);	
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}finally {
+				try {
+					if(resultSet != null) resultSet.close();
+					if(getHistoryStmt != null) getHistoryStmt.close();
+					if(conn != null) conn.close();
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return history;
+		}
+		
+		//---Change Made by Andrew --- adds a string to the List and to the db
+		public void addToHistory(String add) {
+			Connection conn = null;
+			PreparedStatement addHistory = null;
+			try {
+				conn = connect();
+				addHistory = conn.prepareStatement(
+						"INSERT INTO GameHistory(printout) "+
+					    "VALUES(?)"
+						);
+				addHistory.setString(1,add);
+				
+				conn.commit();
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally {
+				try {
+					if(addHistory != null)addHistory.close();
+					if(conn != null)conn.close();
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	
+	
+
 }

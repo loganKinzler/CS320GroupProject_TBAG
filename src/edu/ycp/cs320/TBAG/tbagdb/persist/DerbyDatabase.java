@@ -298,8 +298,8 @@ public class DerbyDatabase implements IDatabase {
 		toOut.setConnectedRoom("east", east);
 		toOut.setConnectedRoom("south", south);
 		toOut.setConnectedRoom("west", west);
-		System.out.println(resultSet);
-		System.out.println(toOut.getConnectedRoom("north") + ", " + toOut.getConnectedRoom("east") + ", " + toOut.getConnectedRoom("south") + ", " + toOut.getConnectedRoom("west"));
+		//System.out.println(resultSet);
+		//System.out.println(toOut.getConnectedRoom("north") + ", " + toOut.getConnectedRoom("east") + ", " + toOut.getConnectedRoom("south") + ", " + toOut.getConnectedRoom("west"));
 		
 		return toOut;
 		

@@ -1,18 +1,12 @@
 package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,25 +14,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import edu.ycp.cs320.TBAG.controller.ASCIIOutput;
 // our imports
 import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
+import edu.ycp.cs320.TBAG.controller.EntityController;
+import edu.ycp.cs320.TBAG.controller.FightController;
 import edu.ycp.cs320.TBAG.controller.PlayerController;
 import edu.ycp.cs320.TBAG.controller.RoomContainer;
-import edu.ycp.cs320.TBAG.controller.FightController;
-import edu.ycp.cs320.TBAG.controller.EntityController;
-
 import edu.ycp.cs320.TBAG.model.Action;
-import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
+import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
-import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
-import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
-
-import edu.ycp.cs320.TBAG.model.EntityInventory;
 
 
 
@@ -197,10 +188,10 @@ public class GameEngineServlet extends HttpServlet {
         			
         			//hake easter egg test
 	        		case "hakeTest" :
-	        			systemResponse = profAsciiEasterEgg("hake");
+	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
 	        		break;
 	        		case "babcockTest":
-	        			systemResponse = profAsciiEasterEgg("babcock");
+	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
 	        		break;
             	
             		// TYPE 1 COMMANDS:
@@ -697,33 +688,33 @@ public class GameEngineServlet extends HttpServlet {
     	//Add db insert method here
     }
     
-    public String profAsciiEasterEgg(String prof) {
-    	System.out.println(prof);
-    	String toOut = "";
-    	try {
-    		InputStream in = getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
-			Scanner reader = new Scanner(in);
-			if (prof.equals("hake")) toOut += "<div class=\"hake-ascii-art\">";
-			else if (prof.equals("babcock")) toOut += "<div class=\"babcock-ascii-art\">";
-			while (reader.hasNextLine()) {
-				String asciiLine = reader.nextLine();
-				
-				//ChatGPT recommended that i do this to avoid any issues with formatting
-				asciiLine = asciiLine
-						  .replace("&", "&amp;")
-						  .replace("<", "&lt;")
-						  .replace(">", "&gt;");
-				
-				toOut += asciiLine + "\n";
-			}
-			toOut += "</div>";
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    	return toOut;
-    }
+//    public String profAsciiEasterEgg(String prof) {
+//    	System.out.println(prof);
+//    	String toOut = "";
+//    	try {
+//    		InputStream in = getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
+//			Scanner reader = new Scanner(in);
+//			if (prof.equals("hake")) toOut += "<div class=\"hake-ascii-art\">";
+//			else if (prof.equals("babcock")) toOut += "<div class=\"babcock-ascii-art\">";
+//			while (reader.hasNextLine()) {
+//				String asciiLine = reader.nextLine();
+//				
+//				//ChatGPT recommended that i do this to avoid any issues with formatting
+//				asciiLine = asciiLine
+//						  .replace("&", "&amp;")
+//						  .replace("<", "&lt;")
+//						  .replace(">", "&gt;");
+//				
+//				toOut += asciiLine + "\n";
+//			}
+//			toOut += "</div>";
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//    	
+//    	return toOut;
+//    }
     
     public String repeatString(String toRepeat, int amount) {
     	String toOut = "";

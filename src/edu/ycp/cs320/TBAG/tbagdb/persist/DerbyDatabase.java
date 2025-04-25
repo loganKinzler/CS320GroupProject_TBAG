@@ -85,7 +85,6 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	
 	public Integer GetItemIDQuery(String itemName, String itemDescription) {
 		return executeTransaction(new Transaction<Integer>() {
 			@Override
@@ -127,9 +126,7 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	
-	
-	
+
 	
 	public List<Room> RoomsByIdQuery(int id) {
 		return executeTransaction(new Transaction<List<Room>>() {
@@ -352,7 +349,7 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement entitiesStatement = conn.prepareStatement(
 						"create table entities ("
 						+ "id int primary key "
-						+ "	generated always as identity (start with 1, increment by 1), "
+						+ "generated always as identity (start with 1, increment by 1), "
 						+ "health double, "
 						+ "maxHealth double, "
 						+ "lives int, "
@@ -368,21 +365,6 @@ public class DerbyDatabase implements IDatabase {
 					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
 						isNewDatabase = false;
 					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(entitiesStatement);
-				}
-				
-
-				try {
-					entitiesStatement.executeUpdate();
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
 					
 				} catch (Exception e) {
 					throw e;
@@ -543,6 +525,7 @@ public class DerbyDatabase implements IDatabase {
 					resetTable("inventories", "inventory_id", 2);
 					resetTable("weaponTypes", "weapon_id", 1);
 					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
+					resetTable("entities", "id", 1);
 
 				}
 				
@@ -680,7 +663,7 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	public void create() {
+	public static void create() {
 		DerbyDatabase db = new DerbyDatabase();
 		
 		System.out.println("Creating tables...");
@@ -923,7 +906,7 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	public static void main(String[] args) {
-		
+		create();
 	}
 
 	@Override

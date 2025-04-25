@@ -687,34 +687,7 @@ public class GameEngineServlet extends HttpServlet {
     	
     	//Add db insert method here
     }
-    
-//    public String profAsciiEasterEgg(String prof) {
-//    	System.out.println(prof);
-//    	String toOut = "";
-//    	try {
-//    		InputStream in = getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
-//			Scanner reader = new Scanner(in);
-//			if (prof.equals("hake")) toOut += "<div class=\"hake-ascii-art\">";
-//			else if (prof.equals("babcock")) toOut += "<div class=\"babcock-ascii-art\">";
-//			while (reader.hasNextLine()) {
-//				String asciiLine = reader.nextLine();
-//				
-//				//ChatGPT recommended that i do this to avoid any issues with formatting
-//				asciiLine = asciiLine
-//						  .replace("&", "&amp;")
-//						  .replace("<", "&lt;")
-//						  .replace(">", "&gt;");
-//				
-//				toOut += asciiLine + "\n";
-//			}
-//			toOut += "</div>";
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//    	
-//    	return toOut;
-//    }
+ 
     
     public String repeatString(String toRepeat, int amount) {
     	String toOut = "";

@@ -1,8 +1,7 @@
 ----------------------------------------------------------------
-<<<<<<< HEAD
-Thu Apr 24 08:26:40 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-67c3-b022-000005c772f8 
-on database directory /Users/krimx/git/CS320GroupProject_TBAG/test.db with class loader sun.misc.Launcher$AppClassLoader@4e0e2f2a 
+Fri Apr 25 15:25:13 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-6e69-4021-0000064e5268 
+on database directory /Users/krimx/git/CS320GroupProject_TBAG/test.db with class loader sun.misc.Launcher$AppClassLoader@d716361 
 Loaded from file:/Users/krimx/Documents/EclipseWorkspace/CS320_Derby/lib/derby.jar
 java.vendor=Temurin
 java.runtime.version=1.8.0_442-b06
@@ -10,17 +9,5 @@ user.dir=/Users/krimx/git/CS320GroupProject_TBAG
 os.name=Mac OS X
 os.arch=x86_64
 os.version=15.4
-=======
-Wed Apr 23 16:19:47 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-644e-75cf-00000f41cf90 
-on database directory C:\Users\j2mar\git\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5c647e05 
-Loaded from file:/C:/CS320-eclipse2024stuff/CS320_Derby/lib/derby.jar
-java.vendor=Oracle Corporation
-java.runtime.version=21.0.2+13-LTS-58
-user.dir=C:\Users\j2mar\git\CS320GroupProject_TBAG
-os.name=Windows 11
-os.arch=amd64
-os.version=10.0
->>>>>>> refs/heads/development-branch
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''

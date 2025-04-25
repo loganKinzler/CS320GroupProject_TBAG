@@ -12,6 +12,7 @@ import edu.ycp.cs320.TBAG.model.Room;
 public interface IDatabase {
 	public abstract List<Item> ItemsByNameQuery(String itemName);
 	public abstract List<Room> RoomsByIdQuery(int id);
+	public abstract List<String> DirectionsByRoomIdQuery(int id);
 	
 	public abstract PlayerModel GetPlayer();
 	public abstract EntityInventory getPlayerInventory();

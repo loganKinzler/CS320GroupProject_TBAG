@@ -7,10 +7,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
+import edu.ycp.cs320.TBAG.controller.RoomContainer;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
@@ -179,6 +181,53 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
+	public List<String> DirectionsByRoomIdQuery(int id) {
+		return executeTransaction(new Transaction<List<String>>() {
+			@Override
+			public List<String> execute(Connection conn) throws SQLException {
+				PreparedStatement stmt = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// Get all rooms with the same room id as id
+					stmt = conn.prepareStatement(
+							"select connections.direction " +
+							" from connections " + 
+							" where connections.room_id = ?"
+					);
+					stmt.setInt(1, id);
+					
+					List<String> result = new ArrayList<>();
+					
+					resultSet = stmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						String direction = loadConnection(resultSet); 
+						result.add(direction);
+					}
+					
+					// check if a room with the id was found
+					if(!found) {
+						System.out.println("<" + id + "> was not found in the rooms table");
+						return null;
+					}
+					
+					return result;
+					
+					
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(stmt);
+				}
+				
+			}
+		});
+	}
+	
 	// END OF QUERIES / INSERTS
 
 	
@@ -233,6 +282,14 @@ public class DerbyDatabase implements IDatabase {
 		
 		return toOut;
 	}
+	
+	private String loadConnection(ResultSet resultSet) throws SQLException{
+		int index = 1;
+		String direction = resultSet.getString(index++);
+		return direction;
+	}
+	
+	
 	// END OF CLASS LOADING METHODS
 	
 	public<ResultType> ResultType executeTransaction(Transaction<ResultType> txn) {
@@ -438,7 +495,7 @@ public class DerbyDatabase implements IDatabase {
 				// ROOMS
 				PreparedStatement roomsStatement = conn.prepareStatement(
 						"Create table rooms ("
-						+ "room_id int primary key "
+						+ "room_id int primary key"
 						+ " generated always as identity (start with 1, increment by 1), "
 						+ "name varchar(16), "
 						+ "description varchar(64)"
@@ -458,6 +515,37 @@ public class DerbyDatabase implements IDatabase {
 					
 				} finally {
 					DBUtil.closeQuietly(roomsStatement);
+				}
+				
+				
+				//CONNECTIONS
+				PreparedStatement connectionsStatement = conn.prepareStatement(
+						"Create table connections ("
+						+ "index int primary key"
+						+ " generated always as identity (start with 1, increment by 1), "
+						+ "room_id int, "
+						+ "	constraint roomID foreign key (room_id) references rooms(room_id), "
+						+ "direction varchar(16), "
+						+ "connection_id int)"
+						);
+				
+				
+				
+				try {
+					connectionsStatement.executeUpdate();
+					
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else
+						throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(connectionsStatement);
 				}
 				
 				return isNewDatabase;
@@ -504,6 +592,7 @@ public class DerbyDatabase implements IDatabase {
 				PlayerModel player;
 				List<EnemyModel> enemies;
 				List<Room> rooms;
+				List<Room> connections;
 				
 				try {
 					itemList = InitialData.getItemTypes();
@@ -513,6 +602,7 @@ public class DerbyDatabase implements IDatabase {
 					player = InitialData.getPlayer();
 					enemies = InitialData.getEnemies();
 					rooms = InitialData.getRooms();
+					connections = InitialData.getConnections();
 					
 				} catch (IOException e) {
 					throw new SQLException("Couldn't read initial data", e);
@@ -521,12 +611,12 @@ public class DerbyDatabase implements IDatabase {
 				
 				// if database already exists, reset it first
 				if (!isNewDatabase) {
+					resetTable("connections", "index", 1);
 					resetTable("rooms", "room_id", 1);
 					resetTable("weaponSlots", "slot_id", 2);// reset dependencies first (inventory_source)
 					resetTable("inventories", "inventory_id", 2);
 					resetTable("weaponTypes", "weapon_id", 1);
 					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
-
 				}
 				
 				
@@ -656,8 +746,21 @@ public class DerbyDatabase implements IDatabase {
 					insertRoomStatement.executeUpdate();
 				}
 				
+				//Insert Connections
+				PreparedStatement insertConnectionsStatement = conn.prepareStatement(
+						"insert into connections (room_id, direction, connection_id) values (?, ?, ?)");
+						
 				
-
+				
+				for(Room room : connections) {
+					for(String connection : room.getAllKeys()) {
+						
+						insertConnectionsStatement.setInt(1, room.getRoomId());
+						insertConnectionsStatement.setString(2, connection);
+						insertConnectionsStatement.setInt(3, room.getConnectedRoom(connection));
+						insertConnectionsStatement.executeUpdate();
+					}
+				}
 				return true;
 			}
 		});

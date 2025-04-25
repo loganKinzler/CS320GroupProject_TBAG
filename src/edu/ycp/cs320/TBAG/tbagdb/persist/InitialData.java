@@ -18,6 +18,7 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
+import edu.ycp.cs320.TBAG.controller.RoomContainer;
 
 public class InitialData {
 	private static List<Item> itemTypes;
@@ -233,4 +234,36 @@ public class InitialData {
 		return rooms;
 		
 	}
+	
+	public static List<Room> getConnections() throws IOException{
+		List<Room> rooms = new ArrayList<>();
+		ReadCSV readConnections = new ReadCSV("connections.csv"); 
+		
+		try {
+			
+			
+			while (true) {
+				List<String> tuple = readConnections.next();
+				
+				if(tuple == null) break;
+				
+				Iterator<String> i = tuple.iterator();
+				
+				int room_id = Integer.parseInt(i.next());
+				String direction = i.next();
+				int connection_id = Integer.parseInt(i.next());
+				
+				Room room = new Room(room_id);
+				room.setConnectedRoom(direction, connection_id);
+				rooms.add(room);
+			}
+		}
+		
+		finally {
+			readConnections.close();
+		}
+		
+		return rooms;
+	}
+		
 }

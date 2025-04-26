@@ -1222,7 +1222,7 @@ public class DerbyDatabase implements IDatabase {
 					    "VALUES(?)"
 						);
 				addHistory.setString(1,add);
-				
+				addHistory.executeUpdate();	
 				conn.commit();
 			}catch(Exception e) {
 				e.printStackTrace();

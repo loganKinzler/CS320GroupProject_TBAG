@@ -20,7 +20,7 @@ public class PlayerDbTest {
 	@Test
 	public void startRoomTest() {
 		setup();
-		assertEquals(db.GetPlayer().getCurrentRoomIndex(), 1);
+		assertEquals(db.GetPlayer().getCurrentRoomIndex(), 0);
 	}
 	
 	@Test

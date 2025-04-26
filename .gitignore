@@ -3,7 +3,7 @@
 .classpath
 .project
 .settings/
-test.db
-/derby.log
+test.db/*
+derby.log
 /bin/
 /test-bin/

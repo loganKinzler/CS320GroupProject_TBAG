@@ -458,6 +458,27 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(roomsStatement);
 				}
 				
+				//GameHistory
+				PreparedStatement historystmt = null;
+				try {
+					historystmt = conn.prepareStatement(
+					"create table GameHistory ("+
+					" printout varchar(10000))"
+					);
+					historystmt.executeUpdate();
+				} catch (SQLException sql){
+				if(sql.getMessage().matches("Table/View '.*' already exists in Scheme 'APP'.")) {
+					isNewDatabase = false;
+				}
+				}catch (Exception e){
+				throw e;
+				}finally{
+					historystmt=null;
+				DBUtil.closeQuietly(historystmt);
+				
+				}
+
+				
 				return isNewDatabase;
 			}
 		});
@@ -905,7 +926,16 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	public static void main(String[] args) {
-//		create();
+		DerbyDatabase db = new DerbyDatabase();
+		
+		System.out.println("Creating tables...");
+		Boolean isNewDatabase = db.createTables();
+		System.out.println(isNewDatabase);
+		
+		System.out.println("Loading initial data...");
+		db.loadInitialData(isNewDatabase);
+		
+		System.out.println("Success!");
 	}
 
 	@Override
@@ -1205,7 +1235,4 @@ public class DerbyDatabase implements IDatabase {
 				}
 			}
 		}
-	
-	
-
 }

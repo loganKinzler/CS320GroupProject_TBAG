@@ -84,8 +84,6 @@ public class GameEngineServlet extends HttpServlet {
             gameHistory = new ArrayList<>();
             session.setAttribute("gameHistory", gameHistory);
         }
-        
-        System.out.println("fhsegfysgfjesgfulewsbhfirsbhiufsguyis:     " + db.GetPlayer().getHealth());
 //        db.UpdatePlayerHealth(new PlayerModel(150.0,1,1));
         
         //Check if player current room is in session history, set if yes, initialize if not
@@ -690,7 +688,7 @@ public class GameEngineServlet extends HttpServlet {
     
     public void addToGameHistory(IDatabase db, List<String> gameHistory, String toAdd) {
     	gameHistory.add(toAdd);
-    	db.addToHistory(toAdd);
+//    	db.addToHistory(toAdd);
     }
  
     

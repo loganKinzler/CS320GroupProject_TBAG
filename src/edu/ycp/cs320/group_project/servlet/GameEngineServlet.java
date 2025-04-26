@@ -46,7 +46,20 @@ public class GameEngineServlet extends HttpServlet {
         }
         
         List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
+        if (gameHistory == null) {
+            DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
+            if (db == null) {
+                db = new DerbyDatabase();
+                session.setAttribute("db", db);
+            }
+            gameHistory = db.getGameHistory();
+            session.setAttribute("gameHistory", gameHistory);
+        }
+        req.setAttribute("gameHistory", gameHistory);
+        
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
+        
+        
         
         
 
@@ -74,17 +87,24 @@ public class GameEngineServlet extends HttpServlet {
         // Get or create the session
         HttpSession session = req.getSession(true);
         
-        DerbyDatabase db = new DerbyDatabase();
-        
+        DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
+        if (db == null) {
+            db = new DerbyDatabase();
+            session.setAttribute("db", db);
+        }
+
+        // Always pull fresh game history from DB
+        List<String> gameHistory = db.getGameHistory();
+        session.setAttribute("gameHistory", gameHistory);
+        System.out.println(session.getAttribute("gameHistory"));  
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
         // Retrieve the game history from the session (or create a new one if it doesn't exist)
-        List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
-        if (gameHistory == null) {
-            gameHistory = new ArrayList<>();
-            session.setAttribute("gameHistory", gameHistory);
-        }
-//        db.UpdatePlayerHealth(new PlayerModel(150.0,1,1));
+//        gameHistory = (List<String>) session.getAttribute("gameHistory");
+//        if (gameHistory == null) {
+//            gameHistory = new ArrayList<>();
+//            session.setAttribute("gameHistory", gameHistory);
+//        }
         
         //Check if player current room is in session history, set if yes, initialize if not
         PlayerModel playerModel = (PlayerModel)session.getAttribute("player");
@@ -433,7 +453,7 @@ public class GameEngineServlet extends HttpServlet {
                 				
             					//TODO: Use this method once set up
 //            					ArrayList<EnemyModel> enemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-            					ArrayList<EnemyModel> enemies = rooms.getEnemiesinRoom( player.getCurrentRoomIndex() );
+            					ArrayList<EnemyModel> enemies = db.GetEnemiesInRoom(db.GetPlayer().getCurrentRoomIndex());
             					systemResponse = String.format("Describing enemies...<br><br>");
             					
             					// remove dead enemies
@@ -688,7 +708,7 @@ public class GameEngineServlet extends HttpServlet {
     
     public void addToGameHistory(IDatabase db, List<String> gameHistory, String toAdd) {
     	gameHistory.add(toAdd);
-//    	db.addToHistory(toAdd);
+    	db.addToGameHistory(toAdd);
     }
  
     

@@ -463,19 +463,17 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					historystmt = conn.prepareStatement(
 					"create table GameHistory ("+
-					" printout varchar(10000))"
+					" printout varchar(32672))"
 					);
 					historystmt.executeUpdate();
 				} catch (SQLException sql){
-				if(sql.getMessage().matches("Table/View '.*' already exists in Scheme 'APP'.")) {
+				if(sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) {
 					isNewDatabase = false;
 				}
 				}catch (Exception e){
 				throw e;
 				}finally{
-					historystmt=null;
-				DBUtil.closeQuietly(historystmt);
-				
+					DBUtil.closeQuietly(historystmt);
 				}
 
 				
@@ -1179,60 +1177,85 @@ public class DerbyDatabase implements IDatabase {
        return false;
    }
 	
-	//----Change Made by Andrew --- it gets the history from the DB and returns a list of strings for the printout stuff
-		public List<String> loadHistory(){
-			Connection conn = null;
-			PreparedStatement getHistoryStmt = null;
-			ResultSet resultSet = null;
-			List<String> history = new ArrayList<>();
-			try {
-				conn = connect();
-			getHistoryStmt = conn.prepareStatement(
-					"SELECT * FROM GameHistory"
-					);
-			resultSet = getHistoryStmt.executeQuery();
-			
-			
-			while(resultSet.next()) {
-				String rowinfo = resultSet.getString(1);
-			history.add(rowinfo);	
-				}
-			}catch(Exception e){
-				e.printStackTrace();
-			}finally {
+	@Override
+	public List<String> getGameHistory() {
+		return executeTransaction(new Transaction<List<String>>() {
+			@Override
+			public List<String> execute(Connection conn) throws SQLException {
+				PreparedStatement getGameHistoryStatement = null;
+				ResultSet resultSet = null;
+				
 				try {
-					if(resultSet != null) resultSet.close();
-					if(getHistoryStmt != null) getHistoryStmt.close();
-					if(conn != null) conn.close();
-				}catch(Exception e) {
-					e.printStackTrace();
+					// retreive all attributes from both Books and Authors tables
+					getGameHistoryStatement = conn.prepareStatement(
+							"select GameHistory.* from GameHistory"
+					);
+					
+					List<String> history = new ArrayList<>();
+					
+					resultSet = getGameHistoryStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						history.add(resultSet.getString(1));
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Line was not found in the GameHistory table");
+					}
+					
+					return history;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getGameHistoryStatement);
 				}
 			}
-			return history;
+		});
+	}
+	public String addToGameHistory(String toAdd) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"insert into GameHistory(printout) "
+					+ "values(?)"
+				);
+
+				insertStatement.setString(1, toAdd);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return toAdd;
+			}
+		});
+	}
+
+		
+	public boolean dbExists(String type) {
+		boolean exists = false;
+		
+		File dbFolder = new File("" + type + ".db");
+		
+		if (dbFolder.exists() && dbFolder.isDirectory()) {
+			System.out.println("Database of type <" + type + "> was found.");
+			exists = true;
+		}
+		else {
+			System.out.println("Database of type <" + type + "> was not found.");
 		}
 		
-		//---Change Made by Andrew --- adds a string to the List and to the db
-		public void addToHistory(String add) {
-			Connection conn = null;
-			PreparedStatement addHistory = null;
-			try {
-				conn = connect();
-				addHistory = conn.prepareStatement(
-						"INSERT INTO GameHistory(printout) "+
-					    "VALUES(?)"
-						);
-				addHistory.setString(1,add);
-				addHistory.executeUpdate();	
-				conn.commit();
-			}catch(Exception e) {
-				e.printStackTrace();
-			}finally {
-				try {
-					if(addHistory != null)addHistory.close();
-					if(conn != null)conn.close();
-				}catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
+		return exists;
+	}
 }

@@ -32,7 +32,7 @@ public interface IDatabase {
 	public String UpdateEnemyDescriptionById(int id, String description);
 	public EnemyModel getEnemyById(int id);
 	
-	public List<String> loadHistory();
 	public void deleteDb(String dbName, String dblocation);
-	public void addToHistory(String add);
+	public String addToGameHistory(String add);
+	List<String> getGameHistory();
 }

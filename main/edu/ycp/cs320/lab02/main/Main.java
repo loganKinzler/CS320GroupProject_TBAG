@@ -4,8 +4,14 @@ import java.io.File;
 
 import org.eclipse.jetty.server.Server;
 
+import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
+
 public class Main {
 	public static void main(String[] args) throws Exception {
+		
+		DerbyDatabase db = new DerbyDatabase();
+		if (!db.dbExists("test")) db.create();
+		
 		String webappCodeBase = "./war";
 		File warFile = new File(webappCodeBase);
 		Launcher launcher = new Launcher();

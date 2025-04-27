@@ -1,19 +1,12 @@
 package edu.ycp.cs320.group_project.servlet;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-
-
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -21,22 +14,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import edu.ycp.cs320.TBAG.controller.ASCIIOutput;
 // our imports
 import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
+import edu.ycp.cs320.TBAG.controller.EntityController;
+import edu.ycp.cs320.TBAG.controller.FightController;
 import edu.ycp.cs320.TBAG.controller.PlayerController;
 import edu.ycp.cs320.TBAG.controller.RoomContainer;
-import edu.ycp.cs320.TBAG.controller.FightController;
-import edu.ycp.cs320.TBAG.controller.EntityController;
-
 import edu.ycp.cs320.TBAG.model.Action;
-import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
+import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
-import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
-
-import edu.ycp.cs320.TBAG.model.EntityInventory;
+import edu.ycp.cs320.TBAG.model.Room;
+import edu.ycp.cs320.TBAG.model.Weapon;
+import edu.ycp.cs320.TBAG.tbagdb.DBController;
+import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
+import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 
 
@@ -74,39 +69,13 @@ public class GameEngineServlet extends HttpServlet {
 //        }
         req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
     }
-
-    //Use this section for when we end up having a database for storing the information
-    /*@Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String userInput = req.getParameter("userInput");
-        if (userInput != null && !userInput.trim().isEmpty()) {
-            // Simulate a system response
-            String systemResponse = "System: You entered '" + userInput + "'";
-
-            // Save to the database
-            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/game_db", "username", "password")) {
-                String sql = "INSERT INTO game_history (user_input, system_response) VALUES (?, ?)";
-                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, userInput);
-                    stmt.setString(2, systemResponse);
-                    stmt.executeUpdate();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Forward to the JSP file
-        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
-    }
-    */
-    
-    
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Get or create the session
         HttpSession session = req.getSession(true);
+        
+        DerbyDatabase db = new DerbyDatabase();
         
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
@@ -116,11 +85,12 @@ public class GameEngineServlet extends HttpServlet {
             gameHistory = new ArrayList<>();
             session.setAttribute("gameHistory", gameHistory);
         }
+//        db.UpdatePlayerHealth(new PlayerModel(150.0,1,1));
         
         //Check if player current room is in session history, set if yes, initialize if not
         PlayerModel playerModel = (PlayerModel)session.getAttribute("player");
         if (playerModel == null) {
-        	playerModel = new PlayerModel(50, 3, 0);
+        	playerModel = db.GetPlayer();
         }
         
         PlayerController player = new PlayerController(playerModel);
@@ -133,11 +103,16 @@ public class GameEngineServlet extends HttpServlet {
         	session.setAttribute("foundCommands", foundCommands);
         }
 
-        RoomContainer rooms = (RoomContainer)session.getAttribute("rooms");
+        List<Room> rooms = new ArrayList<>();
+        List<Room> connections = new ArrayList<>();
+        rooms = (List<Room>)session.getAttribute("rooms");
         if (rooms == null) {
-        	rooms = new RoomContainer();
-        	rooms.createHardcodedRooms();
+        	rooms = db.getRooms();
+        	connections = db.getConnections();
+        	//rooms.createHardcodedRooms();
         }
+        
+        
         
         if (session.getAttribute("sudoStage") == null) {
         	session.setAttribute("sudoStage", 0);
@@ -191,13 +166,13 @@ public class GameEngineServlet extends HttpServlet {
         		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
         		break;
         	}
-        	gameHistory.add(systemResponse);
+        	addToGameHistory(db, gameHistory, systemResponse);
         }
         
         if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
             // Add user input to the game history
 
-        	gameHistory.add("C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
+        	addToGameHistory(db, gameHistory, "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
             
             Action userAction = interpreter.ValidateInput(userInput);
             systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
@@ -218,18 +193,39 @@ public class GameEngineServlet extends HttpServlet {
         			
         			//hake easter egg test
 	        		case "hakeTest" :
-	        			systemResponse = profAsciiEasterEgg("hake");
+	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
 	        		break;
 	        		case "babcockTest":
-	        			systemResponse = profAsciiEasterEgg("babcock");
+	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
+	        		break;
+	        		case "newSave":
+	        			db = new DerbyDatabase();
+	        			db.create();
+	        			systemResponse = "Creating new save...";
 	        		break;
             	
             		// TYPE 1 COMMANDS:
             		case "move":
             			if (!foundCommands.contains("move")) foundCommands.add("move");
             			
-            			Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
-            					params.get(0));
+            			//Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
+            					//params.get(0));
+            			boolean doesconnectionexist = connections.get(player.getCurrentRoomIndex()).doesKeyExist(params.get(0));
+            			Integer nextRoom;
+            			
+            			if(doesconnectionexist == true) {
+            				nextRoom = connections.get(player.getCurrentRoomIndex()).getConnectedRoom(params.get(0));
+            				//for now the room will be null if it doesn't exist or is locked
+            				if(nextRoom <= 0) {
+            					nextRoom = null;
+            				}
+            			}
+            			
+            			if(doesconnectionexist == false) {
+            				nextRoom = null;
+            			}
+            			
+            			
             			
             			if (nextRoom == null) {
             				systemResponse = String.format("The current room doesn't have a room %s of it.",
@@ -238,11 +234,13 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			player.setCurrentRoomIndex(nextRoom);
-            			
+            			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
+            			String short_description = rooms.get(nextRoom).getShortRoomDescription();
+            			String long_description = rooms.get(nextRoom).getLongRoomDescription();
             			systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
             					params.get(0),
-            					rooms.getShortRoomDescription(nextRoom),
-            					rooms.getLongRoomDescription(nextRoom));
+            					short_description,
+            					long_description);
             		break;
             		
             		case "use":
@@ -267,7 +265,7 @@ public class GameEngineServlet extends HttpServlet {
             				
             				Set<Item> roomInventoryKeys = new HashSet<Item>();
             				roomInventoryKeys.addAll(rooms.getRoomInventory(player.getCurrentRoomIndex()).GetItems().keySet());
-            				
+            			
             				if (roomInventoryKeys.isEmpty()){
                 				systemResponse = String.format("This room does not contain any items to pickup.<br>");
                 				break;
@@ -430,8 +428,8 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
             					
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
-                    					rooms.getShortRoomDescription( player.getCurrentRoomIndex() ),
-                    					rooms.getLongRoomDescription( player.getCurrentRoomIndex() ));
+                    					rooms.getShortRoomDescription( db.GetPlayer().getCurrentRoomIndex() ),
+                    					rooms.getLongRoomDescription( db.GetPlayer().getCurrentRoomIndex() ));
             				break;
             				
             				//  [######--]
@@ -445,17 +443,19 @@ public class GameEngineServlet extends HttpServlet {
             					Integer healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
             					
             					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: [%s%s] (%.1f / %.1f)",
-            							player.getLives(),
-            							"#".repeat(healthBarLength),
-            							"-".repeat(healthBarSize - healthBarLength),
-            							player.getHealth(),
-            							player.getMaxHealth());
+            							DBController.getPlayerLives(db),
+            							repeatString("#", healthBarLength),
+										repeatString("-", healthBarSize - healthBarLength),
+										DBController.getPlayerHealth(db),
+            							DBController.getPlayerMaxHealth(db));
             				break;
             				
             				case "enemies":
             					if (!foundCommands.contains("describeGroup_attack")) foundCommands.add("describeGroup_attack");
             					if (!foundCommands.contains("describe_enemies")) foundCommands.add("describe_enemies");
                 				
+            					//TODO: Use this method once set up
+//            					ArrayList<EnemyModel> enemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
             					ArrayList<EnemyModel> enemies = rooms.getEnemiesinRoom( player.getCurrentRoomIndex() );
             					systemResponse = String.format("Describing enemies...<br><br>");
             					
@@ -481,8 +481,8 @@ public class GameEngineServlet extends HttpServlet {
             						
             						systemResponse += String.format("<br>&num;%d: %s<br> - Health: [%s%s] (%.1f / %.1f)<br> - %s<br>",
             								enemies.size(), enemies.get(i).getName(),
-                							"#".repeat(healthBarLength),
-                							"-".repeat(healthBarSize - healthBarLength),
+            								repeatString("#", healthBarLength),
+    										repeatString("-", healthBarSize - healthBarLength),
             								enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
             								enemies.get(i).getDescription());
             					}
@@ -500,12 +500,12 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
             					
-            					for (String direction : rooms.getAllKeys( player.getCurrentRoomIndex() )) {
+            					for (String direction : connections.get(DBController.getPlayerCurrentRoom(db)).getAllKeys()) {
             						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
             						
             						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
-            								rooms.getShortRoomDescription(
-            									rooms.nextConnection(player.getCurrentRoomIndex(), direction)
+            								rooms.get(player.getCurrentRoomIndex()).getShortRoomDescription()
+            									connections.get(player.getCurrentRoomIndex()).getConnectedRoom(direction)
             								));
             					}
             				break;
@@ -525,6 +525,7 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
             					if (!foundCommands.contains("describe_inventory")) foundCommands.add("describe_inventory");
                 				
+//            					HashMap<Item, Integer> playerItems = db.getPlayerInventory();
             					HashMap<Item, Integer> playerItems = player.getInventory().GetItems();
             					HashMap<String, Weapon> playerEquips = player.getInventory().GetWeaponsAsSlots();
             					systemResponse = String.format("Describing inventory...<br><br>");
@@ -614,9 +615,11 @@ public class GameEngineServlet extends HttpServlet {
         						break;
             			}
             			
+            			//TODO: Use this method once set up
+//            			ArrayList<EnemyModel> roomEnemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
             			ArrayList<EnemyModel> roomEnemies = rooms.getRoom(player.getCurrentRoomIndex()).getAllEnemies();
             			ArrayList<EntityModel> fighters = new ArrayList<EntityModel>();
-            			fighters.add(player.getModel());
+            			fighters.add(db.GetPlayer());
             			fighters.addAll(roomEnemies);
 
             			Integer attackIndex = -1;         			
@@ -655,7 +658,7 @@ public class GameEngineServlet extends HttpServlet {
             					);
             			
             			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
-            				new EntityController(fightController.GetFighter(attackIndex)).Die(rooms);
+            				new EntityController(fightController.GetFighter(attackIndex)).Die(db, rooms);
             				
             				systemResponse += String.format("%s has died.<br>",
             						attackedName);
@@ -664,8 +667,8 @@ public class GameEngineServlet extends HttpServlet {
             			for (int i=0; i<roomEnemies.size(); i++) {
             				if (i != 0) systemResponse += "<br>";
             				
-            				if (player.getHealth() == 0) {
-            					player.Die(rooms);
+            				if (DBController.getPlayerHealth(db) == 0) {
+            					player.Die(db, rooms);
             					break;
             				}
             				
@@ -685,12 +688,12 @@ public class GameEngineServlet extends HttpServlet {
             	}
             }
 
-            gameHistory.add(systemResponse);
+            addToGameHistory(db, gameHistory, systemResponse);
 
             if (sudoStage == 0) {
-            	gameHistory.add("<br>");
-                gameHistory.add("~-==============================-~");// end of turn line break
-                gameHistory.add("<br>");
+            	addToGameHistory(db, gameHistory, "<br>");
+            	addToGameHistory(db, gameHistory, "~-==============================-~");
+            	addToGameHistory(db, gameHistory, "<br>");
             }
         }
 
@@ -706,31 +709,17 @@ public class GameEngineServlet extends HttpServlet {
         resp.sendRedirect("game");
     }
     
-    public String profAsciiEasterEgg(String prof) {
-    	System.out.println(prof);
+    public void addToGameHistory(IDatabase db, List<String> gameHistory, String toAdd) {
+    	gameHistory.add(toAdd);
+//    	db.addToHistory(toAdd);
+    }
+ 
+    
+    public String repeatString(String toRepeat, int amount) {
     	String toOut = "";
-    	try {
-    		InputStream in = getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
-			Scanner reader = new Scanner(in);
-			if (prof.equals("hake")) toOut += "<div class=\"hake-ascii-art\">";
-			else if (prof.equals("babcock")) toOut += "<div class=\"babcock-ascii-art\">";
-			while (reader.hasNextLine()) {
-				String asciiLine = reader.nextLine();
-				
-				//ChatGPT recommended that i do this to avoid any issues with formatting
-				asciiLine = asciiLine
-						  .replace("&", "&amp;")
-						  .replace("<", "&lt;")
-						  .replace(">", "&gt;");
-				
-				toOut += asciiLine + "\n";
-			}
-			toOut += "</div>";
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
+    	for (int i = 0; i < amount; i++) {
+    		toOut += toRepeat;
+    	}
     	return toOut;
     }
 }

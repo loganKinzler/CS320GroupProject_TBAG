@@ -145,6 +145,7 @@ public class InitialData {
 		ReadCSV readPlayer = new ReadCSV("entities.csv");
 		
 		try {
+			readPlayer.next();
 			List<String> tuple = readPlayer.next();
 			
 			Iterator<String> i = tuple.iterator();
@@ -169,10 +170,14 @@ public class InitialData {
 	
 	public static List<EnemyModel> getEnemies() throws IOException {
 		List<EnemyModel> enemies = new ArrayList<>();
-		ReadCSV readEnemies = new ReadCSV("enemyTypes.csv");
+
+		ReadCSV readEnemies = new ReadCSV("entities.csv");
+
+		
 		
 		try {
-			
+
+			readEnemies.next();
 			readEnemies.next();
 			
 			while (true) {

@@ -1,10 +1,13 @@
 package edu.ycp.cs320.TBAG.controller;
 
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
-import edu.ycp.cs320.TBAG.model.*;
-import edu.ycp.cs320.TBAG.controller.*;
+import edu.ycp.cs320.TBAG.model.EntityInventory;
+import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.Weapon;
+import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class EntityController {
 	private EntityModel model;
@@ -66,7 +69,7 @@ public class EntityController {
 		return dropped;
 	}
 	
-	public boolean Die(RoomContainer rooms) {
+	public boolean Die(IDatabase db, RoomContainer rooms) {
 		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
 		
 		// drop all enemy items

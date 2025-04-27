@@ -1,5 +1,6 @@
 package edu.ycp.cs320.TBAG.tbagdb.persist;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,16 +12,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
 import edu.ycp.cs320.TBAG.controller.RoomContainer;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
-import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.Weapon;
-import edu.ycp.cs320.TBAG.model.Inventory;
 
 public class DerbyDatabase implements IDatabase {
 	static {
@@ -87,7 +88,6 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	
 	public Integer GetItemIDQuery(String itemName, String itemDescription) {
 		return executeTransaction(new Transaction<Integer>() {
 			@Override
@@ -130,8 +130,98 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
+	public List<Room> getRooms() {
+		return executeTransaction(new Transaction<List<Room>>() {
+			@Override
+			public List<Room> execute(Connection conn) throws SQLException {
+				PreparedStatement stmt = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// Get all rooms with the same room id as id
+					stmt = conn.prepareStatement(
+							"select * from rooms"
+					);
+					
+					
+					List<Room> result = new ArrayList<Room>();
+					
+					resultSet = stmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						
+						// create new Room object
+						// retrieve attributes from resultSet starting with index 1
+						Room room = loadRoom(resultSet);
+						
+						result.add(room);
+					}
+					
+					
+					if (!found) {
+						System.out.println("No rooms were found in the rooms table.");
+					}
+					
+					return result;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(stmt);
+				}
+			}
+		});
+	}
 	
-	
+	public List<Room> getConnections() {
+		return executeTransaction(new Transaction<List<Room>>() {
+			@Override
+			public List<Room> execute(Connection conn) throws SQLException {
+				PreparedStatement stmt = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// Get all rooms with the same room id as id
+					stmt = conn.prepareStatement(
+							"select * from connections"
+					);
+					
+					
+					List<Room> result = new ArrayList<Room>();
+					
+					resultSet = stmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						
+						// create new Room object
+						// retrieve attributes from resultSet starting with index 1
+						Room room = loadRoom(resultSet);
+						
+						result.add(room);
+					}
+					
+					
+					if (!found) {
+						System.out.println("No connections were found in the connections table.");
+					}
+					
+					return result;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(stmt);
+				}
+			}
+		});
+	}
+
 	
 	public List<Room> RoomsByIdQuery(int id) {
 		return executeTransaction(new Transaction<List<Room>>() {
@@ -425,7 +515,7 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement entitiesStatement = conn.prepareStatement(
 						"create table entities ("
 						+ "id int primary key "
-						+ "	generated always as identity (start with 1, increment by 1), "
+						+ "generated always as identity (start with 1, increment by 1), "
 						+ "health double, "
 						+ "maxHealth double, "
 						+ "lives int, "
@@ -449,6 +539,8 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(entitiesStatement);
 				}
 				
+				
+
 				
 				
 				// INVENTORY
@@ -533,6 +625,7 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(roomsStatement);
 				}
 				
+
 				
 				//CONNECTIONS
 				//north|east|south|west
@@ -562,6 +655,27 @@ public class DerbyDatabase implements IDatabase {
 				} finally {
 					DBUtil.closeQuietly(connectionsStatement);
 				}
+
+				//GameHistory
+				PreparedStatement historystmt = null;
+				try {
+					historystmt = conn.prepareStatement(
+					"create table GameHistory ("+
+					" printout varchar(10000))"
+					);
+					historystmt.executeUpdate();
+				} catch (SQLException sql){
+				if(sql.getMessage().matches("Table/View '.*' already exists in Scheme 'APP'.")) {
+					isNewDatabase = false;
+				}
+				}catch (Exception e){
+				throw e;
+				}finally{
+					historystmt=null;
+				DBUtil.closeQuietly(historystmt);
+				
+				}
+
 				
 				return isNewDatabase;
 			}
@@ -632,6 +746,7 @@ public class DerbyDatabase implements IDatabase {
 					resetTable("inventories", "inventory_id", 2);
 					resetTable("weaponTypes", "weapon_id", 1);
 					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
+					resetTable("entities", "id", 1);
 				}
 				
 				
@@ -779,12 +894,12 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	// The main method creates the database tables and loads the initial data.
-	public static void main(String[] args) throws IOException {
+	public void create() {
 		DerbyDatabase db = new DerbyDatabase();
 		
 		System.out.println("Creating tables...");
 		Boolean isNewDatabase = db.createTables();
+		System.out.println(isNewDatabase);
 		
 		System.out.println("Loading initial data...");
 		db.loadInitialData(isNewDatabase);
@@ -803,8 +918,8 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					// retreive all attributes from both Books and Authors tables
 					getPlayerStatement = conn.prepareStatement(
-							"select entities.* " +
-							" where entities.id = 1"
+							"select entities.* from entities " +
+							"where entities.id = 1"
 					);
 					
 					PlayerModel player = null;
@@ -835,7 +950,6 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-
 
 	@Override
 	public ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex) {
@@ -883,11 +997,10 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-
 	@Override
-	public PlayerModel UpdatePlayerHealth(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Double UpdatePlayerHealth(double health) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -896,20 +1009,25 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setDouble(1, player.getHealth());
+				insertStatement.setDouble(1, health);
 				
-				insertStatement.executeUpdate();
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
 				
-				return GetPlayer();
+				return health;
 			}
 		});
 	}
 
-
 	@Override
-	public PlayerModel UpdatePlayerRoom(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Integer UpdatePlayerRoom(int room) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -918,21 +1036,26 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setInt(1, player.getCurrentRoomIndex());
+				insertStatement.setInt(1, room);
 				
-				insertStatement.executeUpdate();
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
 				
-				return GetPlayer();
+				return room;
 			}
 		});
 		
 	}
 
-
 	@Override
-	public PlayerModel UpdatePlayerMaxHealth(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Double UpdatePlayerMaxHealth(double maxHealth) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -941,21 +1064,26 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setDouble(1, player.getMaxHealth());
+				insertStatement.setDouble(1, maxHealth);
 				
-				insertStatement.executeUpdate();
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
 				
-				return GetPlayer();
+				return maxHealth;
 			}
 		});
 		
 	}
 
-
 	@Override
-	public PlayerModel UpdatePlayerLives(PlayerModel player) {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			public PlayerModel execute(Connection conn) throws SQLException {
+	public Integer UpdatePlayerLives(int lives) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
 				
 				insertStatement = conn.prepareStatement(
@@ -964,20 +1092,358 @@ public class DerbyDatabase implements IDatabase {
 					+ "where entities.id = 1"
 				);
 				
-				insertStatement.setInt(1, player.getLives());
+				insertStatement.setInt(1, lives);
 				
-				insertStatement.executeUpdate();
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
 				
-				return GetPlayer();
+				return lives;
 			}
 		});
 		
 	}
+	
+	@Override
+	public Double UpdateEnemyHealthById(int id, double health) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set health = ? "
+					+ "where entities.id = ?"
+				);
 
+				insertStatement.setDouble(1, health);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return health;
+			}
+		});
+	}
+	
+	public static void main(String[] args) {
+		DerbyDatabase db = new DerbyDatabase();
+		
+		System.out.println("Creating tables...");
+		Boolean isNewDatabase = db.createTables();
+		System.out.println(isNewDatabase);
+		
+		System.out.println("Loading initial data...");
+		db.loadInitialData(isNewDatabase);
+		
+		System.out.println("Success!");
+	}
+
+	@Override
+	public Double UpdateEnemyMaxHealthById(int id, double maxHealth) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set maxHealth = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setDouble(1, maxHealth);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return maxHealth;
+			}
+		});
+	}
+
+	@Override
+	public Integer UpdateEnemyLivesById(int id, int lives) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set lives = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setInt(1, lives);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return lives;
+			}
+		});
+	}
+
+	@Override
+	public Integer UpdateEnemyRoomById(int id, int roomId) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set currentRoom = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setInt(1, roomId);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return roomId;
+			}
+		});
+	}
+
+	@Override
+	public EnemyModel getEnemyById(int id) {
+		return executeTransaction(new Transaction<EnemyModel>() {
+			@Override
+			public EnemyModel execute(Connection conn) throws SQLException {
+				PreparedStatement getEnemyStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getEnemyStatement = conn.prepareStatement(
+							"select entities.* " +
+							" where entities.id = ?"
+					);
+					
+					EnemyModel enemy = null;
+					
+					resultSet = getEnemyStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						enemy = loadEnemy(resultSet);
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Enemy was not found in the entities table");
+					}
+					
+					return enemy;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getEnemyStatement);
+				}
+			}
+		});
+	}
 
 	@Override
 	public EntityInventory getPlayerInventory() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public String UpdateEnemyNameById(int id, String name) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set name = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setString(1, name);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return name;
+			}
+		});
+	}
+
+	@Override
+	public String UpdateEnemyDescriptionById(int id, String description) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set description = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setString(1, description);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return description;
+			}
+		});
+	}
+	
+	//--------Change Made By Andrew ----- It deletes the DB
+	@Override
+	public void deleteDb(String dbName, String dblocation) {
+		// Set Derby system home if specified
+       if (dblocation != null && !dblocation.isEmpty()) {
+           System.setProperty("derby.system.home", dblocation);
+       }
+       try {
+           // Load Derby driver
+           Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+          
+           // Derby uses a special shutdown URL to close the database
+           String shutdownUrl = "jdbc:derby:;shutdown=true";
+           try {
+               DriverManager.getConnection(shutdownUrl);
+           } catch (SQLException e) {
+               // Expected exception when shutting down Derby
+               if (!e.getSQLState().equals("08006")) {
+                   throw e;
+               }
+           }
+          
+           // Delete the directory path
+           String dbPath = (dblocation == null) ? dbName : dblocation + "/" + dbName;
+           deleteDirectory(new java.io.File(dbPath));
+          
+           System.out.println("Derby database '" + dbName + "' deleted successfully");
+          
+       } catch (ClassNotFoundException e) {
+           System.err.println("Derby driver not found: " + e.getMessage());
+       } catch (SQLException e) {
+           System.err.println("Error deleting Derby database: " + e.getMessage());
+       }
+   }
+	private static boolean deleteDirectory(File directory) {
+       if (directory.exists()) {
+           File[] files = directory.listFiles();
+           if (files != null) {
+               for (File file : files) {
+                   if (file.isDirectory()) {
+                       deleteDirectory(file);
+                   } else {
+                       file.delete();
+                   }
+               }
+           }
+           return directory.delete();
+       }
+       return false;
+   }
+	
+	//----Change Made by Andrew --- it gets the history from the DB and returns a list of strings for the printout stuff
+		public List<String> loadHistory(){
+			Connection conn = null;
+			PreparedStatement getHistoryStmt = null;
+			ResultSet resultSet = null;
+			List<String> history = new ArrayList<>();
+			try {
+				conn = connect();
+			getHistoryStmt = conn.prepareStatement(
+					"SELECT * FROM GameHistory"
+					);
+			resultSet = getHistoryStmt.executeQuery();
+			
+			
+			while(resultSet.next()) {
+				String rowinfo = resultSet.getString(1);
+			history.add(rowinfo);	
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}finally {
+				try {
+					if(resultSet != null) resultSet.close();
+					if(getHistoryStmt != null) getHistoryStmt.close();
+					if(conn != null) conn.close();
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return history;
+		}
+		
+		//---Change Made by Andrew --- adds a string to the List and to the db
+		public void addToHistory(String add) {
+			Connection conn = null;
+			PreparedStatement addHistory = null;
+			try {
+				conn = connect();
+				addHistory = conn.prepareStatement(
+						"INSERT INTO GameHistory(printout) "+
+					    "VALUES(?)"
+						);
+				addHistory.setString(1,add);
+				addHistory.executeUpdate();	
+				conn.commit();
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally {
+				try {
+					if(addHistory != null)addHistory.close();
+					if(conn != null)conn.close();
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 }

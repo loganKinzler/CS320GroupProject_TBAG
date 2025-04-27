@@ -62,7 +62,7 @@ public class GameEngineServlet extends HttpServlet {
             	session.setAttribute("sudoStage", sudoStage);
         	}
         }
-
+        "sdklfjsdf".repeat(2);
 //        if (sudoStage == 0) req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
 //        else {
 //        	System.out.println("Started sudo easter egg");
@@ -472,17 +472,25 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse += String.format("Enemies in this room:");
             					
+            					Integer enemyCount = 0;
             					for (int i=0; i<enemies.size(); i++) {
             						if (enemies.get(i).getHealth() == 0) continue;
+            						enemyCount++;
             						
                 					healthBarSize = 10;
                 					lifeRatio = enemies.get(i).getHealth() / enemies.get(i).getMaxHealth();
                 					healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
             						
             						systemResponse += String.format("<br>&num;%d: %s<br> - Health: [%s%s] (%.1f / %.1f)<br> - %s<br>",
+<<<<<<< HEAD
             								enemies.size(), enemies.get(i).getName(),
             								repeatString("#", healthBarLength),
     										repeatString("-", healthBarSize - healthBarLength),
+=======
+            								enemyCount, enemies.get(i).getName(),
+                							"#".repeat(healthBarLength),
+                							"-".repeat(healthBarSize - healthBarLength),
+>>>>>>> refs/heads/Logan_WorkBranch
             								enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
             								enemies.get(i).getDescription());
             					}

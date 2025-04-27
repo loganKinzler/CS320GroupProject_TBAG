@@ -23,6 +23,7 @@ import edu.ycp.cs320.TBAG.controller.RoomContainer;
 public class InitialData {
 	private static List<Item> itemTypes;
 	private static List<Weapon> weaponTypes;
+	private static List<String> slotNames;
 	
 	public static List<Item> getItemTypes() throws IOException {
 		InitialData.itemTypes = new ArrayList<Item>();
@@ -84,9 +85,31 @@ public class InitialData {
 		return InitialData.weaponTypes;
 	}
 	
+	public static List<String> getSlotNames() throws IOException {
+		InitialData.slotNames = new ArrayList<String>();
+		ReadCSV readSlots = new ReadCSV("slotNames.csv");
+		
+		try {
+			while (true) {
+				List<String> tuple = readSlots.next();
+				if (tuple == null) break;
+				
+				Iterator<String> i = tuple.iterator();
+				
+				String slot = i.next();
+				InitialData.slotNames.add(slot);
+			}
+		} finally {
+			readSlots.close();
+		}
+		
+		return InitialData.slotNames;
+	}
+	
 	public static Map<Integer, Inventory> getInventories() throws IOException {
 		if (InitialData.itemTypes == null) InitialData.getItemTypes();
 		if (InitialData.weaponTypes == null) InitialData.getWeaponTypes();
+		if (InitialData.slotNames == null) InitialData.getSlotNames();
 		
 		Map<Integer, Inventory> inventories = new HashMap<Integer, Inventory>();
 		ReadCSV readInventories = new ReadCSV("inventories.csv");
@@ -111,7 +134,16 @@ public class InitialData {
 					}
 				}
 				
-				inventories.get(inventorySource).AddItem(InitialData.itemTypes.get(Integer.parseInt(i.next()) - 1));
+				Item addItem = InitialData.itemTypes.get(Integer.parseInt(i.next()) - 1);
+				
+				// item could be a weapon
+				for (Weapon weapon : weaponTypes)
+					if (weapon.equals(addItem)) addItem = weapon;
+				
+				
+				inventories.get(inventorySource).AddItems(
+						addItem,
+						Integer.parseInt(i.next()));
 			}
 			
 			while (true) {
@@ -119,7 +151,7 @@ public class InitialData {
 				if (tuple == null) break;
 				
 				Iterator<String> i = tuple.iterator();
-				Integer inventorySource = 1 + (Integer.parseInt(i.next()) << 1);			
+				Integer inventorySource = 1 + (Integer.parseInt(i.next()) << 1);
 				EntityInventory slotInventory = (EntityInventory) inventories.get(inventorySource);
 
 				// if inventory doesn't exist
@@ -128,9 +160,23 @@ public class InitialData {
 					inventories.put(inventorySource, slotInventory);
 				}
 				
-				slotInventory.EquipWeapon(
-						i.next(),
-						weaponTypes.get(Integer.parseInt(i.next()) - 1));
+				Integer slotID = Integer.parseInt(i.next()) - 1;
+				String slotName = InitialData.slotNames.get(slotID);
+				
+				Integer weaponID = Integer.parseInt(i.next());
+				
+				// get weapon to put into slot
+				Weapon slotWeapon = null;
+				for (Weapon weapon : InitialData.weaponTypes)
+					if (weapon.GetID() == weaponID) slotWeapon = weapon;
+
+				// id doesn't correlate to a weapon
+				if (slotWeapon == null) {
+					System.out.println("Item ID: <" + weaponID.toString() +"> is not in the table weaponTypes.");
+					return null;
+				}
+				
+				slotInventory.EquipWeapon(slotName, slotWeapon);
 			}
 		} finally {
 			readInventories.close();

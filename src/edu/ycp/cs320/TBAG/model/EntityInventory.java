@@ -54,8 +54,7 @@ public class EntityInventory extends Inventory {
 		return this.items.containsKey(item);// weapon could potentially be in regular inventory
 	}
 
-	@Override
-	public HashMap<Item, Integer> GetItems() {
+	public HashMap<Item, Integer> GetAllItems() {
 		
 		@SuppressWarnings("unchecked")
 		HashMap<Item, Integer> totalItems = (HashMap<Item, Integer>) this.items.clone();

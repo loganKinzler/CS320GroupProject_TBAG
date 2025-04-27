@@ -14,7 +14,7 @@ public class ItemsByNameQuery {
 		database = db;
 	}
 	
-	public static List<Item> queryDatabase(String itemName) {
+	public static Item queryDatabase(String itemName) {
 		return database.ItemsByNameQuery(itemName);
 	}
 	
@@ -26,11 +26,9 @@ public class ItemsByNameQuery {
 		System.out.print("Item name to query: ");
 		String itemName = keyboard.next();
 		
-		List<Item> itemsWithName = ItemsByNameQuery.queryDatabase(itemName);
+		Item itemWithName = ItemsByNameQuery.queryDatabase(itemName);
 		
 		System.out.println("   NAME   | DESCRIPTION ");
-		for (Item item : itemsWithName) {
-			System.out.println(String.format("%10s|%s", item.GetName(), item.GetDescription()));
-		}
+		System.out.println(String.format("%10s|%s", itemWithName.GetName(), itemWithName.GetDescription()));
 	}
 }

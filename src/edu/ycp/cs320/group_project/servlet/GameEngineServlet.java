@@ -428,8 +428,8 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
             					
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
-                    					rooms.getShortRoomDescription( db.GetPlayer().getCurrentRoomIndex() ),
-                    					rooms.getLongRoomDescription( db.GetPlayer().getCurrentRoomIndex() ));
+                    					rooms.get(db.GetPlayer().getCurrentRoomIndex()).getShortRoomDescription(),
+                    					rooms.get(db.GetPlayer().getCurrentRoomIndex()).getLongRoomDescription());
             				break;
             				
             				//  [######--]
@@ -456,7 +456,7 @@ public class GameEngineServlet extends HttpServlet {
                 				
             					//TODO: Use this method once set up
 //            					ArrayList<EnemyModel> enemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-            					ArrayList<EnemyModel> enemies = rooms.getEnemiesinRoom( player.getCurrentRoomIndex() );
+            					ArrayList<EnemyModel> enemies = db.GetEnemiesInRoom(db.GetPlayer().getCurrentRoomIndex());
             					systemResponse = String.format("Describing enemies...<br><br>");
             					
             					// remove dead enemies
@@ -504,9 +504,9 @@ public class GameEngineServlet extends HttpServlet {
             						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
             						
             						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
-            								rooms.get(player.getCurrentRoomIndex()).getShortRoomDescription()
-            									connections.get(player.getCurrentRoomIndex()).getConnectedRoom(direction)
-            								));
+            								rooms.get(player.getCurrentRoomIndex()).getShortRoomDescription());
+            									
+            								
             					}
             				break;
             				

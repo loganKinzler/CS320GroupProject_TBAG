@@ -617,7 +617,7 @@ public class GameEngineServlet extends HttpServlet {
             			
             			//TODO: Use this method once set up
 //            			ArrayList<EnemyModel> roomEnemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-            			ArrayList<EnemyModel> roomEnemies = rooms.getRoom(player.getCurrentRoomIndex()).getAllEnemies();
+            			ArrayList<EnemyModel> roomEnemies = db.GetEnemiesInRoom(player.getCurrentRoomIndex());
             			ArrayList<EntityModel> fighters = new ArrayList<EntityModel>();
             			fighters.add(db.GetPlayer());
             			fighters.addAll(roomEnemies);

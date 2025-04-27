@@ -16,6 +16,8 @@ import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.model.Room;
+import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.Inventory;
 
@@ -36,17 +38,18 @@ public class DerbyDatabase implements IDatabase {
 	
 	
 	// OUR QUERIES / INSERTS GO HERE
-	public List<Item> ItemsByNameQuery(String itemName) {
-		return executeTransaction(new Transaction<List<Item>>() {
+	@Override
+	public Item ItemsByNameQuery(String itemName) {
+		return executeTransaction(new Transaction<Item>() {
 			@Override
-			public List<Item> execute(Connection conn) throws SQLException {
+			public Item execute(Connection conn) throws SQLException {
 				PreparedStatement stmt = null;
 				ResultSet resultSet = null;
 				
 				try {
 					// retreive all attributes from both Books and Authors tables
 					stmt = conn.prepareStatement(
-							"select itemTypes.* " +
+						"select itemTypes.* " +
 							" from itemTypes " + 
 							" where itemTypes.name = ?"
 					);
@@ -66,16 +69,18 @@ public class DerbyDatabase implements IDatabase {
 						
 						// create new Author object
 						// retrieve attributes from resultSet starting with index 1
-						Item item = loadItem(resultSet, 2, itemID);
+						Item item = loadItem(resultSet, 1);
 						result.add(item);
 					}
 					
 					// check if the title was found
 					if (!found) {
 						System.out.println("<" + itemName + "> was not found in the items table");
+						return null;
 					}
 					
-					return result;
+					conn.commit();
+					return result.getFirst();
 				} finally {
 					DBUtil.closeQuietly(resultSet);
 					DBUtil.closeQuietly(stmt);
@@ -84,7 +89,7 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	
+	@Override
 	public Integer GetItemIDQuery(String itemName, String itemDescription) {
 		return executeTransaction(new Transaction<Integer>() {
 			@Override
@@ -113,6 +118,8 @@ public class DerbyDatabase implements IDatabase {
 					
 					if (resultSet.next()) {
 						found = true;
+						
+						conn.commit();
 						return resultSet.getInt(1);
 					}
 					
@@ -127,16 +134,448 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
+	@Override
+	public Inventory InventoryBySourceID(Integer sourceID) {
+		return executeTransaction(new Transaction<Inventory>() {
+			@Override
+			public Inventory execute(Connection conn) throws SQLException {
+				PreparedStatement equippedWeaponsStmt = null;
+				ResultSet equippedWeaponsResults = null;
+				
+				PreparedStatement onlyItemsStmt = null;
+				ResultSet onlyItemsResults = null;
+				
+				PreparedStatement onlyWeaponsStmt = null;
+				ResultSet onlyWeaponsResults = null;
+				
+				List<Item> result = new ArrayList<Item>();
+				Inventory resultInventory = new EntityInventory();
+				
+				try {
+					
+					// entity inventory weapon slots
+					if (sourceID % 2 == 1) {		
+						
+						// weaponSlots
+						equippedWeaponsStmt = conn.prepareStatement(
+								"select itemTypes.item_id, itemTypes.name, itemTypes.description, weaponTypes.damage, slotNames.slot_name" +
+								"	from weaponSlots" +
+								"		inner join weaponTypes on weaponTypes.item_id = weaponSlots.item_id" +
+								"		inner join itemTypes on itemTypes.item_id = weaponSlots.item_id" +
+								"		inner join slotNames on slotNames.slot_id = weaponSlots.slot_id" +
+								"	where weaponSlots.inventory_source = ?"
+						);
+						
+						equippedWeaponsStmt.setInt(1, sourceID);
+						equippedWeaponsResults = equippedWeaponsStmt.executeQuery();
+						
+						while (equippedWeaponsResults.next()) {
+							Weapon resultWeapon = loadWeapon(equippedWeaponsResults, 1);
+							((EntityInventory) resultInventory).EquipWeapon(equippedWeaponsResults.getString(5), resultWeapon);
+						}
+						
+					} else {
+						resultInventory = new RoomInventory();
+					}
+					
+					
+					// items (without weapons)
+					onlyItemsStmt = conn.prepareStatement(
+						"select itemTypes.item_id, itemTypes.name, itemTypes.description, inventories.item_quantity" +
+								"	from inventories, itemTypes" +
+								"	where inventories.inventory_source = ?" +
+								"		and inventories.item_id = itemTypes.item_id" +
+								"	and not exists (" +
+								"		select 1" +
+								"			from weaponTypes" +
+								"			where inventories.item_id = weaponTypes.item_id)"
+					);
+
+					onlyItemsStmt.setInt(1, sourceID);
+					onlyItemsResults = onlyItemsStmt.executeQuery();
+
+					while (onlyItemsResults.next()) {
+						Item resultItem = loadItem(onlyItemsResults, 1);
+						resultInventory.AddItems(resultItem, onlyItemsResults.getInt(4));
+					}
+					
+					
+					// weapons (without base items)
+					onlyWeaponsStmt = conn.prepareStatement(
+						"select weaponTypes.item_id, itemTypes.name, itemTypes.description, weaponTypes.damage, inventories.item_quantity" +
+						"		from inventories," +
+						"			weaponTypes join itemTypes on itemTypes.item_id = weaponTypes.item_id" +
+						"		where inventories.inventory_source = ?" +
+						"			and inventories.item_id = weaponTypes.item_id"
+					);
+
+					onlyWeaponsStmt.setInt(1, sourceID);
+					onlyWeaponsResults = onlyWeaponsStmt.executeQuery();
+					
+					while (onlyWeaponsResults.next()) {
+						Weapon resultWeapon = loadWeapon(onlyWeaponsResults, 1);
+						resultInventory.AddItems(resultWeapon, onlyWeaponsResults.getInt(5));
+					}
+					
+					
+					
+					return resultInventory;
+				} finally {
+					
+					DBUtil.closeQuietly(equippedWeaponsStmt);
+					DBUtil.closeQuietly(equippedWeaponsResults);
+					
+					DBUtil.closeQuietly(onlyItemsStmt);
+					DBUtil.closeQuietly(onlyItemsResults);
+					
+					DBUtil.closeQuietly(onlyWeaponsStmt);
+					DBUtil.closeQuietly(onlyWeaponsResults);
+				}
+			}
+		});
+	}
+	
+	@Override
+	public void UpdateInventoryBySourceID(Integer sourceID, Inventory updateInventory) {
+		executeTransaction(new Transaction<Boolean>() {
+			@Override
+			public Boolean execute(Connection conn) throws SQLException {
+				PreparedStatement slotNamesStmt = null;
+				ResultSet slotNamesResults = null;
+
+				PreparedStatement databaseSlotsStmt = null;
+				ResultSet databaseSlotsResults = null;
+				
+				PreparedStatement slotsUpdateStmt = null;
+				PreparedStatement slotsInsertStmt = null;
+				PreparedStatement slotsDeleteStmt = null;
+				PreparedStatement slotsShiftStmt = null;
+				
+				PreparedStatement slotsLastStmt = null;
+				ResultSet slotsLastResults = null;
+					
+				// update weapon slots (if updateInventory is an entityInventory)
+				if (sourceID % 2 == 1) {
+					try {
+						slotNamesStmt = conn.prepareStatement(
+							"select slotNames.slot_id, slotNames.slot_name from slotNames"
+						);
+						
+						slotNamesResults = slotNamesStmt.executeQuery();
+						
+						while (slotNamesResults.next()) {
+							Integer slotID = slotNamesResults.getInt(1);
+							String slotName = slotNamesResults.getString(2);
+							
+							// determine existence combination (database and updateInventory)
+							databaseSlotsStmt = conn.prepareStatement(
+								"select weaponSlots.slot_id, weaponSlots.item_id" +
+									"	from weaponSlots" +
+									"	where weaponSlots.inventory_source = ?" +
+									"		and weaponSlots.slot_id = ?"
+							);
+							
+							databaseSlotsStmt.setInt(1, sourceID);
+							databaseSlotsStmt.setInt(2, slotID);
+						
+							databaseSlotsResults = databaseSlotsStmt.executeQuery();
+							
+							Boolean existsInDatabase = databaseSlotsResults.next();
+							Boolean existsInInventory = ((EntityInventory) updateInventory).WeaponSlotIsFull(slotName);
+							
+							Integer inventoryItemID = null;
+							if (existsInInventory) inventoryItemID = ((EntityInventory) updateInventory).GetWeapon(slotName).GetID();
+							
+							Integer databaseSlotID = null;
+							Integer databaseItemID = null;
+							if (existsInDatabase) {
+								databaseSlotID = databaseSlotsResults.getInt(1);
+								databaseItemID = databaseSlotsResults.getInt(2);
+							}
+							
+							
+							// item isn't in database nor inventory (nothing to do, continue)
+							if (!(existsInDatabase || existsInInventory)) continue;
+							
+							// both slots are full
+							else if (existsInDatabase && existsInInventory) {
+								if (inventoryItemID == databaseItemID) continue;
+								
+								// the database weapon is different than the inventory (update it)
+								slotsUpdateStmt = conn.prepareStatement(
+									"update weaponSlots" +
+										"	set weaponSlots.item_id = ?" +
+										"	where weaponSlots.inventory_source = ?" +
+										"	and weaponSlots.slot_id = ?"
+								);
+									
+								slotsUpdateStmt.setInt(1, inventoryItemID);
+								slotsUpdateStmt.setInt(2, sourceID);
+								slotsUpdateStmt.setInt(3, slotID);
+								slotsUpdateStmt.executeUpdate();
+							}
+							
+							
+							// exists in inventory, but not database (insert it)
+							else if (!existsInDatabase && existsInInventory) {
+								slotsInsertStmt = conn.prepareStatement(
+									"insert into weaponSlots (inventory_source, slot_id, item_id)" +
+										"	values (?, ?, ?)"
+								);
+									
+								slotsInsertStmt.setInt(1, sourceID);
+								slotsInsertStmt.setInt(2, slotID);
+								slotsInsertStmt.setInt(3, inventoryItemID);
+								slotsInsertStmt.executeUpdate();
+							}
+							
+							// exists in database, but not inventory (remove it)
+							else if (existsInDatabase && !existsInInventory) {
+								
+								// get num items in all inventories
+								slotsLastStmt = conn.prepareStatement(
+									"select max(inventories.inventory_id) from inventories"
+								);
+								
+								slotsLastResults = slotsLastStmt.executeQuery();
+								
+								Integer numSlots = null;
+								if (slotsLastResults.next()) numSlots = slotsLastResults.getInt(1);
+								
+								
+								// run through all items that are above and shift them down 1
+								// this will overwrite the current item and place the duplicate into the last slot
+								// which will then be removed from database
+								for (int i=databaseSlotID; i<numSlots; i++) {
+									slotsShiftStmt = conn.prepareStatement(
+										"update weaponSlots" +
+											"	set weaponSlots.inventory_source = (" +
+											"		select slots.inventory_source" +
+											"			from weaponSlots as slots" +
+											"			where slots.slot_num = weaponSlots.slot_num + 1), " +
+											
+											"	weaponSlots.slot_id = (" +
+											"		select slots.slot_id" +
+											"			from weaponSlots as slots" +
+											"			where slots.slot_num = weaponSlots.slot_num + 1), " +
+											
+											"	weaponSlots.item_id = (" +
+											"		select slots.item_id" +
+											"			from weaponSlots as slots" +
+											"			where slots.slot_num = weaponSlots.slot_num + 1)" +
+											"	where weaponSlots.slot_num = ?"
+									);
+
+									slotsShiftStmt.setInt(1, i);
+									slotsShiftStmt.executeUpdate();
+								}
+								
+								// delete the slot
+								slotsDeleteStmt = conn.prepareStatement(
+									"delete from weaponSlots" +
+										"	where weaponSlots.slot_num = (" +
+										"		select max(slots.slot_num) from weaponSlots as slots)"
+								);
+								
+								slotsDeleteStmt.executeUpdate();
+							}
+						}
+					} catch (Exception e) {
+						throw e;
+						
+					} finally {
+						DBUtil.closeQuietly(slotNamesStmt);
+						DBUtil.closeQuietly(slotNamesResults);
+
+						DBUtil.closeQuietly(databaseSlotsStmt);
+						DBUtil.closeQuietly(databaseSlotsResults);
+						
+						DBUtil.closeQuietly(slotsUpdateStmt);
+						DBUtil.closeQuietly(slotsInsertStmt);
+						DBUtil.closeQuietly(slotsDeleteStmt);
+						DBUtil.closeQuietly(slotsShiftStmt);
+					}
+				}
+				
+				
+				// repeat for rest of inventory
+				PreparedStatement invStmt = null;
+				ResultSet invResults = null;
+
+				PreparedStatement databaseInvStmt = null;
+				ResultSet databaseInvResults = null;
+				
+				PreparedStatement invUpdateStmt = null;
+				PreparedStatement invInsertStmt = null;
+				PreparedStatement invDeleteStmt = null;
+				PreparedStatement invShiftStmt = null;
+				
+				PreparedStatement lastInvStmt = null;
+				ResultSet lastInvResults = null;
+				
+				try {
+					// get all items
+					invStmt = conn.prepareStatement(
+						"select itemTypes.* from itemTypes"
+					);
+					
+					invResults = invStmt.executeQuery();
+					
+					// run through all items 
+					while (invResults.next()) {
+						Item item = loadItem(invResults, 1);
+						
+						databaseInvStmt = conn.prepareStatement(
+							"select inventories.inventory_id, inventories.item_quantity" +
+								"	from inventories" +
+								"	where inventories.inventory_source = ?" +
+								"	and inventories.item_id = ?"
+						);
+						
+						databaseInvStmt.setInt(1, sourceID);
+						databaseInvStmt.setInt(2, item.GetID());
+						databaseInvResults = databaseInvStmt.executeQuery();
+						
+						
+						Boolean existsInDatabase = databaseInvResults.next();
+						Boolean existsInInventory = updateInventory.ContainsItem(item);
+						
+						Integer inventoryItemQuantity = updateInventory.GetItemAmount(item);
+						
+						Integer databaseInventoryID = null;
+						Integer databaseItemQuantity = null;
+						if (existsInDatabase) {
+							databaseInventoryID = databaseInvResults.getInt(1);
+							databaseItemQuantity = databaseInvResults.getInt(2);
+						}
+						
+						
+						// item isn't in database nor inventory (nothing to do, continue)
+						if (!existsInDatabase && !existsInInventory) continue;
+						
+						// both slots are full
+						else if (existsInDatabase && existsInInventory) {
+							
+							// the database quantity is different than the inventory (update it)
+							if (inventoryItemQuantity == databaseItemQuantity) continue;
+							
+							invUpdateStmt = conn.prepareStatement(
+								"update inventories" +
+									"	set inventories.item_quantity = ?" +
+									"	where inventories.inventory_source = ?" +
+									"		and inventories.item_id = ?"
+							);
+								
+							invUpdateStmt.setInt(1, inventoryItemQuantity);
+							invUpdateStmt.setInt(2, sourceID);
+							invUpdateStmt.setInt(3, item.GetID());
+							invUpdateStmt.executeUpdate();
+						}
+						
+						// exists in inventory, but not database (insert it)
+						else if (!existsInDatabase && existsInInventory) {
+							
+							invInsertStmt = conn.prepareStatement(
+								"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)"
+							);
+								
+							invInsertStmt.setInt(1, sourceID);
+							invInsertStmt.setInt(2, item.GetID());
+							invInsertStmt.setInt(3, inventoryItemQuantity);
+							invInsertStmt.executeUpdate();
+						}
+						
+						// exists in database, but not inventory (remove it)
+						else if (existsInDatabase && !existsInInventory) {
+							
+							// get num items in all inventories
+							lastInvStmt = conn.prepareStatement(
+								"select max(inventories.inventory_id) from inventories"
+							);
+							
+							lastInvResults = lastInvStmt.executeQuery();
+							
+							Integer numInvs = null;
+							if (lastInvResults.next()) numInvs = lastInvResults.getInt(1);
+							
+							
+							// run through all items that are above and shift them down 1
+							// this will overwrite the current item and place the duplicate into the last slot
+							// which will then be removed from database
+							for (int i=databaseInventoryID; i<numInvs; i++) {
+								invShiftStmt = conn.prepareStatement(
+									"update inventories" +
+										"	set inventories.inventory_source = (" +
+										"		select inv.inventory_source" +
+										"			from inventories as inv" +
+										"			where inv.inventory_id = inventories.inventory_id + 1), " +
+										
+										"	inventories.item_id = (" +
+										"		select inv.item_id" +
+										"			from inventories as inv" +
+										"			where inv.inventory_id = inventories.inventory_id + 1), " +
+										
+										"	inventories.item_quantity = (" +
+										"		select inv.item_quantity" +
+										"			from inventories as inv" +
+										"			where inv.inventory_id = inventories.inventory_id + 1)" +
+										"	where inventories.inventory_id = ?"
+								);
+
+								invShiftStmt.setInt(1, i);
+								invShiftStmt.executeUpdate();
+							}
+							
+							// delete the slot
+							invDeleteStmt = conn.prepareStatement(
+								"delete from inventories" +
+									"	where inventories.inventory_id = (" +
+									"		select max(inv.inventory_id) from inventories as inv)"
+							);
+							
+							invDeleteStmt.executeUpdate();
+						}
+					}
+				} catch (Exception e) {
+					throw e;
+				
+				} finally {
+					DBUtil.closeQuietly(invStmt);
+					DBUtil.closeQuietly(invResults);
+
+					DBUtil.closeQuietly(databaseInvStmt);
+					DBUtil.closeQuietly(databaseInvResults);
+					
+					DBUtil.closeQuietly(invUpdateStmt);
+					DBUtil.closeQuietly(invInsertStmt);
+					DBUtil.closeQuietly(invDeleteStmt);
+					DBUtil.closeQuietly(invShiftStmt);
+				}
+				
+				return true;
+			}
+		});
+	}
+	
 	// END OF QUERIES / INSERTS
 
 	
 	// OUR CLASS LOADING METHODS GO HERE
-	private Item loadItem(ResultSet resultSet, int index, int itemID) throws SQLException {
+	private Item loadItem(ResultSet resultSet, int index) throws SQLException {
 		return new Item(
-			itemID,
+			resultSet.getInt(index++),
 			resultSet.getString(index++),
 			resultSet.getString(index++)
 		);
+	}
+	
+	private Weapon loadWeapon(ResultSet resultSet, int index) throws SQLException {
+		return new Weapon(
+				resultSet.getInt(index++),
+				resultSet.getString(index++),
+				resultSet.getString(index++),
+				resultSet.getDouble(index++)
+			);
 	}
 	
 	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
@@ -150,7 +589,8 @@ public class DerbyDatabase implements IDatabase {
 		PlayerModel toOut = new PlayerModel(health, lives, currentRoom);
 		toOut.setMaxHealth(maxHealth);
 		
-		//TODO: Use sql controller to get player inventory
+		EntityInventory playerInventory = this.GetPlayerInventory();
+		toOut.setInventory(playerInventory);
 		
 		return toOut;
 	}
@@ -168,7 +608,8 @@ public class DerbyDatabase implements IDatabase {
 		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
 		toOut.setMaxHealth(maxHealth);
 		
-		//TODO: Use sql controller to get enemy inventory
+		EntityInventory enemyInventory = this.GetEnemyInvetoryByID(1 + (resultSet.getInt(1) << 1));// im assuming 1 is the enemy id
+		toOut.setInventory(enemyInventory);
 		
 		return toOut;
 	}
@@ -321,8 +762,8 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement inventoryStmt = conn.prepareStatement(
 					"create table inventories (" +
 							"   inventory_id int primary key" +
-							"       generated always as identity (start with 2, increment by 1), " + 
-							"	inventory_source int unique, " + 
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"	inventory_source int, " + 
 							"   item_id int, " + 
 							"		constraint inv_itemID foreign key (item_id) references itemTypes(item_id), " + 
 							"	item_quantity int" +
@@ -346,32 +787,60 @@ public class DerbyDatabase implements IDatabase {
 				
 				
 				
+				// SLOT NAMES
+				PreparedStatement slotNamesStmt = conn.prepareStatement(
+					"create table slotNames (" +
+							"   slot_id int primary key" +
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"	slot_name varchar(16)" +
+					")"
+				);
+				
+				
+				try {
+					slotNamesStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(slotNamesStmt);
+				}
+				
+				
+				
 				// WEAPON SLOTS
 				PreparedStatement weaponSlotsStmt = conn.prepareStatement(
-						"create table weaponSlots (" +
-								"   slot_id int primary key" +
-								"       generated always as identity (start with 1, increment by 1), " + 
-								"	inventory_source int, " +  
-								"   slot_name varchar(16), " + 
-								"	weapon_id int, " + 
-								"		constraint weaponID foreign key (weapon_id) references itemTypes(item_id)" +
-						")"
-					);
+					"create table weaponSlots (" +
+							"   slot_num int primary key" +
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"	inventory_source int, " +
+							"   slot_id int, " +
+							"		constraint slotID foreign key (slot_id) references slotNames(slot_id), " +
+							"	item_id int, " + 
+							"		constraint weaponID foreign key (item_id) references itemTypes(item_id)" +
+					")"
+				);
 					
-					try {
-						weaponSlotsStmt.executeUpdate();
+				try {
+					weaponSlotsStmt.executeUpdate();
 						
-					} catch (SQLException sql) {
-						if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-							isNewDatabase = false;
-						else throw sql;
-						
-					} catch (Exception e) {
-						throw e;
-						
-					} finally {
-						DBUtil.closeQuietly(weaponSlotsStmt);
-					}
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(weaponSlotsStmt);
+				}
 				
 				
 //				// ROOMS
@@ -464,6 +933,7 @@ public class DerbyDatabase implements IDatabase {
 		executeTransaction(new Transaction<Boolean>() {
 			@Override
 			public Boolean execute(Connection conn) throws SQLException {
+				List<String> slotList;
 				List<Item> itemList;
 				List<Weapon> weaponList;
 				Map<Integer, Inventory> inventoryMap;
@@ -471,6 +941,7 @@ public class DerbyDatabase implements IDatabase {
 				List<EnemyModel> enemies;
 				
 				try {
+					slotList = InitialData.getSlotNames();
 					itemList = InitialData.getItemTypes();
 					weaponList = InitialData.getWeaponTypes();
 					inventoryMap = InitialData.getInventories();
@@ -485,7 +956,8 @@ public class DerbyDatabase implements IDatabase {
 				
 				// if database already exists, reset it first
 				if (!isNewDatabase) {
-					resetTable("weaponSlots", "slot_id", 2);// reset dependencies first (inventory_source)
+					resetTable("weaponSlots", "slot_num", 1);// reset dependencies first (inventory_source)
+					resetTable("slotNames", "slot_id", 1);// reset dependencies first (slot_id)
 					resetTable("inventories", "inventory_id", 2);
 					resetTable("weaponTypes", "weapon_id", 1);
 					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
@@ -534,12 +1006,35 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 				
+				
+				// INSERT (WEAPON) SLOT NAMES
+				PreparedStatement insertSlot = conn.prepareStatement(
+					"insert into slotNames (slot_name) values (?)"
+				);
+				
+				try {
+					for (String name : slotList) {
+						insertSlot.setString(1, name);
+						insertSlot.addBatch();
+					}
+
+					insertSlot.executeBatch();
+					
+				} catch(Exception e) { 
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertSlot);
+				}
+				
+				
+				
 				// INSERT INVENTORIES
 				PreparedStatement insertInventory = conn.prepareStatement(
 						"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)");
 				
 				PreparedStatement insertWeaponSlot = conn.prepareStatement(
-						"insert into weaponSlots (inventory_source, slot_name, weapon_id) values (?, ?, ?)");
+						"insert into weaponSlots (inventory_source, slot_id, item_id) values (?, ?, ?)");
 				
 				try {
 					for (Integer inventory_source : inventoryMap.keySet()) {
@@ -561,9 +1056,9 @@ public class DerbyDatabase implements IDatabase {
 						if (inventory_source % 2 == 1) {
 							Map<String, Weapon> weaponSlots = ((EntityInventory) inventoryMap.get(inventory_source)).GetWeaponsAsSlots();
 							
-							for (String slot : weaponSlots.keySet()) {									
+							for (String slot : weaponSlots.keySet()) {
 								insertWeaponSlot.setInt(1, inventory_source);
-								insertWeaponSlot.setString(2, slot);
+								insertWeaponSlot.setInt(2, slotList.indexOf(slot) + 1);
 								insertWeaponSlot.setInt(3, weaponSlots.get(slot).GetID());
 								insertWeaponSlot.addBatch();
 							}
@@ -680,7 +1175,7 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					// retreive all attributes from both Books and Authors tables
 					getEnemiesStatement = conn.prepareStatement(
-							"select entities* " +
+							"select entities.* " +
 							" where entities.id > 1 "
 							+ "and entities.currentRoom = ?"
 					);
@@ -808,8 +1303,32 @@ public class DerbyDatabase implements IDatabase {
 
 
 	@Override
-	public EntityInventory getPlayerInventory() {
-		// TODO Auto-generated method stub
-		return null;
+	public EntityInventory GetPlayerInventory() {
+		return (EntityInventory) this.InventoryBySourceID(2);
+	}
+
+	@Override
+	public void UpdatePlayerInventory(EntityInventory playerInventory) {
+		this.UpdateInventoryBySourceID(2, playerInventory);
+	}
+	
+	@Override
+	public EntityInventory GetEnemyInvetoryByID(Integer enemyID) {
+		return (EntityInventory) this.InventoryBySourceID((enemyID << 1) + 1);
+	}
+
+	@Override
+	public RoomInventory GetRoomInventoryByID(Integer roomID) {
+		return (RoomInventory) this.InventoryBySourceID(roomID << 1);
+	}
+
+	@Override
+	public void UpdateEnemyInventory(Integer enemyID, EntityInventory enemyInventory) {
+		this.UpdateInventoryBySourceID((enemyID << 1) + 1, enemyInventory);
+	}
+
+	@Override
+	public void UpdateRoomInventory(Integer roomID, RoomInventory roomInventory) {
+		this.UpdateInventoryBySourceID(roomID << 1, roomInventory);
 	}
 }

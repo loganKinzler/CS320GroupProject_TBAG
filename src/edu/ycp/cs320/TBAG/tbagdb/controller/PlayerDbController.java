@@ -22,7 +22,7 @@ public class PlayerDbController {
 		return player.getCurrentRoomIndex();
 	}
 	public EntityInventory getPlayerInventory(IDatabase db) {
-		EntityInventory inv = db.getPlayerInventory();
+		EntityInventory inv = db.GetPlayerInventory();
 		return inv;
 	}
 }

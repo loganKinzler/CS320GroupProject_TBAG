@@ -17,7 +17,7 @@ public interface IDatabase {
 	
 	public abstract Inventory InventoryBySourceID(Integer sourceID);
 	public abstract EntityInventory GetPlayerInventory();
-	public abstract EntityInventory GetEnemyInvetoryByID(Integer enemyID);
+	public abstract EntityInventory GetEnemyInventoryByID(Integer enemyID);
 	public abstract RoomInventory GetRoomInventoryByID(Integer roomID);
 
 	public abstract void UpdateInventoryBySourceID(Integer sourceID, Inventory updateInventory);

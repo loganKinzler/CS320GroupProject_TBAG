@@ -608,7 +608,7 @@ public class DerbyDatabase implements IDatabase {
 		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
 		toOut.setMaxHealth(maxHealth);
 		
-		EntityInventory enemyInventory = this.GetEnemyInvetoryByID(1 + (resultSet.getInt(1) << 1));// im assuming 1 is the enemy id
+		EntityInventory enemyInventory = this.GetEnemyInventoryByID(1 + (resultSet.getInt(1) << 1));
 		toOut.setInventory(enemyInventory);
 		
 		return toOut;
@@ -1313,7 +1313,7 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	@Override
-	public EntityInventory GetEnemyInvetoryByID(Integer enemyID) {
+	public EntityInventory GetEnemyInventoryByID(Integer enemyID) {
 		return (EntityInventory) this.InventoryBySourceID((enemyID << 1) + 1);
 	}
 

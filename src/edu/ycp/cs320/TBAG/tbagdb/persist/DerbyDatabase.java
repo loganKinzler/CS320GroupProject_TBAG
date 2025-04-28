@@ -89,7 +89,7 @@ public class DerbyDatabase implements IDatabase {
 					}
 					
 					conn.commit();
-					return result.getFirst();
+					return result.get(0);
 				} finally {
 					DBUtil.closeQuietly(resultSet);
 					DBUtil.closeQuietly(stmt);

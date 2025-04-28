@@ -320,7 +320,7 @@ public class GameEngineServlet extends HttpServlet {
             			systemResponse += String.format("Picked up %d %s<br>",
             					roomQuantity, params.get(1));
             			
-        				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+        				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
         				db.UpdatePlayerInventory(player.getInventory());
             		break;
             		
@@ -353,7 +353,7 @@ public class GameEngineServlet extends HttpServlet {
                     					itemQuantity, playerItem.GetName());
             				}
             				
-            				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+            				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
             				db.UpdatePlayerInventory(player.getInventory());
             				break;
             			}

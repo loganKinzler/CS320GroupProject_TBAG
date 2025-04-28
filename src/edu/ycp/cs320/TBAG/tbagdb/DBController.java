@@ -1,10 +1,12 @@
 package edu.ycp.cs320.TBAG.tbagdb;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class DBController {
@@ -27,7 +29,7 @@ public class DBController {
 		return player.getCurrentRoomIndex();
 	}
 	public static EntityInventory getPlayerInventory(IDatabase db) {
-		EntityInventory inv = db.getPlayerInventory();
+		EntityInventory inv = db.GetPlayerInventory();
 		return inv;
 	}
 	
@@ -96,5 +98,16 @@ public class DBController {
 	}
 	public static void setEnemyDescriptionById(IDatabase db, int id, String description) {
 		db.UpdateEnemyDescriptionById(id, description);
+	}
+	
+	//Room methods
+	public static List<Room> getRooms(IDatabase db) {
+		return db.getRooms();
+	}
+	
+	
+	//Connections methods
+	public static List<Room> getConnections(IDatabase db){
+		return db.getConnections();
 	}
 }

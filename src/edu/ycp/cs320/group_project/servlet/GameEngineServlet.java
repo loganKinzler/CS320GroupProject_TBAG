@@ -2,6 +2,7 @@ package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +26,10 @@ import edu.ycp.cs320.TBAG.model.Action;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
@@ -108,9 +111,7 @@ public class GameEngineServlet extends HttpServlet {
         
         //Check if player current room is in session history, set if yes, initialize if not
         PlayerModel playerModel = (PlayerModel)session.getAttribute("player");
-        if (playerModel == null) {
-        	playerModel = db.GetPlayer();
-        }
+        playerModel = db.GetPlayer();
         
         PlayerController player = new PlayerController(playerModel);
         
@@ -122,11 +123,24 @@ public class GameEngineServlet extends HttpServlet {
         	session.setAttribute("foundCommands", foundCommands);
         }
 
-        RoomContainer rooms = (RoomContainer)session.getAttribute("rooms");
-        if (rooms == null) {
-        	rooms = new RoomContainer();
-        	rooms.createHardcodedRooms();
+        List<Room> rooms = new ArrayList<>();
+        //Room dummy = new Room();
+       // rooms.add(dummy);
+        List<Room> connections = new ArrayList<>();
+        //connections.add(dummy);
+//        rooms = (List<Room>)session.getAttribute("rooms");
+        rooms = db.getRooms();
+        connections = db.getConnections();
+        
+        for(int i = 0; i<rooms.size(); i++) {
+        	rooms.get(i).setConnections(connections.get(i).getHashMap());
         }
+
+//        if (rooms == null) {
+//        	//rooms.createHardcodedRooms();
+//        }
+        
+        
         
         if (session.getAttribute("sudoStage") == null) {
         	session.setAttribute("sudoStage", 0);
@@ -222,8 +236,21 @@ public class GameEngineServlet extends HttpServlet {
             		case "move":
             			if (!foundCommands.contains("move")) foundCommands.add("move");
             			
-            			Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
-            					params.get(0));
+            			//Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
+            					//params.get(0));
+            			//System.out.println(player.getCurrentRoomIndex());
+            			//boolean doesconnectionexist = rooms.get(player.getCurrentRoomIndex()).doesKeyExist(params.get(0));
+            			Integer nextRoom = null;
+            			
+            			
+            				nextRoom = rooms.get(player.getCurrentRoomIndex() - 1).getConnectedRoom(params.get(0));
+            				//for now the room will be null if it doesn't exist or is locked
+            				if(nextRoom <= 0) {
+            					nextRoom = null;
+            				}
+            			
+            			
+            			
             			
             			if (nextRoom == null) {
             				systemResponse = String.format("The current room doesn't have a room %s of it.",
@@ -232,12 +259,16 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			player.setCurrentRoomIndex(nextRoom);
+            			System.out.println(player.getCurrentRoomIndex());
             			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
             			
+            			//These used to be offset by 1
+            			String short_description = rooms.get(nextRoom - 1).getShortRoomDescription();
+            			String long_description = rooms.get(nextRoom - 1).getLongRoomDescription();
             			systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
             					params.get(0),
-            					rooms.getShortRoomDescription(nextRoom),
-            					rooms.getLongRoomDescription(nextRoom));
+            					short_description,
+            					long_description);
             		break;
             		
             		case "use":
@@ -261,32 +292,36 @@ public class GameEngineServlet extends HttpServlet {
             				
             				
             				Set<Item> roomInventoryKeys = new HashSet<Item>();
-            				roomInventoryKeys.addAll(rooms.getRoomInventory(player.getCurrentRoomIndex()).GetItems().keySet());
-            				
+            				roomInventoryKeys.addAll(rooms.get(player.getCurrentRoomIndex() - 1).getItems().keySet());            			
             				if (roomInventoryKeys.isEmpty()){
                 				systemResponse = String.format("This room does not contain any items to pickup.<br>");
                 				break;
                 			}
             				
             				for (Item roomItem : roomInventoryKeys) {
-            					Integer itemQuantity = player.PickUp(rooms, roomItem, pickupQuantity);
+            					Integer itemQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex() - 1), roomItem, pickupQuantity);
                     			systemResponse += String.format("Picked up %d %s<br>",
                     					itemQuantity, roomItem.GetName());
             				}
             				
+            				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
+            				db.UpdatePlayerInventory(player.getInventory());
             				break;
             			}
             			
-            			Item pickupItem = rooms.getRoomInventory(player.getCurrentRoomIndex()).GetItemByName(params.get(1));
+            			Item pickupItem = rooms.get(player.getCurrentRoomIndex()).getRoomInventory().GetItemByName(params.get(1));
             			if (pickupItem == null) {
             				systemResponse = String.format("This room does not contain an item named %s.<br>",
             						params.get(1));
             				break;
             			}
             			
-            			Integer roomQuantity = player.PickUp(rooms, pickupItem, pickupQuantity);
+            			Integer roomQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex()), pickupItem, pickupQuantity);
             			systemResponse += String.format("Picked up %d %s<br>",
             					roomQuantity, params.get(1));
+            			
+        				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+        				db.UpdatePlayerInventory(player.getInventory());
             		break;
             		
             		case "drop":
@@ -310,11 +345,16 @@ public class GameEngineServlet extends HttpServlet {
                 			}
             				
             				for (Item playerItem : playerInventoryKeys) {
-            					Integer itemQuantity = player.Drop(rooms, playerItem, dropQuantity);
+            					Integer itemQuantity = player.Drop(
+            							rooms.get(player.getCurrentRoomIndex()),
+            							playerItem, dropQuantity);
+            					
                     			systemResponse += String.format("Dropped %d %s<br>",
                     					itemQuantity, playerItem.GetName());
             				}
             				
+            				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+            				db.UpdatePlayerInventory(player.getInventory());
             				break;
             			}
             			
@@ -325,10 +365,15 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             			}
             			
-            			Integer playerQuantity = player.Drop(rooms, dropItem, dropQuantity);
+            			Integer playerQuantity = player.Drop(
+            					rooms.get(player.getCurrentRoomIndex()),
+            					dropItem, dropQuantity);
             			
             			systemResponse += String.format("Dropped %d %s<br>",
             					playerQuantity, params.get(1));
+            			
+        				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+        				db.UpdatePlayerInventory(player.getInventory());
             		break;
             		
             		case "equip":
@@ -360,6 +405,8 @@ public class GameEngineServlet extends HttpServlet {
             			
             			systemResponse += String.format("Equipped %s into %s.<br>",
             					params.get(0), weaponSlot);
+            			
+            			db.UpdatePlayerInventory(player.getInventory());
             		break;
             		
             		case "unequip":
@@ -380,6 +427,8 @@ public class GameEngineServlet extends HttpServlet {
             				
             				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
             						unequippedWeapon.GetName(), params.get(0));
+            				
+            				db.UpdatePlayerInventory(player.getInventory());
             				break;
             			}
             			
@@ -410,6 +459,8 @@ public class GameEngineServlet extends HttpServlet {
             				
             				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
             						unequippedWeapon.GetName(), params.get(0));
+            				
+            				db.UpdatePlayerInventory(player.getInventory());
             				break;
         				}
             			
@@ -424,9 +475,10 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
             					
+            					System.out.println(db.GetPlayer().getCurrentRoomIndex());
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
-                    					rooms.getShortRoomDescription( db.GetPlayer().getCurrentRoomIndex() ),
-                    					rooms.getLongRoomDescription( db.GetPlayer().getCurrentRoomIndex() ));
+                    					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getShortRoomDescription(),
+                    					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getLongRoomDescription());
             				break;
             				
             				//  [######--]
@@ -440,11 +492,11 @@ public class GameEngineServlet extends HttpServlet {
             					Integer healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
             					
             					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: [%s%s] (%.1f / %.1f)",
-            							DBController.getPlayerLives(db),
+            							player.getLives(),
             							repeatString("#", healthBarLength),
 										repeatString("-", healthBarSize - healthBarLength),
-										DBController.getPlayerHealth(db),
-            							DBController.getPlayerMaxHealth(db));
+										player.getHealth(),
+            							player.getMaxHealth());
             				break;
             				
             				case "enemies":
@@ -469,8 +521,10 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse += String.format("Enemies in this room:");
             					
+            					Integer enemyCount = 0;
             					for (int i=0; i<enemies.size(); i++) {
             						if (enemies.get(i).getHealth() == 0) continue;
+            						enemyCount++;
             						
                 					healthBarSize = 10;
                 					lifeRatio = enemies.get(i).getHealth() / enemies.get(i).getMaxHealth();
@@ -480,7 +534,7 @@ public class GameEngineServlet extends HttpServlet {
             								enemies.size(), enemies.get(i).getName(),
             								repeatString("#", healthBarLength),
     										repeatString("-", healthBarSize - healthBarLength),
-            								enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
+    										enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
             								enemies.get(i).getDescription());
             					}
             					
@@ -497,13 +551,22 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
             					
-            					for (String direction : rooms.getAllKeys(DBController.getPlayerCurrentRoom(db))) {
+            					List<String> roomConnections = rooms.get(player.getCurrentRoomIndex() - 1).getAllConnections();
+            					List<String> directions = new ArrayList<String>(Arrays.asList(new String[] {
+            							"East", "South", "North", "West"}));
+            					
+            					
+            					for (int i=0; i<roomConnections.size(); i++) {
+            						String direction = directions.get(i);
             						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
+            						Integer connectionID = Integer.parseInt(roomConnections.get(i));
             						
+            						// connection doesn't exist
+            						if (connectionID == 0) continue;
+            						
+            						System.out.println(String.format("%s : %d", roomConnections.get(i), connectionID));
             						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
-            								rooms.getShortRoomDescription(
-            									rooms.nextConnection(player.getCurrentRoomIndex(), direction)
-            								));
+            								rooms.get(connectionID - 1).getShortRoomDescription());
             					}
             				break;
             				
@@ -522,12 +585,11 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
             					if (!foundCommands.contains("describe_inventory")) foundCommands.add("describe_inventory");
                 				
-//            					HashMap<Item, Integer> playerItems = db.getPlayerInventory();
-            					HashMap<Item, Integer> playerItems = player.getInventory().GetItems();
-            					HashMap<String, Weapon> playerEquips = player.getInventory().GetWeaponsAsSlots();
+            					EntityInventory playerInventory = db.GetPlayerInventory();
+            					HashMap<Item, Integer> playerItems = playerInventory.GetItems();
+            					HashMap<String, Weapon> playerEquips = playerInventory.GetWeaponsAsSlots();
             					systemResponse = String.format("Describing inventory...<br><br>");
 
-            					
             					// no items in inventory
             					if (playerItems.size() == 0 && playerEquips.size() == 0) {
             						systemResponse += String.format("There are no items in your inventory.");
@@ -537,21 +599,30 @@ public class GameEngineServlet extends HttpServlet {
             					systemResponse += String.format("Items in your inventory:");
             					
             					for (String slot : playerEquips.keySet()) 
-            						systemResponse += String.format("<br><br>%s: %s<br> - %s",
+            						systemResponse += String.format("<br><br>%s: %s<br> - Damage: %.1f<br> - %s",
             								slot, playerEquips.get(slot).GetName(),
+            								playerEquips.get(slot).GetDamage(),
             								playerEquips.get(slot).GetDescription());
             					
-            					for (Item playerItem : playerItems.keySet())
+            					for (Item playerItem : playerItems.keySet()) {
             						systemResponse += String.format("<br><br>%s: %d<br> - %s",
             								playerItem.GetName(), playerItems.get(playerItem),
             								playerItem.GetDescription());
+            						
+            						// if item is a weapon, also display the damage
+            						if (playerItem.getClass().equals(Weapon.class))
+            							systemResponse += String.format("<br> - Damage: %.1f",
+            									((Weapon) playerItem).GetDamage());
+            					}
+            						
             				break;
             				
             				case "items":
             					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
             					if (!foundCommands.contains("describe_items")) foundCommands.add("describe_items");
                 				
-            					HashMap<Item, Integer> roomItems = rooms.getItems( player.getCurrentRoomIndex() );
+            					RoomInventory roomInventory = db.GetRoomInventoryByID(player.getCurrentRoomIndex());
+            					HashMap<Item, Integer> roomItems = roomInventory.GetItems();
             					systemResponse = String.format("Describing items...<br><br>");
             					
             					// no enemies in room
@@ -562,10 +633,16 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse += String.format("Items in this room:");
             					
-            					for (Item roomItem : roomItems.keySet())
+            					for (Item roomItem : roomItems.keySet()) {
             						systemResponse += String.format("<br><br>%s: %d<br> - %s",
             								roomItem.GetName(), roomItems.get(roomItem),
             								roomItem.GetDescription());
+
+            						// if item is a weapon, also display the damage
+            						if (roomItem.getClass().equals(Weapon.class))
+            							systemResponse += String.format("<br> - Damage: %.1f",
+            									((Weapon) roomItem).GetDamage());
+            					}
             				break;
             				
             				default:
@@ -580,7 +657,8 @@ public class GameEngineServlet extends HttpServlet {
             		case "attack":
             			if (!foundCommands.contains("attack")) foundCommands.add("attack");
             			
-            			weaponSlots = player.getInventory().GetWeaponsAsSlots();
+            			EntityInventory playerInventory = db.GetPlayerInventory();
+            			weaponSlots = playerInventory.GetWeaponsAsSlots();
             			String attackName = "";
             			
             			// make camel case
@@ -614,7 +692,7 @@ public class GameEngineServlet extends HttpServlet {
             			
             			//TODO: Use this method once set up
 //            			ArrayList<EnemyModel> roomEnemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-            			ArrayList<EnemyModel> roomEnemies = rooms.getRoom(player.getCurrentRoomIndex()).getAllEnemies();
+            			ArrayList<EnemyModel> roomEnemies = db.GetEnemiesInRoom(player.getCurrentRoomIndex());
             			ArrayList<EntityModel> fighters = new ArrayList<EntityModel>();
             			fighters.add(db.GetPlayer());
             			fighters.addAll(roomEnemies);
@@ -655,7 +733,8 @@ public class GameEngineServlet extends HttpServlet {
             					);
             			
             			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
-            				new EntityController(fightController.GetFighter(attackIndex)).Die(db, rooms);
+            				new EntityController(fightController.GetFighter(attackIndex)).Die(
+            						db, rooms.get(player.getCurrentRoomIndex() - 1));
             				
             				systemResponse += String.format("%s has died.<br>",
             						attackedName);
@@ -664,8 +743,8 @@ public class GameEngineServlet extends HttpServlet {
             			for (int i=0; i<roomEnemies.size(); i++) {
             				if (i != 0) systemResponse += "<br>";
             				
-            				if (DBController.getPlayerHealth(db) == 0) {
-            					player.Die(db, rooms);
+            				if (player.getHealth() == 0) {
+            					player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1));
             					break;
             				}
             				

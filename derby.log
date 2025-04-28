@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Sat Apr 26 19:06:05 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-7459-c84d-000006c902d8 
-on database directory /Users/krimx/git/CS320GroupProject_TBAG/test.db with class loader sun.misc.Launcher$AppClassLoader@4e0e2f2a 
+Sun Apr 27 20:01:40 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-79b3-1125-0000064dfbd0 
+on database directory /Users/krimx/git/CS320GroupProject_TBAG/test.db with class loader sun.misc.Launcher$AppClassLoader@d716361 
 Loaded from file:/Users/krimx/Documents/EclipseWorkspace/CS320_Derby/lib/derby.jar
 java.vendor=Temurin
 java.runtime.version=1.8.0_442-b06

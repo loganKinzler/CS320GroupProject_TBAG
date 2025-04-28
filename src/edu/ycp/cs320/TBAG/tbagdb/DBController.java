@@ -48,6 +48,12 @@ public class DBController {
 	public static void updatePlayerRoom(IDatabase db, int room) {
 		db.UpdatePlayerRoom(room);
 	}
+	public static int decrementPlayerLives(IDatabase db) {
+		int lives = db.GetPlayer().getLives();
+		lives -= 1;
+		db.UpdatePlayerLives(lives);
+		return lives;
+	}
 	
 	//Enemy methods
 	public static ArrayList<EnemyModel> getEnemiesByRoomId(IDatabase db, int roomId) {

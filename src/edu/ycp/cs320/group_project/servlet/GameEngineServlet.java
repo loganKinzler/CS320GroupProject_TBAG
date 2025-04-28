@@ -263,7 +263,6 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			player.setCurrentRoomIndex(nextRoom);
-            			System.out.println(player.getCurrentRoomIndex());
             			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
             			
             			//These used to be offset by 1
@@ -313,18 +312,18 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             			}
             			
-            			Item pickupItem = rooms.get(player.getCurrentRoomIndex()).getRoomInventory().GetItemByName(params.get(1));
+            			Item pickupItem = rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().GetItemByName(params.get(1));
             			if (pickupItem == null) {
             				systemResponse = String.format("This room does not contain an item named %s.<br>",
             						params.get(1));
             				break;
             			}
             			
-            			Integer roomQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex()), pickupItem, pickupQuantity);
+            			Integer roomQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex() - 1), pickupItem, pickupQuantity);
             			systemResponse += String.format("Picked up %d %s<br>",
             					roomQuantity, params.get(1));
             			
-        				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+        				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
         				db.UpdatePlayerInventory(player.getInventory());
             		break;
             		
@@ -350,14 +349,14 @@ public class GameEngineServlet extends HttpServlet {
             				
             				for (Item playerItem : playerInventoryKeys) {
             					Integer itemQuantity = player.Drop(
-            							rooms.get(player.getCurrentRoomIndex()),
+            							rooms.get(player.getCurrentRoomIndex() - 1),
             							playerItem, dropQuantity);
             					
                     			systemResponse += String.format("Dropped %d %s<br>",
                     					itemQuantity, playerItem.GetName());
             				}
             				
-            				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+            				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
             				db.UpdatePlayerInventory(player.getInventory());
             				break;
             			}
@@ -370,13 +369,13 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			Integer playerQuantity = player.Drop(
-            					rooms.get(player.getCurrentRoomIndex()),
+            					rooms.get(player.getCurrentRoomIndex() - 1),
             					dropItem, dropQuantity);
             			
             			systemResponse += String.format("Dropped %d %s<br>",
             					playerQuantity, params.get(1));
             			
-        				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+        				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
         				db.UpdatePlayerInventory(player.getInventory());
             		break;
             		

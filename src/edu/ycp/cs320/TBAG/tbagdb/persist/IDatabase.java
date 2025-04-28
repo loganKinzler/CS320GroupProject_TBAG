@@ -38,15 +38,15 @@ public interface IDatabase {
 	public abstract Integer UpdatePlayerLives(int lives);
 	public abstract ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex);
 	
-	public Double UpdateEnemyHealthById(int id, double health);
-	public Double UpdateEnemyMaxHealthById(int id, double maxHealth);
-	public Integer UpdateEnemyLivesById(int id, int lives);
-	public Integer UpdateEnemyRoomById(int id, int roomId);
-	public String UpdateEnemyNameById(int id, String name);
-	public String UpdateEnemyDescriptionById(int id, String description);
-	public EnemyModel getEnemyById(int id);
+	public abstract Double UpdateEnemyHealthById(int id, double health);
+	public abstract Double UpdateEnemyMaxHealthById(int id, double maxHealth);
+	public abstract Integer UpdateEnemyLivesById(int id, int lives);
+	public abstract Integer UpdateEnemyRoomById(int id, int roomId);
+	public abstract String UpdateEnemyNameById(int id, String name);
+	public abstract String UpdateEnemyDescriptionById(int id, String description);
+	public abstract EnemyModel getEnemyById(int id);
 	
-	public List<String> loadHistory();
-	public void deleteDb(String dbName, String dblocation);
-	public void addToHistory(String add);
+	public abstract List<String> loadHistory();
+	public abstract void deleteDb(String dbName, String dblocation);
+	public abstract void addToHistory(String add);
 }

@@ -2,6 +2,7 @@ package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -530,11 +531,22 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
             					
-            					for (String direction : rooms.get(player.getCurrentRoomIndex() - 1).getAllConnections()) {
+            					List<String> roomConnections = rooms.get(player.getCurrentRoomIndex() - 1).getAllConnections();
+            					List<String> directions = new ArrayList<String>(Arrays.asList(new String[] {
+            							"East", "South", "North", "West"}));
+            					
+            					
+            					for (int i=0; i<roomConnections.size(); i++) {
+            						String direction = directions.get(i);
             						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
+            						Integer connectionID = Integer.parseInt(roomConnections.get(i));
             						
+            						// connection doesn't exist
+            						if (connectionID == 0) continue;
+            						
+            						System.out.println(String.format("%s : %d", roomConnections.get(i), connectionID));
             						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
-            								rooms.get(player.getCurrentRoomIndex() - 1).getShortRoomDescription());
+            								rooms.get(connectionID - 1).getShortRoomDescription());
             					}
             				break;
             				
@@ -567,21 +579,29 @@ public class GameEngineServlet extends HttpServlet {
             					systemResponse += String.format("Items in your inventory:");
             					
             					for (String slot : playerEquips.keySet()) 
-            						systemResponse += String.format("<br><br>%s: %s<br> - %s",
+            						systemResponse += String.format("<br><br>%s: %s<br> - Damage: %.1f<br> - %s",
             								slot, playerEquips.get(slot).GetName(),
+            								playerEquips.get(slot).GetDamage(),
             								playerEquips.get(slot).GetDescription());
             					
-            					for (Item playerItem : playerItems.keySet())
+            					for (Item playerItem : playerItems.keySet()) {
             						systemResponse += String.format("<br><br>%s: %d<br> - %s",
             								playerItem.GetName(), playerItems.get(playerItem),
             								playerItem.GetDescription());
+            						
+            						// if item is a weapon, also display the damage
+            						if (playerItem.getClass().equals(Weapon.class))
+            							systemResponse += String.format("<br> - Damage: %.1f",
+            									((Weapon) playerItem).GetDamage());
+            					}
+            						
             				break;
             				
             				case "items":
             					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
             					if (!foundCommands.contains("describe_items")) foundCommands.add("describe_items");
                 				
-            					RoomInventory roomInventory = db.GetRoomInventoryByID(player.getCurrentRoomIndex() - 1);
+            					RoomInventory roomInventory = db.GetRoomInventoryByID(player.getCurrentRoomIndex());
             					HashMap<Item, Integer> roomItems = roomInventory.GetItems();
             					systemResponse = String.format("Describing items...<br><br>");
             					
@@ -593,10 +613,16 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse += String.format("Items in this room:");
             					
-            					for (Item roomItem : roomItems.keySet())
+            					for (Item roomItem : roomItems.keySet()) {
             						systemResponse += String.format("<br><br>%s: %d<br> - %s",
             								roomItem.GetName(), roomItems.get(roomItem),
             								roomItem.GetDescription());
+
+            						// if item is a weapon, also display the damage
+            						if (roomItem.getClass().equals(Weapon.class))
+            							systemResponse += String.format("<br> - Damage: %.1f",
+            									((Weapon) roomItem).GetDamage());
+            					}
             				break;
             				
             				default:

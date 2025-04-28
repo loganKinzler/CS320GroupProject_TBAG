@@ -33,6 +33,12 @@ public class DerbyDatabase implements IDatabase {
 		}
 	}
 	
+	// constructor
+	public DerbyDatabase() {
+		if (this.dbExists("test")) return;
+		this.create();
+	}
+	
 	private interface Transaction<ResultType> {
 		public ResultType execute(Connection conn) throws SQLException;
 	}
@@ -1395,14 +1401,12 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	public void create() {
-		DerbyDatabase db = new DerbyDatabase();
-		
 		System.out.println("Creating tables...");
-		Boolean isNewDatabase = db.createTables();
+		Boolean isNewDatabase = createTables();
 		System.out.println(isNewDatabase);
 		
 		System.out.println("Loading initial data...");
-		db.loadInitialData(isNewDatabase);
+		loadInitialData(isNewDatabase);
 		
 		System.out.println("Success!");
 	}
@@ -1462,9 +1466,9 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					// retreive all attributes from both Books and Authors tables
 					getEnemiesStatement = conn.prepareStatement(
-							"select entities.* " +
-							" where entities.id > 1 "
-							+ "and entities.currentRoom = ?"
+							"select entities.* from entities" +
+							" where entities.id > 1 " +
+							" and entities.currentRoom = ?"
 					);
 					getEnemiesStatement.setInt(1, roomIndex);
 					
@@ -1650,19 +1654,6 @@ public class DerbyDatabase implements IDatabase {
 		}
 		
 		return exists;
-	}
-	
-	public static void main(String[] args) {
-		DerbyDatabase db = new DerbyDatabase();
-		
-		System.out.println("Creating tables...");
-		Boolean isNewDatabase = db.createTables();
-		System.out.println(isNewDatabase);
-		
-		System.out.println("Loading initial data...");
-		db.loadInitialData(isNewDatabase);
-		
-		System.out.println("Success!");
 	}
 
 	@Override
@@ -1878,8 +1869,8 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-	
-	//--------Change Made By Andrew ----- It deletes the DB
+
+
 	@Override
 	public void deleteDb(String dbName, String dblocation) {
 		// Set Derby system home if specified
@@ -1930,7 +1921,6 @@ public class DerbyDatabase implements IDatabase {
        return false;
    }
 	
-	//----Change Made by Andrew --- it gets the history from the DB and returns a list of strings for the printout stuff
 		public List<String> loadHistory(){
 			Connection conn = null;
 			PreparedStatement getHistoryStmt = null;
@@ -1962,7 +1952,6 @@ public class DerbyDatabase implements IDatabase {
 			return history;
 		}
 		
-		//---Change Made by Andrew --- adds a string to the List and to the db
 		public void addToHistory(String add) {
 			Connection conn = null;
 			PreparedStatement addHistory = null;

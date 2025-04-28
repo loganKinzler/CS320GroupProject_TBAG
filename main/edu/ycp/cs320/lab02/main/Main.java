@@ -11,8 +11,8 @@ public class Main {
 		File warFile = new File(webappCodeBase);
 		Launcher launcher = new Launcher();
 		
-		DerbyDatabase db = new DerbyDatabase();
-		if (!db.dbExists("test")) db.create();
+		// initialize the database on runtime
+		
 		
 		// get a server for port 8081
 		System.out.println("CREATING: web server on port 8082");

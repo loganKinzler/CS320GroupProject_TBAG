@@ -216,6 +216,11 @@ public class GameEngineServlet extends HttpServlet {
 	        			db.create();
 	        			systemResponse = "Creating new save...";
 	        		break;
+	        		case "clearChat":
+	        			db.clearGameHistory();
+	        			gameHistory.clear();
+	        			addToGameHistory(db, gameHistory, "Chat logs cleared...");
+	        		break;
             	
             		// TYPE 1 COMMANDS:
             		case "move":

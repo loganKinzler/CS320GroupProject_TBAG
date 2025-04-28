@@ -1241,6 +1241,28 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	public Boolean clearGameHistory() {
+		return executeTransaction(new Transaction<Boolean>() {
+			public Boolean execute(Connection conn) throws SQLException {
+				PreparedStatement clearStatement = null;
+				
+				clearStatement = conn.prepareStatement(
+					"delete from GameHistory"
+				);
+				
+				try {
+					clearStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(clearStatement);
+				}
+				
+				return true;
+			}
+		});
+	}
 
 		
 	public boolean dbExists(String type) {

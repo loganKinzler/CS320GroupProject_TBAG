@@ -37,6 +37,9 @@ public class ConsoleInterpreter {
     	else if (userInput.equals("new save")) {
     		return new Action("newSave", new ArrayList<String>(Arrays.asList("newsaveypoo")));
     	}
+    	else if (userInput.equals("clear chat")) {
+    		return new Action("clearChat", new ArrayList<String>(Arrays.asList("cleareypoo")));
+    	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
     	

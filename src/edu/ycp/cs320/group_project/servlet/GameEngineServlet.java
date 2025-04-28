@@ -96,7 +96,6 @@ public class GameEngineServlet extends HttpServlet {
         // Always pull fresh game history from DB
         List<String> gameHistory = db.getGameHistory();
         session.setAttribute("gameHistory", gameHistory);
-        System.out.println(session.getAttribute("gameHistory"));  
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
         // Retrieve the game history from the session (or create a new one if it doesn't exist)
@@ -425,8 +424,8 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
             					
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
-                    					rooms.getShortRoomDescription( db.GetPlayer().getCurrentRoomIndex() ),
-                    					rooms.getLongRoomDescription( db.GetPlayer().getCurrentRoomIndex() ));
+                    					rooms.getShortRoomDescription( DBController.getPlayerCurrentRoom(db) ),
+                    					rooms.getLongRoomDescription( DBController.getPlayerCurrentRoom(db)));
             				break;
             				
             				//  [######--]
@@ -453,7 +452,7 @@ public class GameEngineServlet extends HttpServlet {
                 				
             					//TODO: Use this method once set up
 //            					ArrayList<EnemyModel> enemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-            					ArrayList<EnemyModel> enemies = db.GetEnemiesInRoom(db.GetPlayer().getCurrentRoomIndex());
+            					ArrayList<EnemyModel> enemies = db.GetEnemiesInRoom(DBController.getPlayerCurrentRoom(db));
             					systemResponse = String.format("Describing enemies...<br><br>");
             					
             					// remove dead enemies

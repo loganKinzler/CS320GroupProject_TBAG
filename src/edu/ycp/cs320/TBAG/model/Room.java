@@ -213,4 +213,12 @@ public class Room {
 	public void setMaxHealth(double maxHealth, Integer index) {
 		this.enemies.get(index).setHealth(maxHealth);
 	}
+	
+	public void setRoomInventory(RoomInventory inventory) {
+		this.room_inventory = inventory;
+	}
+	
+	public void setConnections(Map<String, Integer> connections) {
+		this.connections = connections;
+	}
 }

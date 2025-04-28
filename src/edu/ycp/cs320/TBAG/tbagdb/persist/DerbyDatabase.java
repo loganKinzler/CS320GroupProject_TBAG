@@ -163,10 +163,12 @@ public class DerbyDatabase implements IDatabase {
 					while (resultSet.next()) {
 						found = true;
 						
+						RoomInventory roomInventory = GetRoomInventoryByID(resultSet.getInt(1));
 						
 						// create new Room object
 						// retrieve attributes from resultSet starting with index 1
 						Room room = loadRoom(resultSet);
+						room.setRoomInventory(roomInventory);
 						
 						result.add(room);
 					}
@@ -212,8 +214,7 @@ public class DerbyDatabase implements IDatabase {
 						
 						// create new Room object
 						// retrieve attributes from resultSet starting with index 1
-						Room room = loadRoom(resultSet);
-						
+						Room room = loadConnection(resultSet);
 						result.add(room);
 					}
 					
@@ -306,6 +307,7 @@ public class DerbyDatabase implements IDatabase {
 					while (resultSet.next()) {
 						found = true;
 						Room connect = loadConnection(resultSet); 
+						
 						result.add(connect);
 					}
 //					System.out.print(result);
@@ -1216,7 +1218,7 @@ public class DerbyDatabase implements IDatabase {
 				if (!isNewDatabase) {
 					resetTable("connections", "room_id", 1);
 					resetTable("rooms", "room_id", 1);
-					resetTable("weaponSlots", "slot_id", 2);// reset dependencies first (inventory_source)
+					resetTable("weaponSlots", "slot_num", 2);// reset dependencies first (inventory_source)
 					resetTable("slotNames", "slot_id", 1);// reset dependencies first (slot_id)
 					resetTable("inventories", "inventory_id", 2);
 					resetTable("weaponTypes", "weapon_id", 1);
@@ -1777,7 +1779,7 @@ public class DerbyDatabase implements IDatabase {
 
 	@Override
 	public EntityInventory GetPlayerInventory() {
-		return (EntityInventory) this.InventoryBySourceID(2);
+		return (EntityInventory) this.InventoryBySourceID(3);
 	}
 
 	@Override

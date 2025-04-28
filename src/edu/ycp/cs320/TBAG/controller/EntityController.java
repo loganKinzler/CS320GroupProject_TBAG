@@ -3,6 +3,7 @@ package edu.ycp.cs320.TBAG.controller;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
@@ -57,24 +58,24 @@ public class EntityController {
 		this.model.getInventory().EquipWeapon(weaponSlot, weapon);
 	}
 
-	public Integer PickUp(RoomContainer rooms, Item toPickUp, Integer quantity) {
-		Integer pickedUp = rooms.ExtractItems(toPickUp, quantity, getCurrentRoomIndex());
+	public Integer PickUp(Room room, Item toPickUp, Integer quantity) {
+		Integer pickedUp = room.getRoomInventory().ExtractItems(toPickUp, quantity);
 		AddToInventory(toPickUp, pickedUp);
 		return pickedUp;
 	}
 	
-	public Integer Drop(RoomContainer rooms, Item toDrop, Integer quantity) {
+	public Integer Drop(Room room, Item toDrop, Integer quantity) {
 		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
-		rooms.AddItems(toDrop, dropped, getCurrentRoomIndex());
+		room.getRoomInventory().AddItems(toDrop, dropped);
 		return dropped;
 	}
 	
-	public boolean Die(IDatabase db, RoomContainer rooms) {
+	public boolean Die(IDatabase db, Room room) {
 		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
 		
 		// drop all enemy items
 		for (Item item : items)
-			this.Drop(rooms, item, Integer.MAX_VALUE);
+			this.Drop(room, item, Integer.MAX_VALUE);
 		
 		this.model.setLives( Math.min(0, this.model.getLives() - 1) );
 		

@@ -21,4 +21,8 @@ public class Weapon extends Item {
 	public Boolean equals(Weapon weapon) {
 		return super.equals(weapon) && this.damage == weapon.GetDamage();
 	}
+	
+	public Boolean equals(Item weaponItem) {
+		return super.equals(weaponItem);
+	}
 }

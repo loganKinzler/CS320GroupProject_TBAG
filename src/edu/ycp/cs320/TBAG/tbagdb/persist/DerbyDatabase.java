@@ -149,7 +149,7 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					// Get all rooms with the same room id as id
 					stmt = conn.prepareStatement(
-							"select * from rooms"
+							"select * from rooms order by room_id asc"
 					);
 					
 					
@@ -197,7 +197,7 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					// Get all rooms with the same room id as id
 					stmt = conn.prepareStatement(
-							"select * from connections"
+							"select * from connections order by room_id asc"
 					);
 					
 					
@@ -1634,6 +1634,22 @@ public class DerbyDatabase implements IDatabase {
 				return health;
 			}
 		});
+	}
+	
+	public boolean dbExists(String type) {
+		boolean exists = false;
+		
+		File dbFolder = new File("" + type + ".db");
+		
+		if (dbFolder.exists() && dbFolder.isDirectory()) {
+			System.out.println("Database of type <" + type + "> was found.");
+			exists = true;
+		}
+		else {
+			System.out.println("Database of type <" + type + "> was not found.");
+		}
+		
+		return exists;
 	}
 	
 	public static void main(String[] args) {

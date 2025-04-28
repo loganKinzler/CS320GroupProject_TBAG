@@ -3,12 +3,16 @@ package edu.ycp.cs320.lab02.main;
 import java.io.File;
 
 import org.eclipse.jetty.server.Server;
+import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
 		String webappCodeBase = "./war";
 		File warFile = new File(webappCodeBase);
 		Launcher launcher = new Launcher();
+		
+		DerbyDatabase db = new DerbyDatabase();
+		if (!db.dbExists("test")) db.create();
 		
 		// get a server for port 8081
 		System.out.println("CREATING: web server on port 8082");

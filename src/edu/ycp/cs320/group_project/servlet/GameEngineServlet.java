@@ -63,7 +63,7 @@ public class GameEngineServlet extends HttpServlet {
             	session.setAttribute("sudoStage", sudoStage);
         	}
         }
-        "sdklfjsdf".repeat(2);
+
 //        if (sudoStage == 0) req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
 //        else {
 //        	System.out.println("Started sudo easter egg");
@@ -90,9 +90,7 @@ public class GameEngineServlet extends HttpServlet {
         
         //Check if player current room is in session history, set if yes, initialize if not
         PlayerModel playerModel = (PlayerModel)session.getAttribute("player");
-        if (playerModel == null) {
-        	playerModel = db.GetPlayer();
-        }
+        playerModel = db.GetPlayer();
         
         PlayerController player = new PlayerController(playerModel);
         
@@ -224,7 +222,7 @@ public class GameEngineServlet extends HttpServlet {
             			Integer nextRoom = null;
             			
             			
-            				nextRoom = rooms.get(player.getCurrentRoomIndex()).getConnectedRoom(params.get(0));
+            				nextRoom = rooms.get(player.getCurrentRoomIndex() - 1).getConnectedRoom(params.get(0));
             				//for now the room will be null if it doesn't exist or is locked
             				if(nextRoom <= 0) {
             					nextRoom = null;
@@ -244,8 +242,8 @@ public class GameEngineServlet extends HttpServlet {
             			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
             			
             			//These used to be offset by 1
-            			String short_description = rooms.get(nextRoom).getShortRoomDescription();
-            			String long_description = rooms.get(nextRoom).getLongRoomDescription();
+            			String short_description = rooms.get(nextRoom - 1).getShortRoomDescription();
+            			String long_description = rooms.get(nextRoom - 1).getLongRoomDescription();
             			systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
             					params.get(0),
             					short_description,
@@ -273,19 +271,19 @@ public class GameEngineServlet extends HttpServlet {
             				
             				
             				Set<Item> roomInventoryKeys = new HashSet<Item>();
-            				roomInventoryKeys.addAll(rooms.get(player.getCurrentRoomIndex()).getItems().keySet());            			
+            				roomInventoryKeys.addAll(rooms.get(player.getCurrentRoomIndex() - 1).getItems().keySet());            			
             				if (roomInventoryKeys.isEmpty()){
                 				systemResponse = String.format("This room does not contain any items to pickup.<br>");
                 				break;
                 			}
             				
             				for (Item roomItem : roomInventoryKeys) {
-            					Integer itemQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex()), roomItem, pickupQuantity);
+            					Integer itemQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex() - 1), roomItem, pickupQuantity);
                     			systemResponse += String.format("Picked up %d %s<br>",
                     					itemQuantity, roomItem.GetName());
             				}
             				
-            				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+            				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
             				db.UpdatePlayerInventory(player.getInventory());
             				break;
             			}
@@ -456,9 +454,10 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
             					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
             					
+            					System.out.println(db.GetPlayer().getCurrentRoomIndex());
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
-                    					rooms.get(db.GetPlayer().getCurrentRoomIndex()).getShortRoomDescription(),
-                    					rooms.get(db.GetPlayer().getCurrentRoomIndex()).getLongRoomDescription());
+                    					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getShortRoomDescription(),
+                    					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getLongRoomDescription());
             				break;
             				
             				//  [######--]
@@ -531,11 +530,11 @@ public class GameEngineServlet extends HttpServlet {
             					
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
             					
-            					for (String direction : rooms.get(player.getCurrentRoomIndex()).getAllConnections()) {
+            					for (String direction : rooms.get(player.getCurrentRoomIndex() - 1).getAllConnections()) {
             						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
             						
             						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
-            								rooms.get(player.getCurrentRoomIndex()).getShortRoomDescription());
+            								rooms.get(player.getCurrentRoomIndex() - 1).getShortRoomDescription());
             					}
             				break;
             				
@@ -582,7 +581,7 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
             					if (!foundCommands.contains("describe_items")) foundCommands.add("describe_items");
                 				
-            					RoomInventory roomInventory = db.GetRoomInventoryByID(player.getCurrentRoomIndex() + 1);
+            					RoomInventory roomInventory = db.GetRoomInventoryByID(player.getCurrentRoomIndex() - 1);
             					HashMap<Item, Integer> roomItems = roomInventory.GetItems();
             					systemResponse = String.format("Describing items...<br><br>");
             					
@@ -689,7 +688,7 @@ public class GameEngineServlet extends HttpServlet {
             			
             			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
             				new EntityController(fightController.GetFighter(attackIndex)).Die(
-            						db, rooms.get(player.getCurrentRoomIndex()));
+            						db, rooms.get(player.getCurrentRoomIndex() - 1));
             				
             				systemResponse += String.format("%s has died.<br>",
             						attackedName);
@@ -699,7 +698,7 @@ public class GameEngineServlet extends HttpServlet {
             				if (i != 0) systemResponse += "<br>";
             				
             				if (player.getHealth() == 0) {
-            					player.Die(db, rooms.get(player.getCurrentRoomIndex()));
+            					player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1));
             					break;
             				}
             				

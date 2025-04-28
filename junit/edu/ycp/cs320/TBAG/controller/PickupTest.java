@@ -25,22 +25,22 @@ public class PickupTest {
 	@Test
 	public void PickupOneItemTest() {
 		SetUp();
-		player.PickUp(rooms, Inventory.LEAD_PIPE, 1);
+		player.PickUp(rooms.getRoom(0), Inventory.LEAD_PIPE, 1);
 		assertTrue(player.getInventory().ContainsItem(Inventory.LEAD_PIPE));
 	}
 	
 	@Test
 	public void PickupMultipleItemsTest() {
 		SetUp();
-		player.PickUp(rooms, Inventory.SHWARMA, 3);
-		player.Drop(rooms, Inventory.SHWARMA, 1);
+		player.PickUp(rooms.getRoom(0), Inventory.SHWARMA, 3);
+		player.Drop(rooms.getRoom(0), Inventory.SHWARMA, 1);
 		assertTrue(player.getInventory().ContainsExactly(Inventory.SHWARMA, 2));
 	}
 	@Test
 	public void TestWrongRoom() {
 		SetUp();
 		player.setCurrentRoomIndex(3);
-		player.PickUp(rooms, Inventory.LEAD_PIPE, 1);
+		player.PickUp(rooms.getRoom(0), Inventory.LEAD_PIPE, 1);
 		assertFalse(player.getInventory().ContainsItem(Inventory.LEAD_PIPE));
 	}
 }

@@ -19,7 +19,6 @@ public class Main {
 		
 		// initialize the database on runtime
 		
-		
 		// get a server for port 8081
 		System.out.println("CREATING: web server on port 8082");
 		Server server = launcher.launch(true, 8081, warFile.getAbsolutePath(), "/lab02");

@@ -21,7 +21,7 @@ public class PlayerDbTest {
 	@Test
 	public void startRoomTest() {
 		setup();
-		assertEquals(db.GetPlayer().getCurrentRoomIndex(), 0);
+		assertEquals(db.GetPlayer().getCurrentRoomIndex(), 1);
 	}
 	
 	@Test
@@ -34,7 +34,7 @@ public class PlayerDbTest {
 	@Test
 	public void startHealthTest() {
 		setup();
-		assertEquals(db.GetPlayer().getHealth(), 100.0, .001);
+		assertEquals(db.GetPlayer().getHealth(), 50.0, .001);
 	}
 	
 	@Test

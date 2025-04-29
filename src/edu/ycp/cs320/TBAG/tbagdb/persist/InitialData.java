@@ -272,8 +272,12 @@ public class InitialData {
 				
 				String name = i.next();
 				String description = i.next();
+				int x_position = Integer.parseInt(i.next());
+				int y_position = Integer.parseInt(i.next());
+				boolean has_entered_room = Boolean.parseBoolean(i.next());
 				
-				Room room = new Room(name, description);
+				
+				Room room = new Room(name, description, x_position, y_position, has_entered_room);
 				rooms.add(room);
 			}
 		}

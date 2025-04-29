@@ -14,6 +14,9 @@
 	 --font-size: 2rem;
 	 --ascii-font-size: .7rem;
 	 --hake-ascii-font-size: .4rem;
+	 
+	 --map-font-size: 1.3rem;
+	 --map-line-height: .2;
 }
 
 * {
@@ -278,4 +281,8 @@ box-sizing:border-box;
 	bottom: 0;
 	transform: translateX(-50%);
 	margin-bottom: 1vh;
+}
+.map-string {
+	font-size: var(--map-font-size);
+	line-height: .8;
 }

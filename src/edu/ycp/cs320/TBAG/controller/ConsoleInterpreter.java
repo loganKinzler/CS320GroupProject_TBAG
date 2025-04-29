@@ -40,6 +40,9 @@ public class ConsoleInterpreter {
     	else if (userInput.equals("clear chat")) {
     		return new Action("clearChat", new ArrayList<String>(Arrays.asList("cleareypoo")));
     	}
+    	else if (userInput.equals("show map")) {
+    		return new Action("showMap", new ArrayList<String>(Arrays.asList("mappypoo")));
+    	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
     	

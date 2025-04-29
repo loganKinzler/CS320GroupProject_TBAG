@@ -238,6 +238,10 @@ public class GameEngineServlet extends HttpServlet {
 	        			gameHistory.clear();
 	        			addToGameHistory(db, gameHistory, "Chat logs cleared...");
 	        		break;
+	        		case "showMap":
+	        			//Code to show map
+	        			systemResponse = showMapString();
+	        		break;
             	
             		// TYPE 1 COMMANDS:
             		case "move":
@@ -813,5 +817,33 @@ public class GameEngineServlet extends HttpServlet {
             req.setAttribute(attribute, true);
             session.removeAttribute(attribute); // ensure it's only played once
         }
+    }
+    
+    public String showMapString() {
+    	String mapString = 
+    			  "        [L]                                    <br>" //1
+    	    	+ "         |                                     <br>" //vertical connection
+    	    	+ "    [L]–[H]–[L]                 [E]            <br>" //2
+    	    	+ "         |                       |             <br>" //vertical connection
+    	    	+ "    [E]–[H]–[E]–[G]     [M]     [H] [M]–[H]–[e]<br>" //3
+    	    	+ "     |   v       |       |       |   |         <br>" //vertical connection
+    	    	+ "[L]–[H]–[S] [L]–[H]–[b]–[H]–[E]–[H]–[L]        <br>" //4
+    	    	+ "         |           |           |   v         <br>" //vertical connection
+    	    	+ "        [e]         [H]         [G]–[H]        <br>" //5
+    	    	+ "                                 |   ^         <br>" //vertical connection
+    	    	+ "                                [E]–[L]        <br>" //6
+    	    	+ "                                 |             <br>" //vertical connection
+    	    	+ "                                [b]            <br>" //7
+    	    	+ "                                 |             <br>" //vertical connection
+    	    	+ "                                [C]            <br>"; //8
+    	mapString = mapString.replace(" ", "&nbsp"); 	
+    	String toOut =
+    	  "<p class=\"map-string\">"
+    	+ mapString
+    	+ "</p>"; 
+    	
+    	System.out.println(toOut);
+    	
+    	return toOut;
     }
 }

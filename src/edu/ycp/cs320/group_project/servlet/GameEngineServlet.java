@@ -263,7 +263,6 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			player.setCurrentRoomIndex(nextRoom);
-            			System.out.println(player.getCurrentRoomIndex());
             			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
             			
             			//These used to be offset by 1
@@ -350,7 +349,7 @@ public class GameEngineServlet extends HttpServlet {
             				
             				for (Item playerItem : playerInventoryKeys) {
             					Integer itemQuantity = player.Drop(
-            							rooms.get(player.getCurrentRoomIndex()),
+            							rooms.get(player.getCurrentRoomIndex() - 1),
             							playerItem, dropQuantity);
             					
                     			systemResponse += String.format("Dropped %d %s<br>",

@@ -1,4 +1,5 @@
 ----------------------------------------------------------------
+<<<<<<< HEAD
 Mon Apr 28 14:35:32 EDT 2025:
 Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-7dae-ceef-00000790e848 
 on database directory /Users/krimx/git/CS320GroupProject_TBAG/test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
@@ -9,5 +10,17 @@ user.dir=/Users/krimx/git/CS320GroupProject_TBAG
 os.name=Mac OS X
 os.arch=aarch64
 os.version=15.4
+=======
+Mon Apr 28 13:16:53 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-7d66-d276-00000eaa10f0 
+on database directory C:\Users\logan\Desktop\ProgrammingProjects\College\CS320\EclipseProjects\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5c647e05 
+Loaded from file:/C:/Users/logan/Desktop/ProgrammingProjects/College/CS320/EclipseProjects/CS320_Derby/lib/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.2+13-LTS-58
+user.dir=C:\Users\logan\Desktop\ProgrammingProjects\College\CS320\EclipseProjects\CS320GroupProject_TBAG
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
+>>>>>>> branch 'development-branch' of git@github.com:loganKinzler/CS320GroupProject_TBAG.git
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''

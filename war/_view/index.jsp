@@ -121,8 +121,8 @@
 	<c:if test="${playHakeSound}">
     <script>
         window.addEventListener('load', function() {
-            const audio = new Audio('${pageContext.request.contextPath}/recs/hake-scream.mp3');
-            audio.play();
+            new Audio('${pageContext.request.contextPath}/recs/hake-scream.mp3').play();
+            
         });
     </script>
 </c:if>

@@ -63,11 +63,8 @@ public class GameEngineServlet extends HttpServlet {
         
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
         
-        Boolean playSound = (Boolean) session.getAttribute("playHakeSound");
-        if (playSound != null && playSound) {
-            req.setAttribute("playHakeSound", true);
-            session.removeAttribute("playHakeSound"); // ensure it's only played once
-        }
+        
+        sessionPlaySound(req, "playHakeSound");
         
         
 
@@ -806,5 +803,15 @@ public class GameEngineServlet extends HttpServlet {
     		toOut += toRepeat;
     	}
     	return toOut;
+    }
+    
+    public void sessionPlaySound(HttpServletRequest req, String attribute) {
+    	HttpSession session = req.getSession();
+    	
+    	Boolean playSound = (Boolean) session.getAttribute(attribute);
+        if (playSound != null && playSound) {
+            req.setAttribute(attribute, true);
+            session.removeAttribute(attribute); // ensure it's only played once
+        }
     }
 }

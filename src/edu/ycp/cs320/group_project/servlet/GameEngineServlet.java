@@ -58,11 +58,16 @@ public class GameEngineServlet extends HttpServlet {
             gameHistory = db.getGameHistory();
             session.setAttribute("gameHistory", gameHistory);
         }
+        
         req.setAttribute("gameHistory", gameHistory);
         
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
         
-        
+        Boolean playSound = (Boolean) session.getAttribute("playHakeSound");
+        if (playSound != null && playSound) {
+            req.setAttribute("playHakeSound", true);
+            session.removeAttribute("playHakeSound"); // ensure it's only played once
+        }
         
         
 
@@ -221,6 +226,7 @@ public class GameEngineServlet extends HttpServlet {
         			//hake easter egg test
 	        		case "hakeTest" :
 	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+	        			session.setAttribute("playHakeSound", true);
 	        		break;
 	        		case "babcockTest":
 	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");

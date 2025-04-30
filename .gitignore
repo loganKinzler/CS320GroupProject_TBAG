@@ -1,2 +1,9 @@
+/bin/*
+/test-bin/*
+.classpath
+.project
+.settings/
+test.db/*
+derby.log
 /bin/
 /test-bin/

@@ -7,8 +7,9 @@ public class Weapon extends Item {
 	
 	
 	// contstructors
-	public Weapon(String name, String description, Double damage) {
-		super(name, description);
+
+	public Weapon(Integer id, String name, String description, Double damage) {
+		super(id, name, description);
 		this.damage = damage;
 	}
 	
@@ -19,5 +20,9 @@ public class Weapon extends Item {
 	
 	public Boolean equals(Weapon weapon) {
 		return super.equals(weapon) && this.damage == weapon.GetDamage();
+	}
+	
+	public Boolean equals(Item weaponItem) {
+		return super.equals(weaponItem);
 	}
 }

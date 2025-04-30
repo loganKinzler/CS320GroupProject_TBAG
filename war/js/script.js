@@ -6,6 +6,7 @@ window.addEventListener('load', () => {
 });
 
 
-function passed() {
-	console.log("Passed");
+function debugLoop() {
+	requestAnimationFrame(debugLoop);
 }
+debugLoop();

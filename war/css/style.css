@@ -6,11 +6,17 @@
 	 --caret-color: #019808;
 	 --submit-button-bg: #004103;
 	 --submit-button-hover: #004f04;
-	 --font-size: 2rem;
 	 --monitor-color: #D6C6A8;
 	 --lighter-monitor-color: #E8DEC9;
 	 --darker-monitor-color: #B3A78C;
 	 --sticky-note-color: #FED800;
+	 
+	 --font-size: 2rem;
+	 --ascii-font-size: .7rem;
+	 --hake-ascii-font-size: .4rem;
+	 
+	 --map-font-size: 1.3rem;
+	 --map-line-height: .2;
 }
 
 * {
@@ -249,4 +255,34 @@ box-sizing:border-box;
     inset -1px -1px 0 #fff,
     0 1px 0 rgba(0, 0, 0, 0.2);
   	background-color: var(--darker-monitor-color);
+}
+
+.ascii-art {
+	font-size: var(--ascii-font-size) !important;
+	white-space: pre;
+	line-height: 1;
+}
+.hake-ascii-art {
+	font-size: var(--hake-ascii-font-size) !important;
+	white-space: pre;
+	line-height: .75;
+}
+
+.babcock-ascii-art {
+	font-size: var(--hake-ascii-font-size) !important;
+	white-space: pre;
+	line-height: 1;
+}
+
+.ipear-logo {
+	position: absolute;
+	height: 6vh;
+	left: 50vw;
+	bottom: 0;
+	transform: translateX(-50%);
+	margin-bottom: 1vh;
+}
+.map-string {
+	font-size: var(--map-font-size);
+	line-height: .8;
 }

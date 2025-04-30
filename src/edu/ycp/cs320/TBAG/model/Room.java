@@ -11,19 +11,54 @@ import java.util.Set;
 public class Room {
 	//Fields
 	private Map<String, Integer> connections = new HashMap<>();
+	//Each room MUST have a unique room_id
+	private int room_id;
+	//This hashset will be used for checking that each room created is assigned a unique room_id
+	private static Set<Integer> room_id_set = new HashSet<>();
 	private String long_description;
 	private String short_description;
 	private RoomInventory room_inventory;
 	private ArrayList<EnemyModel> enemies = new ArrayList<EnemyModel>();
+	private boolean isLockedRoom;
+	//A locked room will have an item stored here
+	private Item RoomKey = null;
 	//TODO: Might have to move doesKeyExist into the container as well
 	
 	//Constructors
-	//This constructor creates a new RoomInventory
+	//This constructor is for the database
+	public Room(int room_id) {
+		//Returns true if the room_id is able to be added to the HashSet
+		if(this.room_id_set.add(room_id)) {
+			this.room_id = room_id;
+		}
+		this.isLockedRoom = false;
+		/*
+		else {
+			throw new IllegalArgumentException("This room id already exists :(");
+		}
+		this.room_inventory = new RoomInventory();
+		this.enemies = new ArrayList<EnemyModel>();
+		*/
+	}
+	
+	public Room() {
+		
+	}
+	
+	//This constructor is a LOCKED room that requires a certain amount of an item to open
+	public Room(int room_id, Item item) {
+		if(this.room_id_set.add(room_id)) {
+			this.room_id = room_id;
+		}
+		this.isLockedRoom = true;
+	}
+	
 	public Room(String short_description, String long_description) {
 		this.short_description = short_description;
 		this.long_description = long_description;
 		this.room_inventory = new RoomInventory();
 		this.enemies = new ArrayList<EnemyModel>();
+		this.isLockedRoom = false;
 	}
 	
 	public Room(String short_description, String long_description, ArrayList<EnemyModel> enemies) {
@@ -31,6 +66,7 @@ public class Room {
 		this.long_description = long_description;
 		this.room_inventory = new RoomInventory();
 		this.enemies = enemies;
+		this.isLockedRoom = false;
 	}
 	
 	/*This constructor takes an existing RoomInventory and set's it equal to the room_inventory field.
@@ -40,6 +76,7 @@ public class Room {
 		this.long_description = long_description;
 		this.room_inventory = room_inventory;
 		this.enemies = enemies;
+		this.isLockedRoom = false;
 	}
 	
 	
@@ -53,6 +90,10 @@ public class Room {
 	
 	
 	
+	
+	public int getRoomId() {
+		return this.room_id;
+	}
 	
 	//This will return the long room description of the room
 	public String getLongRoomDescription() {
@@ -68,6 +109,8 @@ public class Room {
 	public Integer getConnectedRoom(String direction) {
 		return this.connections.get(direction);
 	}
+	
+	
 	
 	//This will get all of the Items in the room as a HashMap
 	public HashMap<Item, Integer> getItems() {
@@ -123,8 +166,8 @@ public class Room {
 	}
 	
 	//This will return all of the enemies as a String
-	public String getAllEnemies(){
-		return this.enemies.toString();
+	public ArrayList<EnemyModel> getAllEnemies(){
+		return this.enemies;
 	}
 	
 	//This will return the enemy at index in the ArrayList
@@ -169,5 +212,13 @@ public class Room {
 	//Set the MaxHealth of the enemy at index equal to health
 	public void setMaxHealth(double maxHealth, Integer index) {
 		this.enemies.get(index).setHealth(maxHealth);
+	}
+	
+	public void setRoomInventory(RoomInventory inventory) {
+		this.room_inventory = inventory;
+	}
+	
+	public void setConnections(Map<String, Integer> connections) {
+		this.connections = connections;
 	}
 }

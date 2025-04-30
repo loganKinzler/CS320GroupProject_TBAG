@@ -1,6 +1,14 @@
 package edu.ycp.cs320.TBAG.controller;
 
-import edu.ycp.cs320.TBAG.model.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import edu.ycp.cs320.TBAG.model.Room;
+import edu.ycp.cs320.TBAG.model.EntityInventory;
+import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.Weapon;
+import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class EntityController {
 	private EntityModel model;
@@ -45,21 +53,33 @@ public class EntityController {
 	public void AddToInventory(Item toAdd, int amount) {
 		this.model.getInventory().AddItems(toAdd, amount);
 	}
+	
+	public void EquipWeapon(String weaponSlot, Weapon weapon) {
+		this.model.getInventory().EquipWeapon(weaponSlot, weapon);
+	}
 
-	public void Attack(EntityController receiver) {
-		//TODO fill this in
-	}
-	public void Die() {
-		//TODO fill this in
-	}
-	public Integer PickUp(RoomContainer rooms, Item toPickUp, Integer quantity) {
-		Integer pickedUp = rooms.ExtractItems(toPickUp, quantity, getCurrentRoomIndex());
+	public Integer PickUp(Room room, Item toPickUp, Integer quantity) {
+		Integer pickedUp = room.getRoomInventory().ExtractItems(toPickUp, quantity);
 		AddToInventory(toPickUp, pickedUp);
 		return pickedUp;
 	}
-	public Integer Drop(RoomContainer rooms, Item toDrop, Integer quantity) {
+	
+	public Integer Drop(Room room, Item toDrop, Integer quantity) {
 		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
-		rooms.AddItems(toDrop, dropped, getCurrentRoomIndex());
+		room.getRoomInventory().AddItems(toDrop, dropped);
 		return dropped;
 	}
+	
+	public boolean Die(IDatabase db, Room room) {
+		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
+		
+		// drop all enemy items
+		for (Item item : items)
+			this.Drop(room, item, Integer.MAX_VALUE);
+		
+		this.model.setLives( Math.min(0, this.model.getLives() - 1) );
+		
+		return this.model.getLives() == 0;
+	}
+
 }

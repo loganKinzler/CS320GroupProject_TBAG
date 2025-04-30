@@ -5,9 +5,9 @@ import java.lang.Math;
 
 
 public abstract class Inventory {
-	public static Item TEST_ITEM = new Item("Test","This is a test item.");
-	public static Item LEAD_PIPE = new Item("Lead Pipe", "Wack!");
-	public static Item SHWARMA = new Item("Shwarma", "Tastes good...");
+	public static Item TEST_ITEM = new Item(1, "Test","This is a test item.");
+	public static Weapon LEAD_PIPE = new Weapon(2, "Lead Pipe", "Wack!", 5.0);
+	public static Item SHWARMA = new Item(3, "Shwarma", "Tastes good...");
 	
 	// vars
 	protected HashMap<Item, Integer> items;
@@ -27,6 +27,13 @@ public abstract class Inventory {
 	public Item GetItemByName(String itemName) {
 		for (Item item : this.items.keySet())
 			if (item.GetName().toLowerCase().equals(itemName.toLowerCase())) return item;
+		return null;
+	}
+	
+	public Weapon GetWeaponByName(String weaponName) {
+		for (Item weapon : this.items.keySet())
+			if (weapon.GetName().toLowerCase().equals(weaponName.toLowerCase()) &&
+					weapon.getClass() == Weapon.class) return (Weapon) weapon;
 		return null;
 	}
 	

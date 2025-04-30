@@ -755,6 +755,541 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	//Entities~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	@Override
+	public PlayerModel GetPlayer() {
+		return executeTransaction(new Transaction<PlayerModel>() {
+			@Override
+			public PlayerModel execute(Connection conn) throws SQLException {
+				PreparedStatement getPlayerStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getPlayerStatement = conn.prepareStatement(
+							"select entities.* from entities " +
+							"where entities.id = 1"
+					);
+					
+					PlayerModel player = null;
+					
+					resultSet = getPlayerStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						player = loadPlayer(resultSet);
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Player was not found in the entities table");
+					}
+					
+					return player;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getPlayerStatement);
+				}
+			}
+		});
+	}
+
+	@Override
+	public ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex) {
+		return executeTransaction(new Transaction<ArrayList<EnemyModel>>() {
+			@Override
+			public ArrayList<EnemyModel> execute(Connection conn) throws SQLException {
+				PreparedStatement getEnemiesStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getEnemiesStatement = conn.prepareStatement(
+							"select entities.* from entities" +
+							" where entities.id > 1 " +
+							" and entities.currentRoom = ?"
+					);
+					getEnemiesStatement.setInt(1, roomIndex);
+					
+					ArrayList<EnemyModel> enemies = new ArrayList<>();
+					
+					resultSet = getEnemiesStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						enemies.add(loadEnemy(resultSet));
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("No enemies were found in the entities table");
+					}
+					
+					return enemies;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getEnemiesStatement);
+				}
+			}
+		});
+	}
+	
+	@Override
+	public Double UpdatePlayerHealth(double health) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set health = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setDouble(1, health);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return health;
+			}
+		});
+	}
+
+	@Override
+	public Integer UpdatePlayerRoom(int room) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set currentRoom = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setInt(1, room);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return room;
+			}
+		});
+		
+	}
+
+	@Override
+	public Double UpdatePlayerMaxHealth(double maxHealth) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set maxHealth = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setDouble(1, maxHealth);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return maxHealth;
+			}
+		});
+		
+	}
+
+	@Override
+	public Integer UpdatePlayerLives(int lives) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set lives = ? "
+					+ "where entities.id = 1"
+				);
+				
+				insertStatement.setInt(1, lives);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return lives;
+			}
+		});
+		
+	}
+	
+	@Override
+	public Double UpdateEnemyHealthById(int id, double health) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set health = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setDouble(1, health);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return health;
+			}
+		});
+	}
+
+	@Override
+	public Double UpdateEnemyMaxHealthById(int id, double maxHealth) {
+		return executeTransaction(new Transaction<Double>() {
+			public Double execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set maxHealth = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setDouble(1, maxHealth);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return maxHealth;
+			}
+		});
+	}
+
+	@Override
+	public Integer UpdateEnemyLivesById(int id, int lives) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set lives = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setInt(1, lives);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return lives;
+			}
+		});
+	}
+
+	@Override
+	public Integer UpdateEnemyRoomById(int id, int roomId) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set currentRoom = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setInt(1, roomId);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return roomId;
+			}
+		});
+	}
+
+	@Override
+	public EnemyModel getEnemyById(int id) {
+		return executeTransaction(new Transaction<EnemyModel>() {
+			@Override
+			public EnemyModel execute(Connection conn) throws SQLException {
+				PreparedStatement getEnemyStatement = null;
+				ResultSet resultSet = null;
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getEnemyStatement = conn.prepareStatement(
+							"select entities.* " +
+							" where entities.id = ?"
+					);
+					
+					EnemyModel enemy = null;
+					
+					resultSet = getEnemyStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						// create new Author object
+						// retrieve attributes from resultSet starting with index 1
+						enemy = loadEnemy(resultSet);
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Enemy was not found in the entities table");
+					}
+					
+					return enemy;
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getEnemyStatement);
+				}
+			}
+		});
+	}
+
+	@Override
+	public EntityInventory GetPlayerInventory() {
+		return (EntityInventory) this.InventoryBySourceID(3);
+	}
+
+	@Override
+	public void UpdatePlayerInventory(EntityInventory playerInventory) {
+		this.UpdateInventoryBySourceID(2, playerInventory);
+	}
+	
+	@Override
+	public EntityInventory GetEnemyInventoryByID(Integer enemyID) {
+		return (EntityInventory) this.InventoryBySourceID((enemyID << 1) + 1);
+	}
+
+	@Override
+	public RoomInventory GetRoomInventoryByID(Integer roomID) {
+		return (RoomInventory) this.InventoryBySourceID(roomID << 1);
+	}
+
+	@Override
+	public void UpdateEnemyInventory(Integer enemyID, EntityInventory enemyInventory) {
+		this.UpdateInventoryBySourceID((enemyID << 1) + 1, enemyInventory);
+	}
+
+	@Override
+	public void UpdateRoomInventory(Integer roomID, RoomInventory roomInventory) {
+		this.UpdateInventoryBySourceID(roomID << 1, roomInventory);
+	}
+
+	@Override
+	public String UpdateEnemyNameById(int id, String name) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set name = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setString(1, name);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return name;
+			}
+		});
+	}
+
+	@Override
+	public String UpdateEnemyDescriptionById(int id, String description) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update entities "
+					+ "set description = ? "
+					+ "where entities.id = ?"
+				);
+
+				insertStatement.setString(1, description);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return description;
+			}
+		});
+	}
+	
+	//GameHistory~~~~~~
+	
+	@Override
+	public List<String> getGameHistory() {
+		return executeTransaction(new Transaction<List<String>>() {
+			@Override
+			public List<String> execute(Connection conn) throws SQLException {
+				PreparedStatement getGameHistoryStatement = null;
+				ResultSet resultSet = null;
+				List<String> history = new ArrayList<>();
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getGameHistoryStatement = conn.prepareStatement(
+							"select GameHistory.* from GameHistory"
+					);
+					
+					
+					resultSet = getGameHistoryStatement.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						history.add(resultSet.getString(1));
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Line was not found in the GameHistory table");
+					}
+					
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getGameHistoryStatement);
+				}
+
+				return history;
+			}
+		});
+	}
+	public String addToGameHistory(String toAdd) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"insert into GameHistory(printout) "
+					+ "values(?)"
+				);
+
+				insertStatement.setString(1, toAdd);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return toAdd;
+			}
+		});
+	}
+	
+	public Boolean clearGameHistory() {
+		return executeTransaction(new Transaction<Boolean>() {
+			public Boolean execute(Connection conn) throws SQLException {
+				PreparedStatement clearStatement = null;
+				
+				clearStatement = conn.prepareStatement(
+					"delete from GameHistory"
+				);
+				
+				try {
+					clearStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(clearStatement);
+				}
+				
+				return true;
+			}
+		});
+	}
 
 	
 	// END OF QUERIES / INSERTS
@@ -1395,459 +1930,15 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	public void create() {
-		System.out.println("Creating tables...");
+//		System.out.println("Creating tables...");
 		Boolean isNewDatabase = createTables();
 		System.out.println(isNewDatabase);
 		
-		System.out.println("Loading initial data...");
+//		System.out.println("Loading initial data...");
 		loadInitialData(isNewDatabase);
 		
-		System.out.println("Success!");
+//		System.out.println("Success!");
 	}
-
-	@Override
-	public PlayerModel GetPlayer() {
-		return executeTransaction(new Transaction<PlayerModel>() {
-			@Override
-			public PlayerModel execute(Connection conn) throws SQLException {
-				PreparedStatement getPlayerStatement = null;
-				ResultSet resultSet = null;
-				
-				try {
-					// retreive all attributes from both Books and Authors tables
-					getPlayerStatement = conn.prepareStatement(
-							"select entities.* from entities " +
-							"where entities.id = 1"
-					);
-					
-					PlayerModel player = null;
-					
-					resultSet = getPlayerStatement.executeQuery();
-					
-					// for testing that a result was returned
-					Boolean found = false;
-					
-					while (resultSet.next()) {
-						found = true;
-						
-						// create new Author object
-						// retrieve attributes from resultSet starting with index 1
-						player = loadPlayer(resultSet);
-					}
-					
-					// check if the title was found
-					if (!found) {
-						System.out.println("Player was not found in the entities table");
-					}
-					
-					return player;
-				} finally {
-					DBUtil.closeQuietly(resultSet);
-					DBUtil.closeQuietly(getPlayerStatement);
-				}
-			}
-		});
-	}
-
-	@Override
-	public ArrayList<EnemyModel> GetEnemiesInRoom(int roomIndex) {
-		return executeTransaction(new Transaction<ArrayList<EnemyModel>>() {
-			@Override
-			public ArrayList<EnemyModel> execute(Connection conn) throws SQLException {
-				PreparedStatement getEnemiesStatement = null;
-				ResultSet resultSet = null;
-				
-				try {
-					// retreive all attributes from both Books and Authors tables
-					getEnemiesStatement = conn.prepareStatement(
-							"select entities.* from entities" +
-							" where entities.id > 1 " +
-							" and entities.currentRoom = ?"
-					);
-					getEnemiesStatement.setInt(1, roomIndex);
-					
-					ArrayList<EnemyModel> enemies = new ArrayList<>();
-					
-					resultSet = getEnemiesStatement.executeQuery();
-					
-					// for testing that a result was returned
-					Boolean found = false;
-					
-					while (resultSet.next()) {
-						found = true;
-						
-						// create new Author object
-						// retrieve attributes from resultSet starting with index 1
-						enemies.add(loadEnemy(resultSet));
-					}
-					
-					// check if the title was found
-					if (!found) {
-						System.out.println("No enemies were found in the entities table");
-					}
-					
-					return enemies;
-				} finally {
-					DBUtil.closeQuietly(resultSet);
-					DBUtil.closeQuietly(getEnemiesStatement);
-				}
-			}
-		});
-	}
-	
-	@Override
-	public Double UpdatePlayerHealth(double health) {
-		return executeTransaction(new Transaction<Double>() {
-			public Double execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set health = ? "
-					+ "where entities.id = 1"
-				);
-				
-				insertStatement.setDouble(1, health);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return health;
-			}
-		});
-	}
-
-	@Override
-	public Integer UpdatePlayerRoom(int room) {
-		return executeTransaction(new Transaction<Integer>() {
-			public Integer execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set currentRoom = ? "
-					+ "where entities.id = 1"
-				);
-				
-				insertStatement.setInt(1, room);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return room;
-			}
-		});
-		
-	}
-
-	@Override
-	public Double UpdatePlayerMaxHealth(double maxHealth) {
-		return executeTransaction(new Transaction<Double>() {
-			public Double execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set maxHealth = ? "
-					+ "where entities.id = 1"
-				);
-				
-				insertStatement.setDouble(1, maxHealth);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return maxHealth;
-			}
-		});
-		
-	}
-
-	@Override
-	public Integer UpdatePlayerLives(int lives) {
-		return executeTransaction(new Transaction<Integer>() {
-			public Integer execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set lives = ? "
-					+ "where entities.id = 1"
-				);
-				
-				insertStatement.setInt(1, lives);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return lives;
-			}
-		});
-		
-	}
-	
-	@Override
-	public Double UpdateEnemyHealthById(int id, double health) {
-		return executeTransaction(new Transaction<Double>() {
-			public Double execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set health = ? "
-					+ "where entities.id = ?"
-				);
-
-				insertStatement.setDouble(1, health);
-				insertStatement.setInt(2, id);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return health;
-			}
-		});
-	}
-
-	@Override
-	public Double UpdateEnemyMaxHealthById(int id, double maxHealth) {
-		return executeTransaction(new Transaction<Double>() {
-			public Double execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set maxHealth = ? "
-					+ "where entities.id = ?"
-				);
-
-				insertStatement.setDouble(1, maxHealth);
-				insertStatement.setInt(2, id);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return maxHealth;
-			}
-		});
-	}
-
-	@Override
-	public Integer UpdateEnemyLivesById(int id, int lives) {
-		return executeTransaction(new Transaction<Integer>() {
-			public Integer execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set lives = ? "
-					+ "where entities.id = ?"
-				);
-
-				insertStatement.setInt(1, lives);
-				insertStatement.setInt(2, id);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return lives;
-			}
-		});
-	}
-
-	@Override
-	public Integer UpdateEnemyRoomById(int id, int roomId) {
-		return executeTransaction(new Transaction<Integer>() {
-			public Integer execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set currentRoom = ? "
-					+ "where entities.id = ?"
-				);
-
-				insertStatement.setInt(1, roomId);
-				insertStatement.setInt(2, id);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return roomId;
-			}
-		});
-	}
-
-	@Override
-	public EnemyModel getEnemyById(int id) {
-		return executeTransaction(new Transaction<EnemyModel>() {
-			@Override
-			public EnemyModel execute(Connection conn) throws SQLException {
-				PreparedStatement getEnemyStatement = null;
-				ResultSet resultSet = null;
-				
-				try {
-					// retreive all attributes from both Books and Authors tables
-					getEnemyStatement = conn.prepareStatement(
-							"select entities.* " +
-							" where entities.id = ?"
-					);
-					
-					EnemyModel enemy = null;
-					
-					resultSet = getEnemyStatement.executeQuery();
-					
-					// for testing that a result was returned
-					Boolean found = false;
-					
-					while (resultSet.next()) {
-						found = true;
-						
-						// create new Author object
-						// retrieve attributes from resultSet starting with index 1
-						enemy = loadEnemy(resultSet);
-					}
-					
-					// check if the title was found
-					if (!found) {
-						System.out.println("Enemy was not found in the entities table");
-					}
-					
-					return enemy;
-				} finally {
-					DBUtil.closeQuietly(resultSet);
-					DBUtil.closeQuietly(getEnemyStatement);
-				}
-			}
-		});
-	}
-
-	@Override
-	public EntityInventory GetPlayerInventory() {
-		return (EntityInventory) this.InventoryBySourceID(3);
-	}
-
-	@Override
-	public void UpdatePlayerInventory(EntityInventory playerInventory) {
-		this.UpdateInventoryBySourceID(2, playerInventory);
-	}
-	
-	@Override
-	public EntityInventory GetEnemyInventoryByID(Integer enemyID) {
-		return (EntityInventory) this.InventoryBySourceID((enemyID << 1) + 1);
-	}
-
-	@Override
-	public RoomInventory GetRoomInventoryByID(Integer roomID) {
-		return (RoomInventory) this.InventoryBySourceID(roomID << 1);
-	}
-
-	@Override
-	public void UpdateEnemyInventory(Integer enemyID, EntityInventory enemyInventory) {
-		this.UpdateInventoryBySourceID((enemyID << 1) + 1, enemyInventory);
-	}
-
-	@Override
-	public void UpdateRoomInventory(Integer roomID, RoomInventory roomInventory) {
-		this.UpdateInventoryBySourceID(roomID << 1, roomInventory);
-	}
-
-	@Override
-	public String UpdateEnemyNameById(int id, String name) {
-		return executeTransaction(new Transaction<String>() {
-			public String execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set name = ? "
-					+ "where entities.id = ?"
-				);
-
-				insertStatement.setString(1, name);
-				insertStatement.setInt(2, id);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return name;
-			}
-		});
-	}
-
-	@Override
-	public String UpdateEnemyDescriptionById(int id, String description) {
-		return executeTransaction(new Transaction<String>() {
-			public String execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"update entities "
-					+ "set description = ? "
-					+ "where entities.id = ?"
-				);
-
-				insertStatement.setString(1, description);
-				insertStatement.setInt(2, id);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return description;
-			}
-		});
-	}
-
 
 	@Override
 	public void deleteDb(String dbName, String dblocation) {
@@ -1898,126 +1989,6 @@ public class DerbyDatabase implements IDatabase {
        }
        return false;
    }
-	
-	public List<String> loadHistory(){
-		return executeTransaction(new Transaction<List<String>>() {
-			public List<String> execute(Connection conn) throws SQLException {
-//	Connection conn = null;
-		PreparedStatement getHistoryStmt = null;
-		ResultSet resultSet = null;
-		List<String> history = new ArrayList<>();
-		try {
-//		conn = connect();
-			getHistoryStmt = conn.prepareStatement(
-					"SELECT * FROM GameHistory"
-				);
-			resultSet = getHistoryStmt.executeQuery();
-		
-		
-			while(resultSet.next()) {
-				String rowinfo = resultSet.getString(1);
-				history.add(rowinfo);	
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally {
-			DBUtil.closeQuietly(getHistoryStmt);
-			DBUtil.closeQuietly(resultSet);
-		}
-	
-		return history;
-			}
-		});
-	}
-	
-	@Override
-	public List<String> getGameHistory() {
-		return executeTransaction(new Transaction<List<String>>() {
-			@Override
-			public List<String> execute(Connection conn) throws SQLException {
-				PreparedStatement getGameHistoryStatement = null;
-				ResultSet resultSet = null;
-				List<String> history = new ArrayList<>();
-				
-				try {
-					// retreive all attributes from both Books and Authors tables
-					getGameHistoryStatement = conn.prepareStatement(
-							"select GameHistory.* from GameHistory"
-					);
-					
-					
-					resultSet = getGameHistoryStatement.executeQuery();
-					
-					// for testing that a result was returned
-					Boolean found = false;
-					
-					while (resultSet.next()) {
-						found = true;
-						
-						history.add(resultSet.getString(1));
-					}
-					
-					// check if the title was found
-					if (!found) {
-						System.out.println("Line was not found in the GameHistory table");
-					}
-					
-				} finally {
-					DBUtil.closeQuietly(resultSet);
-					DBUtil.closeQuietly(getGameHistoryStatement);
-				}
-
-				return history;
-			}
-		});
-	}
-	public String addToGameHistory(String toAdd) {
-		return executeTransaction(new Transaction<String>() {
-			public String execute(Connection conn) throws SQLException {
-				PreparedStatement insertStatement = null;
-				
-				insertStatement = conn.prepareStatement(
-					"insert into GameHistory(printout) "
-					+ "values(?)"
-				);
-
-				insertStatement.setString(1, toAdd);
-				
-				try {
-					insertStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(insertStatement);
-				}
-				
-				return toAdd;
-			}
-		});
-	}
-	
-	public Boolean clearGameHistory() {
-		return executeTransaction(new Transaction<Boolean>() {
-			public Boolean execute(Connection conn) throws SQLException {
-				PreparedStatement clearStatement = null;
-				
-				clearStatement = conn.prepareStatement(
-					"delete from GameHistory"
-				);
-				
-				try {
-					clearStatement.executeUpdate();
-					conn.commit();
-				}
-				finally {
-					DBUtil.closeQuietly(clearStatement);
-				}
-				
-				return true;
-			}
-		});
-	}
-
 		
 	public boolean dbExists(String type) {
 		boolean exists = false;
@@ -2034,27 +2005,4 @@ public class DerbyDatabase implements IDatabase {
 		
 		return exists;
 	}
-		public void addToHistory(String add) {
-			Connection conn = null;
-			PreparedStatement addHistory = null;
-			try {
-				conn = connect();
-				addHistory = conn.prepareStatement(
-						"INSERT INTO GameHistory(printout) "+
-					    "VALUES(?)"
-						);
-				addHistory.setString(1,add);
-				addHistory.executeUpdate();	
-				conn.commit();
-			}catch(Exception e) {
-				e.printStackTrace();
-			}finally {
-				try {
-					if(addHistory != null)addHistory.close();
-					if(conn != null)conn.close();
-				}catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
 }

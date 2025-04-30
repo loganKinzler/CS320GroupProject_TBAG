@@ -49,7 +49,4 @@ public interface IDatabase {
 	public void deleteDb(String dbName, String dblocation);
 	public String addToGameHistory(String add);
 	List<String> getGameHistory();
-	
-	public abstract List<String> loadHistory();
-	public abstract void addToHistory(String add);
 }

@@ -10,7 +10,7 @@ import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 public class Main {
 	public static void main(String[] args) throws Exception {
 		
-		DerbyDatabase db = new DerbyDatabase();
+		DerbyDatabase db = new DerbyDatabase("test");
 		if (!db.dbExists("test")) db.create();
 		
 		String webappCodeBase = "./war";

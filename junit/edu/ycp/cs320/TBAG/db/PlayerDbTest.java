@@ -10,11 +10,11 @@ import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 
 public class PlayerDbTest {
-	private DerbyDatabase db = new DerbyDatabase();
+	private DerbyDatabase db = new DerbyDatabase("test");
 	
 	@Before
 	public void setup() {
-		db = new DerbyDatabase();
+		db = new DerbyDatabase("test");
 		db.create();
 	}
 	

@@ -104,6 +104,10 @@
 			<c:if test="${foundCommands.contains('use')}">
 			    <p>use [ item ]</p>
 			</c:if>
+			<!-- Misc -->
+			<c:if test="${foundCommands.contains('showMap')}">
+			    <p>show map</p>
+			</c:if>
           </div>
         </div>
 	</div>

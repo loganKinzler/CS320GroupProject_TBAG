@@ -21,6 +21,9 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 
 public class DerbyDatabase implements IDatabase {
+	private String dbType;
+	
+	
 	static {
 		try {
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -30,7 +33,8 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	// constructor
-	public DerbyDatabase() {
+	public DerbyDatabase(String dbType) {
+		this.dbType = dbType;
 		if (this.dbExists("test")) return;
 		this.create();
 	}
@@ -1424,8 +1428,10 @@ public class DerbyDatabase implements IDatabase {
 		}
 	}
 
+	//TODO: add support for multiple databases
+	//Will likely need to have a field in the class for the type because connect is done every db method and i digress against having the db type as a param for every call
 	private Connection connect() throws SQLException {
-		Connection conn = DriverManager.getConnection("jdbc:derby:test.db;create=true");
+		Connection conn = DriverManager.getConnection("jdbc:derby:" + this.dbType + ".db;create=true");
 		
 		// Set autocommit to false to allow execution of
 		// multiple queries/statements as part of the same transaction.

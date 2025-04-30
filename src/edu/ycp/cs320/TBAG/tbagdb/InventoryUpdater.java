@@ -28,7 +28,7 @@ public class InventoryUpdater {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		InventoryUpdater.database = new DerbyDatabase();
+		InventoryUpdater.database = new DerbyDatabase("test");
 		System.out.println("Updating Inventory...");
 		
 		Inventory testUpdateInventory = new EntityInventory();		

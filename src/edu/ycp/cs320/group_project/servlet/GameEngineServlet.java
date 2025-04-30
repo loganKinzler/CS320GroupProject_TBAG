@@ -52,7 +52,7 @@ public class GameEngineServlet extends HttpServlet {
         if (gameHistory == null) {
             DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
             if (db == null) {
-                db = new DerbyDatabase();
+                db = new DerbyDatabase("test");
                 session.setAttribute("db", db);
             }
             gameHistory = db.getGameHistory();
@@ -94,7 +94,7 @@ public class GameEngineServlet extends HttpServlet {
         
         DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
         if (db == null) {
-            db = new DerbyDatabase();
+            db = new DerbyDatabase("test");
             session.setAttribute("db", db);
         }
 
@@ -229,7 +229,7 @@ public class GameEngineServlet extends HttpServlet {
 	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
 	        		break;
 	        		case "newSave":
-	        			db = new DerbyDatabase();
+	        			db = new DerbyDatabase("test");
 	        			db.create();
 	        			systemResponse = "Creating new save...";
 	        		break;
@@ -239,8 +239,8 @@ public class GameEngineServlet extends HttpServlet {
 	        			addToGameHistory(db, gameHistory, "Chat logs cleared...");
 	        		break;
 	        		case "showMap":
-	        			//Code to show map
 	        			systemResponse = showMapString();
+	        			if (!foundCommands.contains("showMap")) foundCommands.add("showMap");
 	        		break;
             	
             		// TYPE 1 COMMANDS:
@@ -841,8 +841,6 @@ public class GameEngineServlet extends HttpServlet {
     	  "<p class=\"map-string\">"
     	+ mapString
     	+ "</p>"; 
-    	
-    	System.out.println(toOut);
     	
     	return toOut;
     }

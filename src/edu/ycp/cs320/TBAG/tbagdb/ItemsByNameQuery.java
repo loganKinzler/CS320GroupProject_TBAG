@@ -20,7 +20,7 @@ public class ItemsByNameQuery {
 	
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
-		database = new DerbyDatabase();
+		database = new DerbyDatabase("test");
 		
 		// prompt user for item name
 		System.out.print("Item name to query: ");

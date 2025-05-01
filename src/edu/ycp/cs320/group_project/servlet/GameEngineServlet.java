@@ -39,10 +39,9 @@ import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
-
-
 public class GameEngineServlet extends HttpServlet {
-    @Override
+
+	@Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     	HttpSession session = req.getSession();
         String userInput = (String) session.getAttribute("userInput");
@@ -66,13 +65,9 @@ public class GameEngineServlet extends HttpServlet {
         }
         
         req.setAttribute("gameHistory", gameHistory);
-        
-        
-        
-        
+        req.setAttribute("foundCommands", foundCommands);        
         sessionPlaySound(req, "playHakeSound");
-        
-        req.setAttribute("foundCommands", foundCommands);
+ 
         
         int sudoStage = 0;
         if (session.getAttribute("sudoStage") != null) {
@@ -87,7 +82,7 @@ public class GameEngineServlet extends HttpServlet {
 //        else {
 //        	System.out.println("Started sudo easter egg");
 //        }
-        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+        req.getRequestDispatcher("/_view/game.jsp").forward(req, resp);
     }
     
 
@@ -263,6 +258,10 @@ public class GameEngineServlet extends HttpServlet {
 	        			sudoStage = 1;
 	        	        session.setAttribute("sudoStage", sudoStage);
         			break;
+        			
+	        		case "quit":
+	        			resp.sendRedirect("index");
+	        		break;
         			
         			//hake easter egg test
 	        		case "hakeTest" :
@@ -771,7 +770,7 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			
-            			FightController fightController = new FightController(fighters);
+            			FightController fightController = new FightController(fighters, db);
             			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
         					systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
             						params.get(0));

@@ -283,6 +283,35 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
+	@Override
+	public Integer UpdateEnteredRoom(boolean entered, int id) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"update rooms "
+					+ "set has_entered_room = ? "
+					+ "where rooms.room_id = ?"
+				);
+				
+				insertStatement.setBoolean(1, entered);
+				insertStatement.setInt(2, id);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return id;
+			}
+		});
+		
+	}
+	
 	public List<Room> DirectionsByRoomIdQuery(int id) {
 		return executeTransaction(new Transaction<List<Room>>() {
 			@Override

@@ -21,15 +21,14 @@ import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
 import edu.ycp.cs320.TBAG.controller.EntityController;
 import edu.ycp.cs320.TBAG.controller.FightController;
 import edu.ycp.cs320.TBAG.controller.PlayerController;
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
 import edu.ycp.cs320.TBAG.model.Action;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
-import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
+import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
@@ -133,7 +132,16 @@ public class GameEngineServlet extends HttpServlet {
         
         for(int i = 0; i<rooms.size(); i++) {
         	rooms.get(i).setConnections(connections.get(i).getHashMap());
+        	/*
+        	//This will check what room the player is starting in
+        	if(rooms.get(i).getRoomId() == player.getCurrentRoomIndex()) {
+        		rooms.get(i).setHas_Entered_Room(true);
+        		db.UpdateEnteredRoom(true, i);
+        	}
+        	*/
         }
+        
+        
 
 //        if (rooms == null) {
 //        	//rooms.createHardcodedRooms();
@@ -268,6 +276,9 @@ public class GameEngineServlet extends HttpServlet {
             			//These used to be offset by 1
             			String short_description = rooms.get(nextRoom - 1).getShortRoomDescription();
             			String long_description = rooms.get(nextRoom - 1).getLongRoomDescription();
+            			//This will set has entered room to true since the player is entering a new room
+            			rooms.get(nextRoom - 1).setHas_Entered_Room(true);
+            			db.UpdateEnteredRoom(true, db.GetPlayer().getCurrentRoomIndex());
             			systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
             					params.get(0),
             					short_description,

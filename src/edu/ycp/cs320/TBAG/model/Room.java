@@ -24,7 +24,7 @@ public class Room {
 	private Item RoomKey = null;
 	private int x_position;
 	private int y_position;
-	private boolean has_entered_room;
+	private boolean has_entered_room = false;
 	//TODO: Might have to move doesKeyExist into the container as well
 	
 	//Constructors
@@ -243,5 +243,9 @@ public class Room {
 	
 	public void setConnections(Map<String, Integer> connections) {
 		this.connections = connections;
+	}
+	
+	public void setHas_Entered_Room(boolean entered) {
+		this.has_entered_room = entered;
 	}
 }

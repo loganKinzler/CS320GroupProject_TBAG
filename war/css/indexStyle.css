@@ -1,0 +1,70 @@
+@charset "UTF-8";
+
+:root {
+	 --console-background: #001701;
+	 --console-text-color: #07b60d;
+	 --caret-color: #019808;
+	 --submit-button-bg: #004103;
+	 --submit-button-hover: #004f04;
+	 --monitor-color: #D6C6A8;
+	 --lighter-monitor-color: #E8DEC9;
+	 --darker-monitor-color: #B3A78C;
+	 --sticky-note-color: #FED800;
+	 
+	 --font-size: 2rem;
+	 --ascii-font-size: .7rem;
+	 --hake-ascii-font-size: .45rem;
+}
+
+* {
+	margin:0;
+	padding:0;
+	box-sizing:border-box;
+}
+
+.monitor {
+	position: absolute;
+	width: 100vw;
+	height: 100vh;
+	background-color: var(--monitor-color);
+	
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	box-shadow: inset 0px 0px 32px 6px rgba(0,0,0,0.65);
+}
+
+.console {
+	position: relative;
+	height: 80%;
+	width: 85%;
+	
+	padding: 1%;
+	
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+	justify-content: end;
+	
+	background-color: var(--console-background);
+	color: var(--console-text-color);
+	
+	font-family: "VT323", monospace;
+	font-weight: 400;
+	font-style: normal;
+	font-size: var(--font-size);
+	
+	box-shadow: 0px 0px 32px 24px rgba(0,0,0,1), inset 0px 0px 66px 0px rgba(0,0,0,0.75);
+	overflow: hidden;
+	z-index: 0;
+}
+
+/* .ipear_logo {
+}
+
+.ipear-img {
+}
+
+.power_button {
+} */

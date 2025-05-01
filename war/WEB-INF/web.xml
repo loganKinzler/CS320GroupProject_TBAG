@@ -4,19 +4,31 @@
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
          <!--Welcome file-->
- <welcome-file-list>
+	<welcome-file-list>
+        <welcome-file>_view/game.jsp</welcome-file>
         <welcome-file>_view/index.jsp</welcome-file>
-        <welcome-file>template/index.html</welcome-file>
     </welcome-file-list>
   <!-- Servlet Declaration -->
-  <servlet>
-    <servlet-name>GameEngineServlet</servlet-name>
-    <servlet-class>edu.ycp.cs320.group_project.servlet.GameEngineServlet</servlet-class>
-  </servlet>
+  	<servlet>
+   	 	<servlet-name>WelcomePageServlet</servlet-name>
+		<servlet-class>edu.ycp.cs320.group_project.servlet.WelcomePageServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+   	 	<servlet-name>GameEngineServlet</servlet-name>
+		<servlet-class>edu.ycp.cs320.group_project.servlet.GameEngineServlet</servlet-class>
+	</servlet>
+  
+  
 
   <!-- Servlet Mapping -->
-  <servlet-mapping>
-    <servlet-name>GameEngineServlet</servlet-name>
-    <url-pattern>/game</url-pattern>
-  </servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>WelcomePageServlet</servlet-name>
+		<url-pattern>/index</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>GameEngineServlet</servlet-name>
+		<url-pattern>/game</url-pattern>
+	</servlet-mapping>
 </web-app>

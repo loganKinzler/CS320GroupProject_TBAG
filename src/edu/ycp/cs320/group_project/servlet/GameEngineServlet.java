@@ -59,8 +59,6 @@ public class GameEngineServlet extends HttpServlet {
             session.setAttribute("gameHistory", gameHistory);
         }
         
-        req.setAttribute("gameHistory", gameHistory);
-        
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
         
         

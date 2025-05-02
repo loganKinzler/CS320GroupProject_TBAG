@@ -22,6 +22,9 @@ public class Room {
 	private boolean isLockedRoom;
 	//A locked room will have an item stored here
 	private Item RoomKey = null;
+	private int x_position;
+	private int y_position;
+	private boolean has_entered_room = false;
 	//TODO: Might have to move doesKeyExist into the container as well
 	
 	//Constructors
@@ -43,6 +46,14 @@ public class Room {
 	
 	public Room() {
 		
+	}
+	
+	public Room(String name, String description, int x_position, int y_position, boolean has_entered_room) {
+		this.short_description = name;
+		this.long_description = description;
+		this.x_position = x_position;
+		this.y_position = y_position;
+		this.has_entered_room = has_entered_room;
 	}
 	
 	//This constructor is a LOCKED room that requires a certain amount of an item to open
@@ -179,6 +190,18 @@ public class Room {
 		return this.enemies;
 	}
 	
+	public int getX_Position() {
+		return this.x_position;
+	}
+	
+	public int getY_Position() {
+		return this.y_position;
+	}
+	
+	public boolean getHas_Entered_Room() {
+		return this.has_entered_room;
+	}
+	
 	
 	
 	
@@ -220,5 +243,9 @@ public class Room {
 	
 	public void setConnections(Map<String, Integer> connections) {
 		this.connections = connections;
+	}
+	
+	public void setHas_Entered_Room(boolean entered) {
+		this.has_entered_room = entered;
 	}
 }

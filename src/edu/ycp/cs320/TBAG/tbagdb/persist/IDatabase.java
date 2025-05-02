@@ -19,6 +19,7 @@ public interface IDatabase {
 
 	public abstract List<Room> getRooms();
 	public abstract List<Room> getConnections();
+	public abstract Integer UpdateEnteredRoom(boolean entered, int id);
 	public abstract List<Room> RoomsByIdQuery(int id);
 	
 	public abstract Inventory InventoryBySourceID(Integer sourceID);

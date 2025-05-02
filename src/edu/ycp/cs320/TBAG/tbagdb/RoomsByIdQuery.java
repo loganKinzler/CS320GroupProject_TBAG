@@ -28,9 +28,9 @@ public class RoomsByIdQuery {
 		
 		List<Room> roomsWithId = RoomsByIdQuery.queryDatabase(room_id);
 		
-		System.out.println("   NAME   | DESCRIPTION ");
+		System.out.println("   NAME   | DESCRIPTION | X_POSITION | Y_POSITION | HAS_ENTERED_ROOM");
 		for (Room room : roomsWithId) {
-			System.out.println(String.format("%10s|%s", room.getShortRoomDescription(), room.getLongRoomDescription()));
+			System.out.println(String.format("%10s|%s|%d|%d|%b", room.getShortRoomDescription(), room.getLongRoomDescription(), room.getX_Position(), room.getY_Position(), room.getHas_Entered_Room()));
 		}
 	}
 }

@@ -296,10 +296,15 @@ public class GameEngineServlet extends HttpServlet {
             			if (!foundCommands.contains("pickup")) foundCommands.add("pickup");
             			
             			systemResponse = String.format("Picking up %s...<br><br>", params.get(1));
+                        addToGameHistory(db, gameHistory, systemResponse);
+            			
+            			systemResponse = ASCIIOutput.ShovelAscii(this, params.get(0));
             			
             			Integer pickupQuantity;
             			if (params.get(0).equals("all")) pickupQuantity = Integer.MAX_VALUE;
-            			else pickupQuantity = Integer.parseInt(params.get(0));
+            			else {
+            				pickupQuantity = Integer.parseInt(params.get(0));
+            			}
             			
             			// pickup all items
             			if (params.get(0).equals("all") && params.get(1).equals("items")) {

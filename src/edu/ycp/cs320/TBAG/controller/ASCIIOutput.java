@@ -33,4 +33,31 @@ public class ASCIIOutput {
     	
     	return toOut;
     }
+	
+	public static String ShovelAscii(GameEngineServlet servlet, String shovel) {
+    	String toOut = "";
+    	try {
+    		InputStream in = servlet.getServletContext().getResourceAsStream("/recs/shovel.txt");
+			Scanner reader = new Scanner(in);
+			if (shovel.equals("biiig shovel")) toOut += "<p class=\"item-ascii-art\">";
+			//System.out.println("It worked");
+			while (reader.hasNextLine()) {
+				String asciiLine = reader.nextLine();
+				
+				//ChatGPT recommended that i do this to avoid any issues with formatting
+				asciiLine = asciiLine
+						  .replace("&", "&amp;")
+						  .replace("<", "&lt;")
+						  .replace(">", "&gt;");
+				
+				toOut += asciiLine + "\n";
+			}
+			toOut += "</p>";
+		} catch (Exception e) {
+			// TODO Auto-generated catch block0
+			e.printStackTrace();
+		}
+    	
+    	return toOut;
+	}
 }

@@ -14,6 +14,7 @@
 	 --font-size: 2rem;
 	 --ascii-font-size: .7rem;
 	 --hake-ascii-font-size: .45rem;
+	 --item-ascii-font-size: .5rem;
 }
 
 * {
@@ -278,4 +279,10 @@ box-sizing:border-box;
 	bottom: 0;
 	transform: translateX(-50%);
 	margin-bottom: 1vh;
+}
+
+.item-ascii-art{
+	font-size: var(--item-ascii-font-size) !important;
+	white-space: pre;
+	line-height: 1;
 }

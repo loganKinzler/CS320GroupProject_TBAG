@@ -131,13 +131,13 @@ public class GameEngineServlet extends HttpServlet {
         
         for(int i = 0; i<rooms.size(); i++) {
         	rooms.get(i).setConnections(connections.get(i).getHashMap());
-        	/*
+        	
         	//This will check what room the player is starting in
         	if(rooms.get(i).getRoomId() == player.getCurrentRoomIndex()) {
         		rooms.get(i).setHas_Entered_Room(true);
         		db.UpdateEnteredRoom(true, i);
         	}
-        	*/
+        	
         }
         
         
@@ -248,7 +248,7 @@ public class GameEngineServlet extends HttpServlet {
 	        			addToGameHistory(db, gameHistory, "Chat logs cleared...");
 	        		break;
 	        		case "showMap":
-	        			systemResponse = showMapString();
+	        			systemResponse = modularMakeMap(db);
 	        			if (!foundCommands.contains("showMap")) addToFoundCommands(db,foundCommands,"showMap");
 	        		break;
             	
@@ -502,7 +502,7 @@ public class GameEngineServlet extends HttpServlet {
             					if (!foundCommands.contains("describeGroup_room")) addToFoundCommands(db,foundCommands,"describeGroup_room");
             					if (!foundCommands.contains("describe_room")) addToFoundCommands(db,foundCommands,"describe_room");
             					
-            					System.out.println(db.GetPlayer().getCurrentRoomIndex());
+//            					System.out.println(db.GetPlayer().getCurrentRoomIndex());
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
                     					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getShortRoomDescription(),
                     					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getLongRoomDescription());
@@ -591,7 +591,7 @@ public class GameEngineServlet extends HttpServlet {
             						// connection doesn't exist
             						if (connectionID == 0) continue;
             						
-            						System.out.println(String.format("%s : %d", roomConnections.get(i), connectionID));
+//            						System.out.println(String.format("%s : %d", roomConnections.get(i), connectionID));
             						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
             								rooms.get(connectionID - 1).getShortRoomDescription());
             					}
@@ -866,5 +866,73 @@ public class GameEngineServlet extends HttpServlet {
     	+ "</p>"; 
     	
     	return toOut;
+    }
+    
+    public String modularMakeMap(IDatabase db) {
+    	
+    	//Get all rooms, get max x and y, make 2d array of strings with that
+    	//Get all found rooms, use their x and y to put them in proper places in 2d array
+    	//Fill rest with empty
+    	
+    	//Get all rooms and get the max x and y to know array size
+    	List<Room> rooms = db.getRooms();
+    	for (Room room : rooms) {
+    		System.out.println(room.getRoomId() + ", " + room.getHas_Entered_Room());
+    	}
+    	int[] dim = getRoomsMaxXY(rooms);
+    	
+    	//Make a 2d array of strings
+    	String[][] mapArr = new String[dim[0]][dim[1]];
+    	
+    	//Popular 2d array with "   "
+    	for (int i = 0; i < mapArr.length; i++) {
+    		for (int j = 0; j < mapArr[i].length; j++) {
+    			mapArr[i][j] = "   ";
+    		}
+    	}
+    	
+    	//Go through every room, if it has been found, use its x and y (offset cause array indexing) to put it in the right place in the array
+    	
+    	for (Room room : rooms) {
+    		if (room.getHas_Entered_Room()) {
+    			int x = room.getX_Position() - 1;
+    			int y = room.getY_Position() - 1;
+    			
+    			mapArr[x][y] = "[ ]";
+    		}
+    	}
+    	
+    	//Use array to make a string to output
+    	String mapString = "";
+    	
+    	for (int i = 0; i < mapArr.length; i++) {
+    		for (int j = 0; j < mapArr[i].length; j++) {
+    			mapString += mapArr[i][j] + " ";
+//    			System.out.println(mapArr[i][j] + ", ");
+    			
+    			if (j == mapArr[i].length) mapString += "<br>";
+    		}
+    		mapString += "<br>";
+    	}
+    	
+    	String toOut =
+		  "<p class=\"map-string\">"
+		+ mapString
+		+ "</p>"; 
+    	
+    	System.out.println(mapString);
+    	
+    	return toOut;
+    }
+    
+    public int[] getRoomsMaxXY(List<Room> rooms) {
+    	int[] pair = {0,0};
+    	
+    	for (Room room : rooms) {
+    		if (room.getX_Position() > pair[0]) pair[0] = room.getX_Position();
+    		if (room.getY_Position() > pair[1]) pair[1] = room.getY_Position();
+    	}
+    	
+    	return pair;
     }
 }

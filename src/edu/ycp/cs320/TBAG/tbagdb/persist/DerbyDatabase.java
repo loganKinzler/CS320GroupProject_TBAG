@@ -1399,10 +1399,14 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private Room loadRoom(ResultSet resultSet) throws SQLException {
-		int index = 2;
+		int index = 1;
+		int id = resultSet.getInt(index++);
 		String name = resultSet.getString(index++);
 		String description = resultSet.getString(index++);
-		Room toOut = new Room(name, description);
+		int x_position = resultSet.getInt(index++);
+		int y_position = resultSet.getInt(index++);
+		boolean has_entered_room = resultSet.getBoolean(index++);
+		Room toOut = new Room(id, name, description, x_position, y_position, has_entered_room);
 		
 		return toOut;
 	}
@@ -1668,7 +1672,10 @@ public class DerbyDatabase implements IDatabase {
 						+ "room_id int primary key"
 						+ " generated always as identity (start with 1, increment by 1), "
 						+ "name varchar(16), "
-						+ "description varchar(64)"
+						+ "description varchar(64), "
+						+ "x_position int, "
+						+ "y_position int, "
+						+ "has_entered_room boolean"
 						+ ")"
 						);
 				
@@ -1971,14 +1978,16 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 
-				//Insert Rooms
 				PreparedStatement insertRoomStatement = conn.prepareStatement(
-						"insert into rooms (name, description) values (?, ?)");
+						"insert into rooms (name, description, x_position, y_position, has_entered_room) values (?, ?, ?, ?, ?)");
 						
 				
 				for(Room room : rooms) {
 					insertRoomStatement.setString(1, room.getShortRoomDescription());
 					insertRoomStatement.setString(2, room.getLongRoomDescription());
+					insertRoomStatement.setInt(3, room.getX_Position());
+					insertRoomStatement.setInt(4, room.getY_Position());
+					insertRoomStatement.setBoolean(5, room.getHas_Entered_Room());
 					insertRoomStatement.executeUpdate();
 				}
 				

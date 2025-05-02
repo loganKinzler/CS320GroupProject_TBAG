@@ -49,4 +49,8 @@ public interface IDatabase {
 	public void deleteDb(String dbName, String dblocation);
 	public String addToGameHistory(String add);
 	List<String> getGameHistory();
+	
+	public String addToFound(String add);
+	List<String> getFoundCommands();
+	public Boolean checkFound(String check);
 }

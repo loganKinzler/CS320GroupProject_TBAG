@@ -35,8 +35,24 @@ public class DerbyDatabase implements IDatabase {
 	// constructor
 	public DerbyDatabase(String dbType) {
 		this.dbType = dbType;
-		if (this.dbExists("test")) return;
-		this.create();
+	    if (this.dbExists("test")) {
+	        // Verify tables exist
+	        if (!verifyTablesExist()) {
+	            create(); // Recreate if tables are missing
+	        }
+	        return;
+	    }
+	    this.create();
+	}
+
+	private boolean verifyTablesExist() {
+	    try {
+	        // Try a simple query against one of the tables
+	        getFoundCommands();
+	        return true;
+	    } catch (Exception e) {
+	        return false;
+	    }
 	}
 	
 	private interface Transaction<ResultType> {
@@ -1673,6 +1689,7 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(connectionsStatement);
 				}
 
+				
 				//GameHistory
 				PreparedStatement historystmt = null;
 				try {
@@ -1690,7 +1707,26 @@ public class DerbyDatabase implements IDatabase {
 				}finally{
 					DBUtil.closeQuietly(historystmt);
 				}
-
+				
+				
+				//GameHistory
+				PreparedStatement foundCommandstmt = null;
+				try {
+				    foundCommandstmt = conn.prepareStatement(
+				        "create table FoundCommands (" +
+				        "   CommandName varchar(32672)" +
+				        ")"
+				    );
+				    foundCommandstmt.executeUpdate();
+				} catch (SQLException sql) {
+				    if (!sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) {
+				        throw sql; // Only ignore "already exists" errors
+				    }
+				    isNewDatabase = false;
+				} finally {
+				    DBUtil.closeQuietly(foundCommandstmt);
+				}
+				
 				
 				return isNewDatabase;
 			}
@@ -2011,4 +2047,100 @@ public class DerbyDatabase implements IDatabase {
 		
 		return exists;
 	}
+	
+	
+	public List<String> getFoundCommands() {
+		return executeTransaction(new Transaction<List<String>>() {
+			@Override
+			public List<String> execute(Connection conn) throws SQLException {
+				PreparedStatement getFoundStmt = null;
+				ResultSet resultSet = null;
+				List<String> foundCommands = new ArrayList<>();
+				
+				try {
+					// retreive all attributes from both Books and Authors tables
+					getFoundStmt = conn.prepareStatement(
+							"select FoundCommands.* from FoundCommands"
+					);
+					
+					
+					resultSet = getFoundStmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						foundCommands.add(resultSet.getString(1));
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Line was not found in the GameHistory table");
+					}
+					
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getFoundStmt);
+				}
+
+				return foundCommands;
+			}
+		});
+	}
+	
+	public String addToFound(String toAdd) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"insert into FoundCommands(CommandName) "
+					+ "values(?)"
+				);
+
+				insertStatement.setString(1, toAdd);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return toAdd;
+			}
+		});
+	}
+	
+	public Boolean checkFound(String toCheck) {
+	    return executeTransaction(new Transaction<Boolean>() {
+	        @Override
+	        public Boolean execute(Connection conn) throws SQLException {
+	            PreparedStatement checkStatement = null;
+	            ResultSet resultSet = null;
+	            
+	            try {
+	                // Prepare SQL query to check if the command exists
+	                checkStatement = conn.prepareStatement(
+	                    "SELECT 1 FROM FoundCommands WHERE CommandName = ?"
+	                );
+	                checkStatement.setString(1, toCheck);
+	                
+	                resultSet = checkStatement.executeQuery();
+	                
+	                // If there's at least one row, the command exists
+	                return resultSet.next();
+	                
+	            } finally {
+	                DBUtil.closeQuietly(resultSet);
+	                DBUtil.closeQuietly(checkStatement);
+	            }
+	        }
+	    });
+	}
+	
+	
 }

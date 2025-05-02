@@ -43,6 +43,9 @@ public class ConsoleInterpreter {
     	else if (userInput.equals("show map")) {
     		return new Action("showMap", new ArrayList<String>(Arrays.asList("mappypoo")));
     	}
+    	else if (userInput.equals("quit")) {
+    		return new Action("quit", new ArrayList<String>(Arrays.asList("quitting")));
+    	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
     	

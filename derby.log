@@ -1,31 +1,8 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 ----------------------------------------------------------------
-Wed Apr 30 14:32:08 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-87f8-6407-00000790e848 
-on database directory /Users/krimx/git/CS320GroupProject_TBAG/test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@1cf4f579 
-Loaded from file:/Users/krimx/Documents/EclipseWorkspace/CS320_Derby/lib/derby.jar
-=======
-
-Wed Apr 30 15:24:57 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-8828-ccd9-00000f209b88 
-on database directory C:\Software Engineering 2025\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@70dea4e 
-Loaded from file:/C:/Software%20Engineering%202025/CS320_Derby/lib/derby.jar
-java.vendor=Eclipse Adoptium
-java.runtime.version=23.0.1+11
-user.dir=C:\Software Engineering 2025\CS320GroupProject_TBAG----------
-Thu May 01 00:11:28 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-8a0a-d70f-00000eea0820 
+Sat May 03 18:38:59 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-984d-8457-00000f4aa9c0 
 on database directory C:\Users\j2mar\git\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5c647e05 
 Loaded from file:/C:/CS320-eclipse2024stuff/CS320_Derby/lib/derby.jar
->>>>>>> refs/heads/development-branch
-=======
-----------------------------------------------------------------
-Fri May 02 13:18:20 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-9201-9a14-00000f516440 
-on database directory C:\Users\j2mar\git\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5c647e05 
-Loaded from file:/C:/CS320-eclipse2024stuff/CS320_Derby/lib/derby.jar
->>>>>>> refs/heads/Evan_Work_Branch
 java.vendor=Oracle Corporation
 java.runtime.version=21.0.2+13-LTS-58
 user.dir=C:\Users\j2mar\git\CS320GroupProject_TBAG

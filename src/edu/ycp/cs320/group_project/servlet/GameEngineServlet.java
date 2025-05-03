@@ -306,7 +306,7 @@ public class GameEngineServlet extends HttpServlet {
             			systemResponse = String.format("Picking up %s...<br><br>", params.get(1));
                         addToGameHistory(db, gameHistory, systemResponse);
             			
-            			systemResponse = ASCIIOutput.ShovelAscii(this, params.get(0));
+            			systemResponse = ASCIIOutput.ShovelAscii(this, params.get(1));
             			
             			Integer pickupQuantity;
             			if (params.get(0).equals("all")) pickupQuantity = Integer.MAX_VALUE;

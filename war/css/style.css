@@ -12,9 +12,8 @@
 	 --sticky-note-color: #FED800;
 	 
 	 --font-size: 2rem;
-	 --ascii-font-size: .7rem;
 	 --hake-ascii-font-size: .45rem;
-	 --item-ascii-font-size: .5rem;
+	 --item-ascii-font-size: 1rem;
 }
 
 * {
@@ -255,11 +254,7 @@ box-sizing:border-box;
   	background-color: var(--darker-monitor-color);
 }
 
-.ascii-art {
-	font-size: var(--ascii-font-size) !important;
-	white-space: pre;
-	line-height: 1;
-}
+
 .hake-ascii-art {
 	font-size: var(--hake-ascii-font-size) !important;
 	white-space: pre;

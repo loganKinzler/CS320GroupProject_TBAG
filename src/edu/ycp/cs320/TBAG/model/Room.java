@@ -164,6 +164,25 @@ public class Room {
 	        return values;
 	}
 	
+	public int[] getAllConnectionsInt() {
+	    int[] conns = {0, 0, 0, 0}; // [north, east, south, west]
+
+	    if (connections.get("north") != null) {
+	        conns[0] = connections.get("north");
+	    }
+	    if (connections.get("east") != null) {
+	        conns[1] = connections.get("east");
+	    }
+	    if (connections.get("south") != null) {
+	        conns[2] = connections.get("south");
+	    }
+	    if (connections.get("west") != null) {
+	        conns[3] = connections.get("west");
+	    }
+
+	    return conns;
+	}
+	
 	//This will get the entire HashMap for the room
 	public Map<String, Integer> getHashMap(){
 		return this.connections;

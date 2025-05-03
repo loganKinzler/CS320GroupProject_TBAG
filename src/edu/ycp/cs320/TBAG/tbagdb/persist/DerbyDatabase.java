@@ -381,6 +381,55 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
+	public Room getConnectionsByRoomId(int id) {
+		return executeTransaction(new Transaction<Room>() {
+			@Override
+			public Room execute(Connection conn) throws SQLException {
+				PreparedStatement stmt = null;
+				ResultSet resultSet = null;
+				Room toOut = new Room();
+				
+				try {
+					// Get all rooms with the same room id as id
+					stmt = conn.prepareStatement(
+							"select connections.* " +
+							"from connections " + 
+							" where connections.room_id = ?"
+					);
+					stmt.setInt(1, id);
+					
+					List<Room> result = new ArrayList<Room>();
+					
+					resultSet = stmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						toOut = loadConnection(resultSet);
+					}
+					
+//					System.out.print(result);
+					
+					// check if a room with the id was found
+					if(!found) {
+						System.out.println("<" + id + "> was not found in the rooms table");
+						return null;
+					}
+					
+					return toOut;
+					
+					
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(stmt);
+				}
+				
+			}
+		});
+	}
+	
 
 	@Override
 	public Inventory InventoryBySourceID(Integer sourceID) {

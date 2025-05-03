@@ -876,63 +876,200 @@ public class GameEngineServlet extends HttpServlet {
     	
     	//Get all rooms and get the max x and y to know array size
     	List<Room> rooms = db.getRooms();
-    	for (Room room : rooms) {
-    		System.out.println(room.getRoomId() + ", " + room.getHas_Entered_Room());
-    	}
-    	int[] dim = getRoomsMaxXY(rooms);
+    	int[] dim = getRoomsDims(rooms);
+    	int[] mins = getRoomsMins(rooms);
     	
-    	//Make a 2d array of strings
-    	String[][] mapArr = new String[dim[0]][dim[1]];
-    	
-    	//Popular 2d array with "   "
-    	for (int i = 0; i < mapArr.length; i++) {
-    		for (int j = 0; j < mapArr[i].length; j++) {
-    			mapArr[i][j] = "   ";
+    	//ArrayList of strings. each string is horizontal, each entry is vertical
+    	ArrayList<ArrayList<String>> map = new ArrayList<>();
+    	for (int i = 0; i < dim[1]; i++) {
+    		ArrayList<String> toAdd = new ArrayList<>();
+    		for (int j = 0; j <= dim[0]; j++) {
+    			toAdd.add("   ");
+    			if (j < dim[0]) toAdd.add("   ");
+    		}
+    		map.add(toAdd);
+    		
+    		if (i < dim[1]) {
+    			ArrayList<String> connLine = (ArrayList<String>) toAdd.clone();
+    			map.add(connLine);
     		}
     	}
     	
-    	//Go through every room, if it has been found, use its x and y (offset cause array indexing) to put it in the right place in the array
+    	List<Room> filteredRooms = filterEnteredRooms(rooms);
     	
-    	for (Room room : rooms) {
+    	//Put rooms in
+    	for (Room room : filteredRooms) {
     		if (room.getHas_Entered_Room()) {
-    			int x = room.getX_Position() - 1;
-    			int y = room.getY_Position() - 1;
+    			int yOffset = room.getY_Position() - mins[1];
+    			int yPos = dim[1] - yOffset;
+        		map.get(2 * yPos).set(2 * room.getX_Position(), "[ ]");
+        		
+        		if (DBController.getPlayerCurrentRoom(db) == room.getRoomId()) {
+        			map.get(2 * yPos).set(2 * room.getX_Position(), "░░░");
+        		}
+    		}
+    		
+    	}
+    	
+    	//Put connections in
+    	for (Room room : filteredRooms) {
+    		int[] conns = db.getConnectionsByRoomId(room.getRoomId()).getAllConnectionsInt();
+    		
+    		
+    		if (conns[0] != 0) {
+    			int yOffset = room.getY_Position() - mins[1];
+    			int yPos = dim[1] - yOffset;
     			
-    			mapArr[x][y] = "[ ]";
+    			map.get(2 * yPos - 1).set(2 * room.getX_Position(), " | ");
+    			
+    			List<Room> destArr = db.RoomsByIdQuery(conns[0]);
+    			
+    			if (destArr.size() == 1) {
+    				Room dest = destArr.get(0);
+    				if (!dest.getHas_Entered_Room()) {
+    					yOffset = dest.getY_Position() - mins[1];
+    	    			yPos = dim[1] - yOffset;
+    	        		map.get(2 * yPos).set(2 * dest.getX_Position(), "___");
+    				}
+    			}
+    		}
+    		if (conns[2] != 0) {
+    			int yOffset = room.getY_Position() - mins[1];
+    			int yPos = dim[1] - yOffset;
+    			
+    			map.get(2 * yPos + 1).set(2 * room.getX_Position(), " | ");
+    			
+    			List<Room> destArr = db.RoomsByIdQuery(conns[2]);
+    			
+    			if (destArr.size() == 1) {
+    				Room dest = destArr.get(0);
+    				if (!dest.getHas_Entered_Room()) {
+    					yOffset = dest.getY_Position() - mins[1];
+    	    			yPos = dim[1] - yOffset;
+    	        		map.get(2 * yPos).set(2 * dest.getX_Position(), "___");
+    				}
+    			}
+    		}
+    		if (conns[1] != 0) {
+    			int yOffset = room.getY_Position() - mins[1];
+    			int yPos = dim[1] - yOffset;
+    			
+    			map.get(2 * yPos).set(2 * room.getX_Position() + 1, "–––");
+    			
+    			List<Room> destArr = db.RoomsByIdQuery(conns[1]);
+    			
+    			if (destArr.size() == 1) {
+    				Room dest = destArr.get(0);
+    				if (!dest.getHas_Entered_Room()) {
+    					yOffset = dest.getY_Position() - mins[1];
+    	    			yPos = dim[1] - yOffset;
+    	        		map.get(2 * yPos).set(2 * dest.getX_Position(), "___");
+    				}
+    			}
+    		}
+
+    		if (conns[3] != 0) {
+    			int yOffset = room.getY_Position() - mins[1];
+    			int yPos = dim[1] - yOffset;
+    			
+    			map.get(2 * yPos).set(2 * room.getX_Position() - 1, "–––");
+    			
+    			List<Room> destArr = db.RoomsByIdQuery(conns[3]);
+    			
+    			if (destArr.size() == 1) {
+    				Room dest = destArr.get(0);
+    				if (!dest.getHas_Entered_Room()) {
+    					yOffset = dest.getY_Position() - mins[1];
+    	    			yPos = dim[1] - yOffset;
+    	        		map.get(2 * yPos).set(2 * dest.getX_Position(), "___");
+    				}
+    			}
     		}
     	}
     	
-    	//Use array to make a string to output
+    	map = removeBlankLists(map);
+    	
     	String mapString = "";
     	
-    	for (int i = 0; i < mapArr.length; i++) {
-    		for (int j = 0; j < mapArr[i].length; j++) {
-    			mapString += mapArr[i][j] + " ";
-//    			System.out.println(mapArr[i][j] + ", ");
-    			
-    			if (j == mapArr[i].length) mapString += "<br>";
+    	int inc = 1;
+    	for (ArrayList<String> arr : map) {
+    		for (String str : arr) {
+    			mapString += str;
     		}
+    		
     		mapString += "<br>";
     	}
     	
+    	mapString = mapString.replace(" ", "&nbsp"); 
+    	
     	String toOut =
 		  "<p class=\"map-string\">"
-		+ mapString
+    	+ mapString
 		+ "</p>"; 
-    	
-    	System.out.println(mapString);
     	
     	return toOut;
     }
     
-    public int[] getRoomsMaxXY(List<Room> rooms) {
-    	int[] pair = {0,0};
+    public int[] getRoomsDims(List<Room> rooms) {
+    	int[] maxes = {0,0};
+    	int[] mins = {0,0};
+    	int[] dims = new int[2];
     	
     	for (Room room : rooms) {
-    		if (room.getX_Position() > pair[0]) pair[0] = room.getX_Position();
-    		if (room.getY_Position() > pair[1]) pair[1] = room.getY_Position();
+    		//Set maxes
+    		if (room.getX_Position() > maxes[0]) maxes[0] = room.getX_Position();
+    		if (room.getY_Position() > maxes[1]) maxes[1] = room.getY_Position();
+    		//Set mins
+    		if (room.getX_Position() < mins[0]) mins[0] = room.getX_Position();
+    		if (room.getY_Position() < mins[1]) mins[1] = room.getY_Position();
     	}
     	
-    	return pair;
+    	dims[0] = maxes[0] - mins[0];
+    	dims[1] = maxes[1] - mins[1];
+    	
+    	return dims;
+    }
+    
+    public int[] getRoomsMins(List<Room> rooms) {
+    	int[] mins = {0,0};
+    	
+    	for (Room room : rooms) {
+    		if (room.getX_Position() < mins[0]) mins[0] = room.getX_Position();
+    		if (room.getY_Position() < mins[1]) mins[1] = room.getY_Position();
+    	}
+    	
+    	return mins;
+    }
+    
+    //Code generated by chatgpt (i coulnt be bothered)
+    public ArrayList<ArrayList<String>> removeBlankLists(ArrayList<ArrayList<String>> input) {
+        ArrayList<ArrayList<String>> result = new ArrayList<>();
+
+        for (ArrayList<String> inner : input) {
+            boolean onlyBlanks = true;
+            for (String s : inner) {
+                if (!s.equals("   ")) {
+                    onlyBlanks = false;
+                    break;
+                }
+            }
+            if (!onlyBlanks) {
+                result.add(inner);
+            }
+        }
+
+        return result;
+    }
+    
+    public static List<Room> filterEnteredRooms(List<Room> rooms) {
+        List<Room> filtered = new ArrayList<>();
+
+        for (Room room : rooms) {
+            if (room.getHas_Entered_Room()) {
+                filtered.add(room);
+            }
+        }
+
+        return filtered;
     }
 }

@@ -55,6 +55,14 @@ public class Room {
 		this.y_position = y_position;
 		this.has_entered_room = has_entered_room;
 	}
+	public Room(int id, String name, String description, int x_position, int y_position, boolean has_entered_room) {
+		this.room_id = id;
+		this.short_description = name;
+		this.long_description = description;
+		this.x_position = x_position;
+		this.y_position = y_position;
+		this.has_entered_room = has_entered_room;
+	}
 	
 	//This constructor is a LOCKED room that requires a certain amount of an item to open
 	public Room(int room_id, Item item) {
@@ -154,6 +162,25 @@ public class Room {
 	        }
 	        
 	        return values;
+	}
+	
+	public int[] getAllConnectionsInt() {
+	    int[] conns = {0, 0, 0, 0}; // [north, east, south, west]
+
+	    if (connections.get("north") != null) {
+	        conns[0] = connections.get("north");
+	    }
+	    if (connections.get("east") != null) {
+	        conns[1] = connections.get("east");
+	    }
+	    if (connections.get("south") != null) {
+	        conns[2] = connections.get("south");
+	    }
+	    if (connections.get("west") != null) {
+	        conns[3] = connections.get("west");
+	    }
+
+	    return conns;
 	}
 	
 	//This will get the entire HashMap for the room

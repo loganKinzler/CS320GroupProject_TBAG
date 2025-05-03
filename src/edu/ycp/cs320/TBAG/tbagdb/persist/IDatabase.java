@@ -54,4 +54,5 @@ public interface IDatabase {
 	public String addToFound(String add);
 	List<String> getFoundCommands();
 	public Boolean checkFound(String check);
+	public abstract Room getConnectionsByRoomId(int roomId);
 }

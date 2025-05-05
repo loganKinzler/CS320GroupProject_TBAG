@@ -135,7 +135,7 @@ public class DerbyDatabase implements IDatabase {
 					stmt.setString(1, itemName);
 					stmt.setString(2, itemDescription);
 					
-					List<Item> result = new ArrayList<Item>();
+//					List<Item> result = new ArrayList<Item>();
 					
 					resultSet = stmt.executeQuery();
 					
@@ -149,7 +149,10 @@ public class DerbyDatabase implements IDatabase {
 						return resultSet.getInt(1);
 					}
 					
-					System.out.println("<" + itemName + "> was not found in the items table");
+					if (!found) {
+						System.out.println("<" + itemName + "> was not found in the items table");
+					}
+				
 					return -1;
 
 				} finally {
@@ -398,7 +401,7 @@ public class DerbyDatabase implements IDatabase {
 					);
 					stmt.setInt(1, id);
 					
-					List<Room> result = new ArrayList<Room>();
+//					List<Room> result = new ArrayList<Room>();
 					
 					resultSet = stmt.executeQuery();
 					
@@ -445,7 +448,7 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement onlyWeaponsStmt = null;
 				ResultSet onlyWeaponsResults = null;
 				
-				List<Item> result = new ArrayList<Item>();
+//				List<Item> result = new ArrayList<Item>();
 				Inventory resultInventory = new EntityInventory();
 				
 				try {

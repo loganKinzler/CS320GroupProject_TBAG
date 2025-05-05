@@ -18,7 +18,6 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
 
 public class InitialData {
 	private static List<Item> itemTypes;
@@ -242,6 +241,7 @@ public class InitialData {
 				
 				EnemyModel enemy = new EnemyModel(maxHealth, 1, currentRoom, name, desc);
 				enemy.setHealth(health);
+				enemy.setLives(lives);
 				
 				enemies.add(enemy);
 			}

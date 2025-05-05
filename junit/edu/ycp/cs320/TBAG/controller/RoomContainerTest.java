@@ -13,7 +13,6 @@ import org.junit.Test;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.Room;
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
 
 public class RoomContainerTest {
 	private RoomContainer container;

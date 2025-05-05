@@ -26,6 +26,7 @@ public class ASCIIOutput {
 				toOut += asciiLine + "\n";
 			}
 			toOut += "</p>";
+			reader.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,6 +54,7 @@ public class ASCIIOutput {
 				toOut += asciiLine + "\n";
 			}
 			toOut += "</p>";
+			reader.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block0
 			e.printStackTrace();

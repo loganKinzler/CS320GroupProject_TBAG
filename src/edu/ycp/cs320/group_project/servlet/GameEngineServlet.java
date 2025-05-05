@@ -37,6 +37,12 @@ import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class GameEngineServlet extends HttpServlet {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@SuppressWarnings("unchecked")
 	@Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     	HttpSession session = req.getSession();
@@ -51,7 +57,7 @@ public class GameEngineServlet extends HttpServlet {
         if (db == null) db = new DerbyDatabase("test");
         session.setAttribute("db", db);
         
-        List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
+		List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
         List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
         if (gameHistory == null) {
             
@@ -878,7 +884,8 @@ public class GameEngineServlet extends HttpServlet {
     	return toOut;
     }
     
-    public String modularMakeMap(IDatabase db) {
+    @SuppressWarnings("unchecked")
+	public String modularMakeMap(IDatabase db) {
     	
     	//Get all rooms, get max x and y, make 2d array of strings with that
     	//Get all found rooms, use their x and y to put them in proper places in 2d array
@@ -1001,7 +1008,6 @@ public class GameEngineServlet extends HttpServlet {
     	
     	String mapString = "";
     	
-    	int inc = 1;
     	for (ArrayList<String> arr : map) {
     		for (String str : arr) {
     			mapString += str;

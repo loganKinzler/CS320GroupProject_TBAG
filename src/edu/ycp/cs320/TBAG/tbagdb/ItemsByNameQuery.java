@@ -1,6 +1,5 @@
 package edu.ycp.cs320.TBAG.tbagdb;
 
-import java.util.List;
 import java.util.Scanner;
 
 import edu.ycp.cs320.TBAG.model.Item;
@@ -18,6 +17,7 @@ public class ItemsByNameQuery {
 		return database.ItemsByNameQuery(itemName);
 	}
 	
+	@SuppressWarnings("resource")
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
 		database = new DerbyDatabase("test");

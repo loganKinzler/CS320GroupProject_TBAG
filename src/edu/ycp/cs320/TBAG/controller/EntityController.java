@@ -12,8 +12,6 @@ import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class EntityController {
 	private EntityModel model;
-	private double maxHealth, health;
-	private int lives;
 	
 	public EntityController(EntityModel model) {
 			this.model = model;
@@ -70,6 +68,7 @@ public class EntityController {
 		return dropped;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean Die(IDatabase db, Room room) {
 		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
 		

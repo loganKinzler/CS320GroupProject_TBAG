@@ -37,6 +37,7 @@ public class EntityInventoryTest {
 		assertTrue(this.model.GetItemAmount(moss) == 2);
 	}
 	
+	@SuppressWarnings("removal")
 	@Test
 	public void GetItemAmountTest() {
 		assertEquals(this.model.GetItemAmount(moss), new Integer(5));

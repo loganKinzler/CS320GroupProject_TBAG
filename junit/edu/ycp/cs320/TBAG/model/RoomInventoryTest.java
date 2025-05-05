@@ -35,6 +35,7 @@ public class RoomInventoryTest {
 		assertTrue(this.model.GetItemAmount(moss) == beforeAmount - 3);
 	}
 	
+	@SuppressWarnings("removal")
 	@Test public void GetItemAmountTest() {
 		assertEquals(this.model.GetItemAmount(moss), new Integer(5));
 	}

@@ -8,8 +8,6 @@ import java.lang.Math;
 
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 import edu.ycp.cs320.TBAG.comparator.PlayerPreferedComparator;
-
-import edu.ycp.cs320.TBAG.controller.EntityController;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.StatusEffect;

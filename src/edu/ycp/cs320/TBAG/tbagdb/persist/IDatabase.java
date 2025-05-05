@@ -9,7 +9,6 @@ import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.Inventory;
-import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
 
 public interface IDatabase {
@@ -54,4 +53,5 @@ public interface IDatabase {
 	public String addToFound(String add);
 	List<String> getFoundCommands();
 	public Boolean checkFound(String check);
+	public abstract Room getConnectionsByRoomId(int roomId);
 }

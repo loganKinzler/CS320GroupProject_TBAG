@@ -10,8 +10,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.ycp.cs320.TBAG.model.Room;
-
 
 public class RoomTest {
 	private Room model;

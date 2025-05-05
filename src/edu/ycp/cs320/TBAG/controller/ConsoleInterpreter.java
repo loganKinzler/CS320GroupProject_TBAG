@@ -24,7 +24,7 @@ public class ConsoleInterpreter {
 	public ConsoleInterpreter() {}
 	
     public Action ValidateInput(String userInput) {
-    	//sudo rm -rf \ easter egg
+    	//Hard coded commands
     	if (userInput.equals("sudo rm -rf \\")) {
     		return new Action("sudoEasterEgg", new ArrayList<String>( Arrays.asList("sudo rm -rf \\") ));
     	}
@@ -45,6 +45,25 @@ public class ConsoleInterpreter {
     	}
     	else if (userInput.equals("quit")) {
     		return new Action("quit", new ArrayList<String>(Arrays.asList("quitting")));
+    	}
+    	else if (userInput.equals("north")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("north") ));
+    	}
+    	else if (userInput.equals("east")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("east") ));
+    	}
+    	else if (userInput.equals("south")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("south") ));
+    	}
+    	else if (userInput.equals("west")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("west") ));
+    	}
+    	else if (userInput.equals("use mirror with camera") || userInput.equals("use camera with mirrror")) {
+    		return new Action("mirrorEasterEgg", new ArrayList<String>(Arrays.asList("mirror")));
     	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	

@@ -135,7 +135,7 @@ public class DerbyDatabase implements IDatabase {
 					stmt.setString(1, itemName);
 					stmt.setString(2, itemDescription);
 					
-					List<Item> result = new ArrayList<Item>();
+//					List<Item> result = new ArrayList<Item>();
 					
 					resultSet = stmt.executeQuery();
 					
@@ -149,7 +149,10 @@ public class DerbyDatabase implements IDatabase {
 						return resultSet.getInt(1);
 					}
 					
-					System.out.println("<" + itemName + "> was not found in the items table");
+					if (!found) {
+						System.out.println("<" + itemName + "> was not found in the items table");
+					}
+				
 					return -1;
 
 				} finally {
@@ -381,6 +384,55 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
+	public Room getConnectionsByRoomId(int id) {
+		return executeTransaction(new Transaction<Room>() {
+			@Override
+			public Room execute(Connection conn) throws SQLException {
+				PreparedStatement stmt = null;
+				ResultSet resultSet = null;
+				Room toOut = new Room();
+				
+				try {
+					// Get all rooms with the same room id as id
+					stmt = conn.prepareStatement(
+							"select connections.* " +
+							"from connections " + 
+							" where connections.room_id = ?"
+					);
+					stmt.setInt(1, id);
+					
+//					List<Room> result = new ArrayList<Room>();
+					
+					resultSet = stmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						toOut = loadConnection(resultSet);
+					}
+					
+//					System.out.print(result);
+					
+					// check if a room with the id was found
+					if(!found) {
+						System.out.println("<" + id + "> was not found in the rooms table");
+						return null;
+					}
+					
+					return toOut;
+					
+					
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(stmt);
+				}
+				
+			}
+		});
+	}
+	
 
 	@Override
 	public Inventory InventoryBySourceID(Integer sourceID) {
@@ -396,7 +448,7 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement onlyWeaponsStmt = null;
 				ResultSet onlyWeaponsResults = null;
 				
-				List<Item> result = new ArrayList<Item>();
+//				List<Item> result = new ArrayList<Item>();
 				Inventory resultInventory = new EntityInventory();
 				
 				try {
@@ -1402,10 +1454,14 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private Room loadRoom(ResultSet resultSet) throws SQLException {
-		int index = 2;
+		int index = 1;
+		int id = resultSet.getInt(index++);
 		String name = resultSet.getString(index++);
 		String description = resultSet.getString(index++);
-		Room toOut = new Room(name, description);
+		int x_position = resultSet.getInt(index++);
+		int y_position = resultSet.getInt(index++);
+		boolean has_entered_room = resultSet.getBoolean(index++);
+		Room toOut = new Room(id, name, description, x_position, y_position, has_entered_room);
 		
 		return toOut;
 	}
@@ -1676,7 +1732,10 @@ public class DerbyDatabase implements IDatabase {
 						+ "room_id int primary key"
 						+ " generated always as identity (start with 1, increment by 1), "
 						+ "name varchar(16), "
-						+ "description varchar(64)"
+						+ "description varchar(64), "
+						+ "x_position int, "
+						+ "y_position int, "
+						+ "has_entered_room boolean"
 						+ ")"
 						);
 				
@@ -1979,14 +2038,16 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 
-				//Insert Rooms
 				PreparedStatement insertRoomStatement = conn.prepareStatement(
-						"insert into rooms (name, description) values (?, ?)");
+						"insert into rooms (name, description, x_position, y_position, has_entered_room) values (?, ?, ?, ?, ?)");
 						
 				
 				for(Room room : rooms) {
 					insertRoomStatement.setString(1, room.getShortRoomDescription());
 					insertRoomStatement.setString(2, room.getLongRoomDescription());
+					insertRoomStatement.setInt(3, room.getX_Position());
+					insertRoomStatement.setInt(4, room.getY_Position());
+					insertRoomStatement.setBoolean(5, room.getHas_Entered_Room());
 					insertRoomStatement.executeUpdate();
 				}
 				

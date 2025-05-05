@@ -10,6 +10,7 @@ import edu.ycp.cs320.TBAG.controller.PlayerController;
 import edu.ycp.cs320.TBAG.controller.RoomContainer;
 import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
+import edu.ycp.cs320.TBAG.model.Weapon;
 
 public class PickupTest {
 	private PlayerController player = new PlayerController(new PlayerModel(100.0, 3, 0));
@@ -22,12 +23,6 @@ public class PickupTest {
 		player = new PlayerController(new PlayerModel(100.0, 3, 0));
 	}
 
-	@Test
-	public void PickupOneItemTest() {
-		SetUp();
-		player.PickUp(rooms.getRoom(0), Inventory.LEAD_PIPE, 1);
-		assertTrue(player.getInventory().ContainsItem(Inventory.LEAD_PIPE));
-	}
 	
 	@Test
 	public void PickupMultipleItemsTest() {
@@ -42,5 +37,13 @@ public class PickupTest {
 		player.setCurrentRoomIndex(3);
 		player.PickUp(rooms.getRoom(0), Inventory.LEAD_PIPE, 1);
 		assertFalse(false);//player.getInventory().ContainsItem(Inventory.LEAD_PIPE));
+	}
+	
+	@Test
+	public void PickupWeaponTest() {
+	    SetUp();
+	    player.PickUp(rooms.getRoom(0), Inventory.LEAD_PIPE, 1);
+	    assertTrue(player.getInventory().ContainsItem(Inventory.LEAD_PIPE));
+	    assertTrue(Inventory.LEAD_PIPE instanceof Weapon);
 	}
 }

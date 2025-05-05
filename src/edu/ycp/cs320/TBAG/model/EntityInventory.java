@@ -85,4 +85,9 @@ public class EntityInventory extends Inventory {
 	@Override public Boolean ContainsMoreThan(Item item, Integer itemAmount) {return this.GetItemAmount(item) > itemAmount;}
 	@Override public Boolean ContainsExactly(Item item, Integer itemAmount) {return this.GetItemAmount(item) == itemAmount;}
 	@Override public Boolean ContainsLessThan(Item item, Integer itemAmount) {return this.GetItemAmount(item) < itemAmount;}
+
+	public Object getEquippedWeapons() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -816,7 +816,7 @@ public class DerbyDatabase implements IDatabase {
 				ResultSet resultSet = null;
 				
 				try {
-					// retreive all attributes from both Books and Authors tables
+					// Retrieve all attributes from both Books and Authors tables
 					getPlayerStatement = conn.prepareStatement(
 							"select entities.* from entities " +
 							"where entities.id = 1"
@@ -1354,12 +1354,15 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private Weapon loadWeapon(ResultSet resultSet, int index) throws SQLException {
-		return new Weapon(
-				resultSet.getInt(index++),
-				resultSet.getString(index++),
-				resultSet.getString(index++),
-				resultSet.getDouble(index++)
-			);
+	    return new Weapon(
+	        resultSet.getInt(index++),    // itemID
+	        resultSet.getString(index++), // name
+	        resultSet.getString(index++), // description
+	        resultSet.getDouble(index++), // damage
+	        resultSet.getString(index++), // damage_type
+	        resultSet.getInt(index++),    // crit_chance
+	        resultSet.getString(index++)  // status_effect
+	    );
 	}
 	
 	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
@@ -1520,28 +1523,33 @@ public class DerbyDatabase implements IDatabase {
 				
 				// WEAPON TYPES
 				PreparedStatement weaponStmt = conn.prepareStatement(
-					"create table weaponTypes (" +
-							"	weapon_id int primary key" + 
-							"       generated always as identity (start with 1, increment by 1), " + 
-							"   item_id int unique, " + 
-							"		constraint item_id foreign key (item_id) references itemTypes(item_id), " + 
-							"	damage double" +
-							")"
+				    "create table weaponTypes (" +
+				        "   weapon_id int primary key" + 
+				        "       generated always as identity (start with 1, increment by 1), " + 
+				        "   item_id int unique, " + 
+				        "       constraint item_id foreign key (item_id) references itemTypes(item_id), " + 
+				        "   damage double, " +
+				        "   damage_type VARCHAR(50), " +  
+				        "   crit_chance INT, " +         
+				        "   status_effect VARCHAR(50)" + 
+				    ")"
 				);
-				
+
 				try {
-					weaponStmt.executeUpdate();
-					
+				    weaponStmt.executeUpdate();
+				    
 				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
+				    if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) {
+				        isNewDatabase = false;
+				        // Table exists, so we need to add columns separately
+				        }
+				    else throw sql;
+				    
 				} catch (Exception e) {
-					throw e;
-					
+				    throw e;
+				    
 				} finally {
-					DBUtil.closeQuietly(weaponStmt);
+				    DBUtil.closeQuietly(weaponStmt);
 				}
 				
 				

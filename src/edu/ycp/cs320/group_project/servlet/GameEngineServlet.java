@@ -1,10 +1,6 @@
 package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +25,7 @@ import edu.ycp.cs320.TBAG.model.Action;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
+import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
@@ -251,6 +248,20 @@ public class GameEngineServlet extends HttpServlet {
 	        			systemResponse = modularMakeMap(db);
 	        			if (!foundCommands.contains("showMap")) addToFoundCommands(db,foundCommands,"showMap");
 	        		break;
+	        		case "mirrorEasterEgg":
+	        			Inventory inv = db.GetPlayerInventory(); //Get player inventory
+	        			
+	        			boolean hasMirror = (inv.GetItemByName("mirror") != null);
+	        			boolean hasCamera = (inv.GetItemByName("camera") != null);
+	        			
+	        			System.out.println(hasMirror + ", " + hasCamera);
+	        			
+	        			String output = "You do not have the required items.";
+	        			if (hasMirror && hasCamera) {
+	        				output = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+	        			}
+	        			systemResponse = output;
+	        		break;
             	
             		// TYPE 1 COMMANDS:
             		case "move":
@@ -316,7 +327,6 @@ public class GameEngineServlet extends HttpServlet {
             			
             			// pickup all items
             			if (params.get(0).equals("all") && params.get(1).equals("items")) {
-            				
             				
             				Set<Item> roomInventoryKeys = new HashSet<Item>();
             				roomInventoryKeys.addAll(rooms.get(player.getCurrentRoomIndex() - 1).getItems().keySet());            			

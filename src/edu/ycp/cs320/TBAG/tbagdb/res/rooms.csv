@@ -1,3 +1,4 @@
+name|desc|x pos|y pos|has entered|type (not read)
 Robot Room|There are two other robots hooked onto charging beds.|2|5|true|Starting room
 Hallway|Rats scurry past your wheels...|1|5|false|Hallway
 Enemy room3|This is an enemy room|1|6|false|Enemy

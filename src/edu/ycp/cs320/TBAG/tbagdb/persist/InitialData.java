@@ -113,6 +113,7 @@ public class InitialData {
 		Map<Integer, Inventory> inventories = new HashMap<Integer, Inventory>();
 		ReadCSV readInventories = new ReadCSV("inventories.csv");
 		ReadCSV readWeaponSlots = new ReadCSV("weaponSlots.csv");
+		readInventories.next();
 		
 		try {
 			while (true) {
@@ -258,6 +259,7 @@ public class InitialData {
 	public static List<Room> getRooms() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readRooms = new ReadCSV("rooms.csv"); 
+		readRooms.next();
 		
 		try {
 			
@@ -293,6 +295,7 @@ public class InitialData {
 	public static List<Room> getConnections() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readConnections = new ReadCSV("connections.csv"); 
+		readConnections.next();
 		
 		try {
 			//readConnections.next();

@@ -31,17 +31,13 @@ public class InventoryUpdater {
 		InventoryUpdater.database = new DerbyDatabase("test");
 		System.out.println("Updating Inventory...");
 		
-		Inventory testUpdateInventory = new EntityInventory();		
-		((EntityInventory) testUpdateInventory).EquipWeapon("Left Hand", new Weapon(4, "Steel Cutlass", "Swing!", 7.5));
+		Inventory testUpdateInventory = new RoomInventory();
 		
-//		testUpdateInventory.AddItems(new Item(1, "Shovel", "Don't dig straight down."), 2);
-		testUpdateInventory.AddItems(new Item(2, "Moss", "It's light and moist."), 1);
-		testUpdateInventory.AddItems(new Item(3, "Golden Key", "It opens golden doors."), 4);
-		testUpdateInventory.AddItems(new Item(4, "Steel Cutlass", "Swing!"), 4);
+		testUpdateInventory.AddItems(new Item(1, "Shovel", "Don't dig straight down."), 2);
+		testUpdateInventory.AddItems(new Item(2, "Flint & Steel", "I... am Steve!"), 1);
+//		testUpdateInventory.AddItems(new Item(3, "Sword", "It slashes."), 4);
 		
-		Integer offset = 1;
-		Integer source = 1;
-		Integer sourceID = offset + (source<<1);
+		Integer sourceID = 2;
 		
 		InventoryUpdater.update(sourceID, testUpdateInventory);
 		System.out.println("Success!\n");
@@ -54,7 +50,7 @@ public class InventoryUpdater {
 		String systemResponse = String.format("Describing inventory...");
 		
 		// entity inventory
-		if (offset == 1) {
+		if (sourceID % 2 ==  1) {
 			HashMap<String, Weapon> equips = ((EntityInventory) resultInventory).GetWeaponsAsSlots();
 			
 			if (items.size() == 0 && equips.size() == 0) {

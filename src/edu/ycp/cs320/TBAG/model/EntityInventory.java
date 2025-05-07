@@ -46,13 +46,6 @@ public class EntityInventory extends Inventory {
 	public Boolean WeaponIsEquiped(Weapon weapon) {return this.weapons.containsValue( weapon );}
 	public Boolean WeaponSlotIsFull(String weaponSlot) {return this.weapons.containsKey( weaponSlot );}
 	public Boolean WeaponSlotIsEmpty(String weaponSlot) {return !this.WeaponSlotIsFull( weaponSlot );}
-	
-	@Override
-	public Boolean ContainsItem(Item item) {
-		if (item.getClass() == Item.class) return super.ContainsItem(item);// item is a base item : only check inventory
-		if (this.WeaponIsEquiped((Weapon) item)) return true;// weapon could potentially be equipped
-		return this.items.containsKey(item);// weapon could potentially be in regular inventory
-	}
 
 	public HashMap<Item, Integer> GetAllItems() {
 		

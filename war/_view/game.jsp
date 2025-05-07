@@ -34,9 +34,7 @@
             </div>
 			
 			<div class="power_button">
-				<form action="${pageContext.request.contextPath}/index" method="post">
-					<button type="submit"></button>
-				</form> 
+				<button type="submit"></button>
 			</div>
 		</div>
 	</div>
@@ -107,7 +105,7 @@
 			
 			<!-- Attack -->
 			<c:if test="${foundCommands.contains('attack')}">
-			    <p>attack [ enemy ] with [ weapon ]</p><!-- using [attack] ->
+			    <p>attack [ enemy ] with [ weapon ]</p><!-- using [attack] -->
 			</c:if>
 			
 			<!-- Use -->

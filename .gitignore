@@ -1,10 +1,10 @@
-/bin/*
-/test-bin/*
 .classpath
 .project
 .settings/
+/test-db/
 /test.db/*
-/test-db
 derby.log
 /bin/
+/bin/*
 /test-bin/
+/test-bin/*

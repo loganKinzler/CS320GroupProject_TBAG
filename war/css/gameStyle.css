@@ -320,14 +320,7 @@ body {
 	aspect-ratio: 1.75;
 }
 
-.power_button > form {
-	position: relative;
-	
-	height: 100%;
-	width: 100%;
-}
-
-.power_button > form > button {
+.power_button > button {
 	position: relative;
 
 	height: 100%;

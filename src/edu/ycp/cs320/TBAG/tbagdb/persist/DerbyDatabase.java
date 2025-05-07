@@ -332,6 +332,36 @@ public class DerbyDatabase implements IDatabase {
 		
 	}
 	
+	@Override
+	public Integer UpdateLockedRoom(int id) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				//This will make the locked room positive indicating that it is now unlocked
+				insertStatement = conn.prepareStatement(
+					"update rooms "
+					+ "set room_id = room_id * -1 "
+					+ "where rooms.room_id = ?"
+				);
+				
+				insertStatement.setInt(1, id);
+				
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return id;
+			}
+		});
+		
+	}
+	
 	public List<Room> DirectionsByRoomIdQuery(int id) {
 		return executeTransaction(new Transaction<List<Room>>() {
 			@Override
@@ -1455,7 +1485,8 @@ public class DerbyDatabase implements IDatabase {
 		int x_position = resultSet.getInt(index++);
 		int y_position = resultSet.getInt(index++);
 		boolean has_entered_room = resultSet.getBoolean(index++);
-		Room toOut = new Room(id, name, description, x_position, y_position, has_entered_room);
+		String key = resultSet.getString(index++);
+		Room toOut = new Room(id, name, description, x_position, y_position, has_entered_room, key);
 		
 		return toOut;
 	}
@@ -1724,7 +1755,8 @@ public class DerbyDatabase implements IDatabase {
 						+ "description varchar(64), "
 						+ "x_position int, "
 						+ "y_position int, "
-						+ "has_entered_room boolean"
+						+ "has_entered_room boolean, "
+						+ "room_key varchar(16)"
 						+ ")"
 						);
 				
@@ -2028,7 +2060,7 @@ public class DerbyDatabase implements IDatabase {
 				
 
 				PreparedStatement insertRoomStatement = conn.prepareStatement(
-						"insert into rooms (name, description, x_position, y_position, has_entered_room) values (?, ?, ?, ?, ?)");
+						"insert into rooms (name, description, x_position, y_position, has_entered_room, room_key) values (?, ?, ?, ?, ?, ?)");
 						
 				
 				for(Room room : rooms) {
@@ -2037,6 +2069,7 @@ public class DerbyDatabase implements IDatabase {
 					insertRoomStatement.setInt(3, room.getX_Position());
 					insertRoomStatement.setInt(4, room.getY_Position());
 					insertRoomStatement.setBoolean(5, room.getHas_Entered_Room());
+					insertRoomStatement.setString(6, room.getRoom_key());
 					insertRoomStatement.executeUpdate();
 				}
 				

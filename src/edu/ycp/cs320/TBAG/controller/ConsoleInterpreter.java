@@ -58,7 +58,6 @@ public class ConsoleInterpreter {
     	switch (inputWords.get(0)) {
     		case MOVE: commandType = 1; break;
     		case DESCRIBE: commandType = 1; break;
-    		case USE: commandType = 1; break;
     	
     		case PICKUP: commandType = 2; break;
     		case DROP: commandType = 2; break;
@@ -67,6 +66,8 @@ public class ConsoleInterpreter {
 
     		case EQUIP: commandType = 4; break;
     		case UNEQUIP: commandType = 5; break;
+    		
+    		case USE: commandType = 6; break;
     	}
   	
     	
@@ -219,6 +220,61 @@ public class ConsoleInterpreter {
 				
 				return new Action(inputWords.get(0), new ArrayList<String>(
     					Arrays.asList(new String[]{unequipName})));
+				
+    		case 6:
+    			if (!(inputWords.contains("on"))) return new Action("Keyword 'on' is missing.");// doesn't have with nor using
+    			//  && inputWords.contains("using")
+    			// or 'with' 
+    			
+    			// combine words between 'attack:' and 'with'
+    			String item = inputWords.get(1);
+
+    			if (item.equals("on")) return new Action("No target was included.");// there is no target included
+    			
+    			if (inputWords.indexOf("on") > 2) {
+    				Integer withIndex = inputWords.indexOf("on");
+    				
+    				for (int i=2; i<withIndex; i++) {
+    					item += " " + inputWords.get(2);
+    					inputWords.remove(2);
+    				}
+    			}
+    			
+    			
+    			// combine words between 'with' and 'using'
+    			if (inputWords.size() <= 3) return new Action("No parameters after keyword 'on' given.");// nothing after 'with'
+    			String location = inputWords.get(3);
+    			
+    			// if (weapon.equals("using")) return new Action("No weapon was included.");// there is no weapon included
+    			
+    			// inputWords.indexOf("using")
+    			// inputWords.indexOf("using")
+    			if (inputWords.size() > 4) {
+    				for (int i=4; i<inputWords.size(); i++) {
+    					location += " " + inputWords.get(4);
+    					inputWords.remove(4);
+    				}
+    			}
+    			
+    			if(inputWords.contains("door")) {
+    				inputWords.remove(inputWords.indexOf("door"));
+    			}
+    			
+    			
+    			// combine words after 'using'
+//    			if (inputWords.size() < 6) return new Action("No attack type was given.");// nothing after 'using'
+//    			String attackType = inputWords.get(5);
+//    			
+//    			if (inputWords.size() > 6) {
+//    				for (int i=6; i<inputWords.size(); i++) {
+//    					attackType += " " + inputWords.get(i);
+//    					inputWords.remove(6);
+//    				}
+//    			}
+    			
+    			// , attackType
+    			return new Action("use", new ArrayList<String>(
+    					Arrays.asList(new String[]{item, location})));
     	}
     	
     	// command doesn't exist

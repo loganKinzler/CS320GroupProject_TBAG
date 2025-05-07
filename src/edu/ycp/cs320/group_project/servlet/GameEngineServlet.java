@@ -138,6 +138,8 @@ public class GameEngineServlet extends HttpServlet {
         		db.UpdateEnteredRoom(true, i);
         	}
         	
+        	
+        	
         }
         
         
@@ -264,10 +266,20 @@ public class GameEngineServlet extends HttpServlet {
             			
             			
             				nextRoom = rooms.get(player.getCurrentRoomIndex() - 1).getConnectedRoom(params.get(0));
-            				//for now the room will be null if it doesn't exist or is locked
-            				if(nextRoom <= 0) {
-            					nextRoom = null;
+            				//This is a room that doesn't exist
+            				if(nextRoom == 0) {
+            					systemResponse = String.format("The current room doesn't have a room %s of it.",params.get(0));
+            					break;
             				}
+            				
+            				//This is a room that is locked
+            				else if(nextRoom < 0) {
+            					systemResponse = String.format("The room is locked... there is a key hole in the shape of a %s in the door",
+            							rooms.get(nextRoom).getRoom_key());
+            					break;
+            				}
+            				
+            				
             			
             			
             			
@@ -293,10 +305,32 @@ public class GameEngineServlet extends HttpServlet {
             					long_description);
             		break;
             		
+            		//TYPE 6 COMMANDS
             		case "use":
             			if (!foundCommands.contains("use")) addToFoundCommands(db,foundCommands,"use");
+            			Item key = db.ItemsByNameQuery(params.get(0));
             			
-            			systemResponse = String.format("Used %s...", params.get(0));
+            			if(!player.getInventory().ContainsItem(key)) {
+            			systemResponse = String.format("You don't have a %s in your inventory", params.get(0));       
+            			}
+            			
+            			//This is for unlocking doors
+            			if(params.get(1).equals("north") || params.get(1).equals("south") || params.get(1).equals("east")  || params.get(1).equals("west")) {
+            				//Check if the room is locked
+            				if(rooms.get(player.getCurrentRoomIndex()-1).getConnectedRoom(params.get(1))<0) {
+            					db.UpdateLockedRoom(player.getCurrentRoomIndex());
+            					//systemResponse = String.format("Used %s...", params.get(0));
+            					systemResponse = String.format("The room has been unlocked!");
+            				}
+            				
+            				else {
+            					systemResponse = String.format("The room is already unlocked...");
+            				}
+            				
+            			}
+            	
+            			
+            			
             		break;
             		
             		// TYPE 3 COMMANDS
@@ -306,7 +340,7 @@ public class GameEngineServlet extends HttpServlet {
             			systemResponse = String.format("Picking up %s...<br><br>", params.get(1));
                         addToGameHistory(db, gameHistory, systemResponse);
             			
-            			systemResponse = ASCIIOutput.ShovelAscii(this, params.get(1));
+            			systemResponse = ASCIIOutput.ItemAscii(this, params.get(1));
             			
             			Integer pickupQuantity;
             			if (params.get(0).equals("all")) pickupQuantity = Integer.MAX_VALUE;

@@ -34,7 +34,7 @@ public class ASCIIOutput {
     	return toOut;
     }
 	
-	public static String ShovelAscii(GameEngineServlet servlet, String shovel) {
+	public static String ItemAscii(GameEngineServlet servlet, String shovel) {
     	String toOut = "";
     	try {
     		InputStream in = servlet.getServletContext().getResourceAsStream("/recs/shovel.txt");

@@ -21,7 +21,7 @@ public class Room {
 	private ArrayList<EnemyModel> enemies = new ArrayList<EnemyModel>();
 	private boolean isLockedRoom;
 	//A locked room will have an item stored here
-	private Item RoomKey = null;
+	private String room_key = "";
 	private int x_position;
 	private int y_position;
 	private boolean has_entered_room = false;
@@ -48,20 +48,22 @@ public class Room {
 		
 	}
 	
-	public Room(String name, String description, int x_position, int y_position, boolean has_entered_room) {
+	public Room(String name, String description, int x_position, int y_position, boolean has_entered_room, String room_key) {
 		this.short_description = name;
 		this.long_description = description;
 		this.x_position = x_position;
 		this.y_position = y_position;
 		this.has_entered_room = has_entered_room;
+		this.room_key = room_key;
 	}
-	public Room(int id, String name, String description, int x_position, int y_position, boolean has_entered_room) {
+	public Room(int id, String name, String description, int x_position, int y_position, boolean has_entered_room, String room_key) {
 		this.room_id = id;
 		this.short_description = name;
 		this.long_description = description;
 		this.x_position = x_position;
 		this.y_position = y_position;
 		this.has_entered_room = has_entered_room;
+		this.room_key = room_key;
 	}
 	
 	//This constructor is a LOCKED room that requires a certain amount of an item to open
@@ -229,6 +231,10 @@ public class Room {
 		return this.has_entered_room;
 	}
 	
+	public String getRoom_key() {
+		return this.room_key;
+	}
+	
 	
 	
 	
@@ -274,5 +280,9 @@ public class Room {
 	
 	public void setHas_Entered_Room(boolean entered) {
 		this.has_entered_room = entered;
+	}
+	
+	public void setRoom_Id(int id) {
+		this.room_id = id;
 	}
 }

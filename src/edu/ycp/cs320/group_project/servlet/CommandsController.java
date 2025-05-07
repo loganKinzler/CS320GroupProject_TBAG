@@ -121,11 +121,8 @@ public class CommandsController {
 				nextRoom = null;
 			}
 		
-		
-		
-		
 		if (nextRoom == null) {
-			responseOut = String.format("The current room doesn't have a room %s of it.",
+			systemResponse = String.format("The current room doesn't have a room %s of it.",
 					params.get(0));
 			return responseOut;
 		}
@@ -136,10 +133,7 @@ public class CommandsController {
 		//These used to be offset by 1
 		String short_description = rooms.get(nextRoom - 1).getShortRoomDescription();
 		String long_description = rooms.get(nextRoom - 1).getLongRoomDescription();
-		//This will set has entered room to true since the player is entering a new room
-		rooms.get(nextRoom - 1).setHas_Entered_Room(true);
-		db.UpdateEnteredRoom(true, db.GetPlayer().getCurrentRoomIndex());
-		responseOut = String.format("Moving %s...<br><br>Entered %s.<br>%s",
+		systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
 				params.get(0),
 				short_description,
 				long_description);
@@ -170,18 +164,14 @@ public class CommandsController {
 		if (!foundCommands.contains("pickup")) LogsController.addToFoundCommands(db,foundCommands,"pickup");
 		
 		responseOut = String.format("Picking up %s...<br><br>", params.get(1));
-        LogsController.addToGameHistory(db, gameHistory, responseOut);
-		
-        responseOut = ASCIIOutput.ShovelAscii(servlet, params.get(0));
 		
 		Integer pickupQuantity;
 		if (params.get(0).equals("all")) pickupQuantity = Integer.MAX_VALUE;
-		else {
-			pickupQuantity = Integer.parseInt(params.get(0));
-		}
+		else pickupQuantity = Integer.parseInt(params.get(0));
 		
 		// pickup all items
 		if (params.get(0).equals("all") && params.get(1).equals("items")) {
+			
 			
 			Set<Item> roomInventoryKeys = new HashSet<Item>();
 			roomInventoryKeys.addAll(rooms.get(player.getCurrentRoomIndex() - 1).getItems().keySet());            			
@@ -201,8 +191,8 @@ public class CommandsController {
 			return responseOut;
 		}
 		
-		Item pickupItem = rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().GetItemByName(params.get(1));
-		if (pickupItem == null) {
+		Item pickupItem = db.ItemsByNameQuery(params.get(1));
+		if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
 			responseOut = String.format("This room does not contain an item named %s.<br>",
 					params.get(1));
 			return responseOut;
@@ -263,7 +253,7 @@ public class CommandsController {
 		
 		Item dropItem = player.getInventory().GetItemByName(params.get(1));
 		if (dropItem == null) {
-			responseOut = String.format("This room does not contain an item named %s.<br>",
+			responseOut = String.format("Your inventory does not contain an item named %s.<br>",
 					params.get(1));
 			return responseOut;
 		}
@@ -511,6 +501,10 @@ public class CommandsController {
 		
 		responseOut += String.format("Equipped %s into %s.<br>",
 				params.get(0), weaponSlot);
+		
+		for (Item i : player.getInventory().GetAllItems().keySet()) {
+			System.out.println(i.GetName());
+		}
 		
 		db.UpdatePlayerInventory(player.getInventory());
 		

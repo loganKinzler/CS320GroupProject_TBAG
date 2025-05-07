@@ -1,14 +1,11 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-
 <!DOCTYPE html>
 
 <html>
 <head>
     <title>The Green Light District - Menu</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/indexStyle.css">
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/recs/favicon.png">
-    <script src="${pageContext.request.contextPath}/js/indexScript.js"></script>
+    <link rel="stylesheet" href="../css/indexStyle.css">
+    <link rel="icon" type="image/png" href="../recs/favicon.png">
+    <script src="../js/indexScript.js"></script>
 
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +20,7 @@
 			</p></div>
 
 			<div class="main_menu">
-				<form action="${pageContext.request.contextPath}/index" method="post">
+				<form action="../index" method="post">
 					<button type="submit" name="endpoint" value="play">Play</button>
 					<button type="submit" name="endpoint" value="options">Options</button>
 					<button type="submit" name="endpoint" value="credits">Credits</button>
@@ -33,7 +30,7 @@
 
 		<div class="bottom_row">
 			<div class="ipear_logo">
-                <img class="ipear_img" src="${pageContext.request.contextPath}/recs/iPearDropShadow.png">
+                <img class="ipear_img" src="../recs/iPearDropShadow.png">
             </div>
 			
 			<div class="power_button_container">

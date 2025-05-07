@@ -125,8 +125,9 @@ public class ConsoleInterpreter {
     			
     			String itemQuantity = inputWords.get(1).toLowerCase();
     			
+    			Integer wordSize = inputWords.size();
     			String itemName = inputWords.get(2).toLowerCase();
-				for (int i=3; i<inputWords.size(); i++) {
+				for (int i=3; i<wordSize; i++) {
 					itemName += " " + inputWords.get(3).toLowerCase();
 					inputWords.remove(3);
 				}
@@ -182,7 +183,9 @@ public class ConsoleInterpreter {
     			// inputWords.indexOf("using")
     			// inputWords.indexOf("using")
     			if (inputWords.size() > 4) {
-    				for (int i=4; i<inputWords.size(); i++) {
+    				
+    				Integer inputSize = inputWords.size();
+    				for (int i=4; i<inputSize; i++) {
     					weapon += " " + inputWords.get(4);
     					inputWords.remove(4);
     				}
@@ -210,16 +213,16 @@ public class ConsoleInterpreter {
     			
     			if (inputWords.indexOf("into") < 0) return new Action("Keyword 'into' is missing.");
     			
-    			
+    			Integer intoIndex = inputWords.indexOf("into");
     			String weaponName = inputWords.get(1).toLowerCase();
-				for (int i=2; i<inputWords.indexOf("into"); i++) {
+				for (int i=2; i<intoIndex; i++) {
 					weaponName += " " + inputWords.get(2).toLowerCase();
 					inputWords.remove(2);
 				}
 				
-				
+				Integer inputSize = inputWords.size();
 				String slotName = inputWords.get(3).toLowerCase();
-				for (int i=4; i<inputWords.size(); i++) {
+				for (int i=4; i<inputSize; i++) {
 					slotName += " " + inputWords.get(4).toLowerCase();
 					inputWords.remove(4);
 				}
@@ -230,8 +233,9 @@ public class ConsoleInterpreter {
     		case 5:
     			if (inputWords.size() == 1) return new Action("No parameters given.");
     			
+    			inputSize = inputWords.size();
     			String unequipName = inputWords.get(1).toLowerCase();
-				for (int i=2; i<inputWords.size(); i++) {
+				for (int i=2; i<inputSize; i++) {
 					unequipName += " " + inputWords.get(2).toLowerCase();
 					inputWords.remove(2);
 				}

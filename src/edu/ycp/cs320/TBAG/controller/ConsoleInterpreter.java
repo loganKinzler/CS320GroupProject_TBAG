@@ -24,7 +24,7 @@ public class ConsoleInterpreter {
 	public ConsoleInterpreter() {}
 	
     public Action ValidateInput(String userInput) {
-    	//sudo rm -rf \ easter egg
+    	//Hard coded commands
     	if (userInput.equals("sudo rm -rf \\")) {
     		return new Action("sudoEasterEgg", new ArrayList<String>( Arrays.asList("sudo rm -rf \\") ));
     	}
@@ -45,6 +45,25 @@ public class ConsoleInterpreter {
     	}
     	else if (userInput.equals("quit")) {
     		return new Action("quit", new ArrayList<String>(Arrays.asList("quitting")));
+    	}
+    	else if (userInput.equals("north")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("north") ));
+    	}
+    	else if (userInput.equals("east")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("east") ));
+    	}
+    	else if (userInput.equals("south")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("south") ));
+    	}
+    	else if (userInput.equals("west")) {
+    		return new Action("move",
+					new ArrayList<String>( Arrays.asList("west") ));
+    	}
+    	else if (userInput.equals("use mirror with camera") || userInput.equals("use camera with mirrror")) {
+    		return new Action("mirrorEasterEgg", new ArrayList<String>(Arrays.asList("mirror")));
     	}
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
@@ -106,8 +125,9 @@ public class ConsoleInterpreter {
     			
     			String itemQuantity = inputWords.get(1).toLowerCase();
     			
+    			Integer wordSize = inputWords.size();
     			String itemName = inputWords.get(2).toLowerCase();
-				for (int i=3; i<inputWords.size(); i++) {
+				for (int i=3; i<wordSize; i++) {
 					itemName += " " + inputWords.get(3).toLowerCase();
 					inputWords.remove(3);
 				}
@@ -163,7 +183,9 @@ public class ConsoleInterpreter {
     			// inputWords.indexOf("using")
     			// inputWords.indexOf("using")
     			if (inputWords.size() > 4) {
-    				for (int i=4; i<inputWords.size(); i++) {
+    				
+    				Integer inputSize = inputWords.size();
+    				for (int i=4; i<inputSize; i++) {
     					weapon += " " + inputWords.get(4);
     					inputWords.remove(4);
     				}
@@ -191,16 +213,16 @@ public class ConsoleInterpreter {
     			
     			if (inputWords.indexOf("into") < 0) return new Action("Keyword 'into' is missing.");
     			
-    			
+    			Integer intoIndex = inputWords.indexOf("into");
     			String weaponName = inputWords.get(1).toLowerCase();
-				for (int i=2; i<inputWords.indexOf("into"); i++) {
+				for (int i=2; i<intoIndex; i++) {
 					weaponName += " " + inputWords.get(2).toLowerCase();
 					inputWords.remove(2);
 				}
 				
-				
+				Integer inputSize = inputWords.size();
 				String slotName = inputWords.get(3).toLowerCase();
-				for (int i=4; i<inputWords.size(); i++) {
+				for (int i=4; i<inputSize; i++) {
 					slotName += " " + inputWords.get(4).toLowerCase();
 					inputWords.remove(4);
 				}
@@ -211,8 +233,9 @@ public class ConsoleInterpreter {
     		case 5:
     			if (inputWords.size() == 1) return new Action("No parameters given.");
     			
+    			inputSize = inputWords.size();
     			String unequipName = inputWords.get(1).toLowerCase();
-				for (int i=2; i<inputWords.size(); i++) {
+				for (int i=2; i<inputSize; i++) {
 					unequipName += " " + inputWords.get(2).toLowerCase();
 					inputWords.remove(2);
 				}

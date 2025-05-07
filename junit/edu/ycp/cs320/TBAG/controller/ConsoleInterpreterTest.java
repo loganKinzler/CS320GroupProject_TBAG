@@ -2,13 +2,9 @@ package edu.ycp.cs320.TBAG.controller;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
 import edu.ycp.cs320.TBAG.model.Action;
 
 public class ConsoleInterpreterTest {

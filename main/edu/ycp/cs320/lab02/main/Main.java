@@ -5,8 +5,6 @@ import java.io.File;
 import org.eclipse.jetty.server.Server;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 
-import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
-
 public class Main {
 	public static void main(String[] args) throws Exception {
 		
@@ -24,7 +22,7 @@ public class Main {
 		// get a server for port 8081
 		System.out.println("CREATING: web server on port " + port);
 		Server server = launcher.launch(true, port, warFile.getAbsolutePath(), "");
-
+		
         // Start things up!		
 		System.out.println("STARTING: web server on port " + port);
 		server.start();

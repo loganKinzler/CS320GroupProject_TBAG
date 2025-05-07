@@ -18,7 +18,6 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
 
 public class InitialData {
 	private static List<Item> itemTypes;
@@ -114,6 +113,7 @@ public class InitialData {
 		Map<Integer, Inventory> inventories = new HashMap<Integer, Inventory>();
 		ReadCSV readInventories = new ReadCSV("inventories.csv");
 		ReadCSV readWeaponSlots = new ReadCSV("weaponSlots.csv");
+		readInventories.next();
 		
 		try {
 			while (true) {
@@ -242,6 +242,7 @@ public class InitialData {
 				
 				EnemyModel enemy = new EnemyModel(maxHealth, 1, currentRoom, name, desc);
 				enemy.setHealth(health);
+				enemy.setLives(lives);
 				
 				enemies.add(enemy);
 			}
@@ -258,6 +259,7 @@ public class InitialData {
 	public static List<Room> getRooms() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readRooms = new ReadCSV("rooms.csv"); 
+		readRooms.next();
 		
 		try {
 			
@@ -272,8 +274,12 @@ public class InitialData {
 				
 				String name = i.next();
 				String description = i.next();
+				int x_position = Integer.parseInt(i.next());
+				int y_position = Integer.parseInt(i.next());
+				boolean has_entered_room = Boolean.parseBoolean(i.next());
 				
-				Room room = new Room(name, description);
+				
+				Room room = new Room(name, description, x_position, y_position, has_entered_room);
 				rooms.add(room);
 			}
 		}
@@ -289,6 +295,7 @@ public class InitialData {
 	public static List<Room> getConnections() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readConnections = new ReadCSV("connections.csv"); 
+		readConnections.next();
 		
 		try {
 			//readConnections.next();

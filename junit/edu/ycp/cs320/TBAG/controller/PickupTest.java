@@ -2,12 +2,8 @@ package edu.ycp.cs320.TBAG.controller;
 
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
-
-import edu.ycp.cs320.TBAG.controller.PlayerController;
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
 import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 

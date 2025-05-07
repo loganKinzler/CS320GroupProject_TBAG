@@ -1,7 +1,6 @@
 package edu.ycp.cs320.TBAG.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,10 +10,26 @@ import java.util.Set;
 public class Room {
 	//Fields
 	private Map<String, Integer> connections = new HashMap<>();
+	public boolean isLockedRoom() {
+		return isLockedRoom;
+	}
+
+	public void setLockedRoom(boolean isLockedRoom) {
+		this.isLockedRoom = isLockedRoom;
+	}
+
+	public Item getRoomKey() {
+		return RoomKey;
+	}
+
+	public void setRoomKey(Item roomKey) {
+		RoomKey = roomKey;
+	}
+
 	//Each room MUST have a unique room_id
 	private int room_id;
 	//This hashset will be used for checking that each room created is assigned a unique room_id
-	private static Set<Integer> room_id_set = new HashSet<>();
+	private Set<Integer> room_id_set = new HashSet<>();
 	private String long_description;
 	private String short_description;
 	private RoomInventory room_inventory;
@@ -22,6 +37,9 @@ public class Room {
 	private boolean isLockedRoom;
 	//A locked room will have an item stored here
 	private Item RoomKey = null;
+	private int x_position;
+	private int y_position;
+	private boolean has_entered_room = false;
 	//TODO: Might have to move doesKeyExist into the container as well
 	
 	//Constructors
@@ -43,6 +61,22 @@ public class Room {
 	
 	public Room() {
 		
+	}
+	
+	public Room(String name, String description, int x_position, int y_position, boolean has_entered_room) {
+		this.short_description = name;
+		this.long_description = description;
+		this.x_position = x_position;
+		this.y_position = y_position;
+		this.has_entered_room = has_entered_room;
+	}
+	public Room(int id, String name, String description, int x_position, int y_position, boolean has_entered_room) {
+		this.room_id = id;
+		this.short_description = name;
+		this.long_description = description;
+		this.x_position = x_position;
+		this.y_position = y_position;
+		this.has_entered_room = has_entered_room;
 	}
 	
 	//This constructor is a LOCKED room that requires a certain amount of an item to open
@@ -145,6 +179,25 @@ public class Room {
 	        return values;
 	}
 	
+	public int[] getAllConnectionsInt() {
+	    int[] conns = {0, 0, 0, 0}; // [north, east, south, west]
+
+	    if (connections.get("north") != null) {
+	        conns[0] = connections.get("north");
+	    }
+	    if (connections.get("east") != null) {
+	        conns[1] = connections.get("east");
+	    }
+	    if (connections.get("south") != null) {
+	        conns[2] = connections.get("south");
+	    }
+	    if (connections.get("west") != null) {
+	        conns[3] = connections.get("west");
+	    }
+
+	    return conns;
+	}
+	
 	//This will get the entire HashMap for the room
 	public Map<String, Integer> getHashMap(){
 		return this.connections;
@@ -177,6 +230,18 @@ public class Room {
 	
 	public ArrayList<EnemyModel> getEnemiesinRoom() {
 		return this.enemies;
+	}
+	
+	public int getX_Position() {
+		return this.x_position;
+	}
+	
+	public int getY_Position() {
+		return this.y_position;
+	}
+	
+	public boolean getHas_Entered_Room() {
+		return this.has_entered_room;
 	}
 	
 	
@@ -220,5 +285,9 @@ public class Room {
 	
 	public void setConnections(Map<String, Integer> connections) {
 		this.connections = connections;
+	}
+	
+	public void setHas_Entered_Room(boolean entered) {
+		this.has_entered_room = entered;
 	}
 }

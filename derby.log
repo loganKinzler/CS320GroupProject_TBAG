@@ -1,10 +1,19 @@
 ----------------------------------------------------------------
+<<<<<<< HEAD
 Mon Apr 28 11:11:53 EDT 2025:
 Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-7cf4-50e4-00000dd531e8 
 on database directory C:\Users\logan\Desktop\ProgrammingProjects\College\CS320\EclipseProjects\CS320GroupProject_TBAG\test.db with class loader sun.misc.Launcher$AppClassLoader@4e0e2f2a 
 Loaded from file:/C:/Users/logan/Desktop/ProgrammingProjects/College/CS320/EclipseProjects/CS320_Derby/lib/derby.jar
 java.vendor=Temurin
 java.runtime.version=1.8.0_442-b06
+=======
+Tue May 06 23:09:22 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-a8b8-25db-00000f2255b8 
+on database directory C:\Users\logan\Desktop\ProgrammingProjects\College\CS320\EclipseProjects\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5c647e05 
+Loaded from file:/C:/Users/logan/Desktop/ProgrammingProjects/College/CS320/EclipseProjects/CS320_Derby/lib/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=21.0.2+13-LTS-58
+>>>>>>> refs/heads/andrew_branch
 user.dir=C:\Users\logan\Desktop\ProgrammingProjects\College\CS320\EclipseProjects\CS320GroupProject_TBAG
 os.name=Windows 11
 os.arch=amd64

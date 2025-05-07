@@ -26,7 +26,7 @@ public class InventoryBySourceQuery {
 	
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
-		InventoryBySourceQuery.database = new DerbyDatabase();
+		InventoryBySourceQuery.database = new DerbyDatabase("test");
 		
 		System.out.print("What kind of inventory? <Room: 0, Entity: 1> ");
 		Integer offset = keyboard.nextInt() % 2;

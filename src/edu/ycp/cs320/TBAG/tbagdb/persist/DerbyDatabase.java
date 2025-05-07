@@ -8,13 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
 import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.Inventory;
@@ -25,6 +21,8 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 
 public class DerbyDatabase implements IDatabase {
+	private String dbType;
+	
 	static {
 		try {
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -34,9 +32,26 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	// constructor
-	public DerbyDatabase() {
-		if (this.dbExists("test")) return;
-		this.create();
+	public DerbyDatabase(String dbType) {
+		this.dbType = dbType;
+	    if (this.dbExists("test")) {
+	        // Verify tables exist
+	        if (!verifyTablesExist()) {
+	            create(); // Recreate if tables are missing
+	        }
+	        return;
+	    }
+	    this.create();
+	}
+
+	private boolean verifyTablesExist() {
+	    try {
+	        // Try a simple query against one of the tables
+	        getFoundCommands();
+	        return true;
+	    } catch (Exception e) {
+	        return false;
+	    }
 	}
 	
 	private interface Transaction<ResultType> {
@@ -55,6 +70,10 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement stmt = null;
 				ResultSet resultSet = null;
 				
+				PreparedStatement weaponStmt = null;
+				ResultSet weaponResults = null;
+				Item result = null;
+				
 				try {
 					// retreive all attributes from both Books and Authors tables
 					stmt = conn.prepareStatement(
@@ -64,7 +83,6 @@ public class DerbyDatabase implements IDatabase {
 					);
 					stmt.setString(1, itemName);
 					
-					List<Item> result = new ArrayList<Item>();
 					
 					resultSet = stmt.executeQuery();
 					
@@ -72,28 +90,44 @@ public class DerbyDatabase implements IDatabase {
 					Boolean found = false;
 					Integer itemID = 0;
 					
-					while (resultSet.next()) {
+					if (resultSet.next()) {
 						found = true;
-						itemID++;
+						result = loadItem(resultSet, 1);
+					
+						weaponStmt = conn.prepareStatement(
+							"select weaponTypes.damage" + 
+							"	from weaponTypes" +
+							"	where weaponTypes.item_id = ?"
+						);
 						
-						// create new Author object
-						// retrieve attributes from resultSet starting with index 1
-						Item item = loadItem(resultSet, 1);
-						result.add(item);
+						weaponStmt.setInt(1, result.GetID());
+						weaponResults = weaponStmt.executeQuery();
+						
+						if (weaponResults.next()) {
+							result = new Weapon(
+								result.GetID(),
+								result.GetName(),
+								result.GetDescription(),
+								weaponResults.getDouble(1)
+							);
+						}
 					}
 					
 					// check if the title was found
-					if (!found) {
+					else {
 						System.out.println("<" + itemName + "> was not found in the items table");
-						return null;
 					}
 					
 					conn.commit();
-					return result.get(0);
 				} finally {
 					DBUtil.closeQuietly(resultSet);
 					DBUtil.closeQuietly(stmt);
+					
+					DBUtil.closeQuietly(weaponStmt);
+					DBUtil.closeQuietly(weaponResults);
 				}
+
+				return result;
 			}
 		});
 	}
@@ -452,10 +486,6 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement slotsUpdateStmt = null;
 				PreparedStatement slotsInsertStmt = null;
 				PreparedStatement slotsDeleteStmt = null;
-				PreparedStatement slotsShiftStmt = null;
-				
-				PreparedStatement slotsLastStmt = null;
-				ResultSet slotsLastResults = null;
 					
 				// update weapon slots (if updateInventory is an entityInventory)
 				if (sourceID % 2 == 1) {
@@ -472,7 +502,7 @@ public class DerbyDatabase implements IDatabase {
 							
 							// determine existence combination (database and updateInventory)
 							databaseSlotsStmt = conn.prepareStatement(
-								"select weaponSlots.slot_id, weaponSlots.item_id" +
+								"select weaponSlots.*" +
 									"	from weaponSlots" +
 									"	where weaponSlots.inventory_source = ?" +
 									"		and weaponSlots.slot_id = ?"
@@ -489,11 +519,13 @@ public class DerbyDatabase implements IDatabase {
 							Integer inventoryItemID = null;
 							if (existsInInventory) inventoryItemID = ((EntityInventory) updateInventory).GetWeapon(slotName).GetID();
 							
+							Integer databaseSlotNum = null;
 							Integer databaseSlotID = null;
 							Integer databaseItemID = null;
 							if (existsInDatabase) {
-								databaseSlotID = databaseSlotsResults.getInt(1);
-								databaseItemID = databaseSlotsResults.getInt(2);
+								databaseSlotNum = databaseSlotsResults.getInt(1);
+								databaseSlotID = databaseSlotsResults.getInt(3);
+								databaseItemID = databaseSlotsResults.getInt(4);
 							}
 							
 							
@@ -535,51 +567,13 @@ public class DerbyDatabase implements IDatabase {
 							// exists in database, but not inventory (remove it)
 							else if (existsInDatabase && !existsInInventory) {
 								
-								// get num items in all inventories
-								slotsLastStmt = conn.prepareStatement(
-									"select max(inventories.inventory_id) from inventories"
-								);
-								
-								slotsLastResults = slotsLastStmt.executeQuery();
-								
-								Integer numSlots = null;
-								if (slotsLastResults.next()) numSlots = slotsLastResults.getInt(1);
-								
-								
-								// run through all items that are above and shift them down 1
-								// this will overwrite the current item and place the duplicate into the last slot
-								// which will then be removed from database
-								for (int i=databaseSlotID; i<numSlots; i++) {
-									slotsShiftStmt = conn.prepareStatement(
-										"update weaponSlots" +
-											"	set weaponSlots.inventory_source = (" +
-											"		select slots.inventory_source" +
-											"			from weaponSlots as slots" +
-											"			where slots.slot_num = weaponSlots.slot_num + 1), " +
-											
-											"	weaponSlots.slot_id = (" +
-											"		select slots.slot_id" +
-											"			from weaponSlots as slots" +
-											"			where slots.slot_num = weaponSlots.slot_num + 1), " +
-											
-											"	weaponSlots.item_id = (" +
-											"		select slots.item_id" +
-											"			from weaponSlots as slots" +
-											"			where slots.slot_num = weaponSlots.slot_num + 1)" +
-											"	where weaponSlots.slot_num = ?"
-									);
-
-									slotsShiftStmt.setInt(1, i);
-									slotsShiftStmt.executeUpdate();
-								}
-								
 								// delete the slot
 								slotsDeleteStmt = conn.prepareStatement(
 									"delete from weaponSlots" +
-										"	where weaponSlots.slot_num = (" +
-										"		select max(slots.slot_num) from weaponSlots as slots)"
+										"	where weaponSlots.slot_num = ?"
 								);
 								
+								slotsDeleteStmt.setInt(1, databaseSlotNum);
 								slotsDeleteStmt.executeUpdate();
 							}
 						}
@@ -596,7 +590,6 @@ public class DerbyDatabase implements IDatabase {
 						DBUtil.closeQuietly(slotsUpdateStmt);
 						DBUtil.closeQuietly(slotsInsertStmt);
 						DBUtil.closeQuietly(slotsDeleteStmt);
-						DBUtil.closeQuietly(slotsShiftStmt);
 					}
 				}
 				
@@ -611,10 +604,6 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement invUpdateStmt = null;
 				PreparedStatement invInsertStmt = null;
 				PreparedStatement invDeleteStmt = null;
-				PreparedStatement invShiftStmt = null;
-				
-				PreparedStatement lastInvStmt = null;
-				ResultSet lastInvResults = null;
 				
 				try {
 					// get all items
@@ -643,6 +632,12 @@ public class DerbyDatabase implements IDatabase {
 						Boolean existsInDatabase = databaseInvResults.next();
 						Boolean existsInInventory = updateInventory.ContainsItem(item);
 						
+						System.out.println(String.format("%s is in the %s%s%s.",
+								item.GetName(),
+								existsInInventory? "inventory" : "",
+								(existsInInventory && existsInDatabase)? " and the " : "",
+								existsInDatabase? "database" : ""));
+						
 						Integer inventoryItemQuantity = updateInventory.GetItemAmount(item);
 						
 						Integer databaseInventoryID = null;
@@ -654,10 +649,12 @@ public class DerbyDatabase implements IDatabase {
 						
 						
 						// item isn't in database nor inventory (nothing to do, continue)
-						if (!existsInDatabase && !existsInInventory) continue;
+						if (!existsInDatabase && !existsInInventory) {
+							continue;						
+						}
 						
 						// both slots are full
-						else if (existsInDatabase && existsInInventory) {
+						if (existsInDatabase && existsInInventory) {
 							
 							// the database quantity is different than the inventory (update it)
 							if (inventoryItemQuantity == databaseItemQuantity) continue;
@@ -673,10 +670,12 @@ public class DerbyDatabase implements IDatabase {
 							invUpdateStmt.setInt(2, sourceID);
 							invUpdateStmt.setInt(3, item.GetID());
 							invUpdateStmt.executeUpdate();
+							
+							continue;
 						}
 						
 						// exists in inventory, but not database (insert it)
-						else if (!existsInDatabase && existsInInventory) {
+						if (!existsInDatabase && existsInInventory) {
 							
 							invInsertStmt = conn.prepareStatement(
 								"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)"
@@ -686,57 +685,24 @@ public class DerbyDatabase implements IDatabase {
 							invInsertStmt.setInt(2, item.GetID());
 							invInsertStmt.setInt(3, inventoryItemQuantity);
 							invInsertStmt.executeUpdate();
+							
+							continue;
 						}
 						
 						// exists in database, but not inventory (remove it)
-						else if (existsInDatabase && !existsInInventory) {
-							
-							// get num items in all inventories
-							lastInvStmt = conn.prepareStatement(
-								"select max(inventories.inventory_id) from inventories"
-							);
-							
-							lastInvResults = lastInvStmt.executeQuery();
-							
-							Integer numInvs = null;
-							if (lastInvResults.next()) numInvs = lastInvResults.getInt(1);
-							
-							
-							// run through all items that are above and shift them down 1
-							// this will overwrite the current item and place the duplicate into the last slot
-							// which will then be removed from database
-							for (int i=databaseInventoryID; i<numInvs; i++) {
-								invShiftStmt = conn.prepareStatement(
-									"update inventories" +
-										"	set inventories.inventory_source = (" +
-										"		select inv.inventory_source" +
-										"			from inventories as inv" +
-										"			where inv.inventory_id = inventories.inventory_id + 1), " +
-										
-										"	inventories.item_id = (" +
-										"		select inv.item_id" +
-										"			from inventories as inv" +
-										"			where inv.inventory_id = inventories.inventory_id + 1), " +
-										
-										"	inventories.item_quantity = (" +
-										"		select inv.item_quantity" +
-										"			from inventories as inv" +
-										"			where inv.inventory_id = inventories.inventory_id + 1)" +
-										"	where inventories.inventory_id = ?"
-								);
-
-								invShiftStmt.setInt(1, i);
-								invShiftStmt.executeUpdate();
-							}
+						if (existsInDatabase && !existsInInventory) {
 							
 							// delete the slot
 							invDeleteStmt = conn.prepareStatement(
 								"delete from inventories" +
-									"	where inventories.inventory_id = (" +
-									"		select max(inv.inventory_id) from inventories as inv)"
+									"	where inventories.inventory_id = ?"
 							);
 							
+							System.out.println(databaseInventoryID);
+							invDeleteStmt.setInt(1, databaseInventoryID);
 							invDeleteStmt.executeUpdate();
+							
+							continue;
 						}
 					}
 				} catch (Exception e) {
@@ -752,436 +718,6 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(invUpdateStmt);
 					DBUtil.closeQuietly(invInsertStmt);
 					DBUtil.closeQuietly(invDeleteStmt);
-					DBUtil.closeQuietly(invShiftStmt);
-				}
-				
-				return true;
-			}
-		});
-	}
-
-	
-	// END OF QUERIES / INSERTS
-
-	
-	// OUR CLASS LOADING METHODS GO HERE
-	private Item loadItem(ResultSet resultSet, int index) throws SQLException {
-		return new Item(
-			resultSet.getInt(index++),
-			resultSet.getString(index++),
-			resultSet.getString(index++)
-		);
-	}
-	
-	private Weapon loadWeapon(ResultSet resultSet, int index) throws SQLException {
-		return new Weapon(
-				resultSet.getInt(index++),
-				resultSet.getString(index++),
-				resultSet.getString(index++),
-				resultSet.getDouble(index++)
-			);
-	}
-	
-	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
-		int index = 2;
-		
-		double health = resultSet.getDouble(index++);
-		double maxHealth = resultSet.getDouble(index++);
-		int lives = resultSet.getInt(index++);
-		int currentRoom = resultSet.getInt(index++);
-		
-		PlayerModel toOut = new PlayerModel(health, lives, currentRoom);
-		toOut.setMaxHealth(maxHealth);
-		
-		EntityInventory playerInventory = this.GetPlayerInventory();
-		toOut.setInventory(playerInventory);
-		
-		return toOut;
-	}
-	
-	private EnemyModel loadEnemy(ResultSet resultSet) throws SQLException {
-		int index = 2;
-		
-		double health = resultSet.getDouble(index++);
-		double maxHealth = resultSet.getDouble(index++);
-		int lives = resultSet.getInt(index++);
-		int currentRoom = resultSet.getInt(index++);
-		String name = resultSet.getString(index++);
-		String description = resultSet.getString(index++);
-		
-		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
-		toOut.setMaxHealth(maxHealth);
-		
-		EntityInventory enemyInventory = this.GetEnemyInventoryByID(1 + (resultSet.getInt(1) << 1));
-		toOut.setInventory(enemyInventory);
-		
-		return toOut;
-	}
-	
-	private Room loadRoom(ResultSet resultSet) throws SQLException {
-		int index = 2;
-		String name = resultSet.getString(index++);
-		String description = resultSet.getString(index++);
-		Room toOut = new Room(name, description);
-		
-		return toOut;
-	}
-	
-	private Room loadConnection(ResultSet resultSet) throws SQLException{
-		int index = 1;
-		int roomID = resultSet.getInt(index++);
-		int north = resultSet.getInt(index++);
-		int east = resultSet.getInt(index++);
-		int south = resultSet.getInt(index++);
-		int west = resultSet.getInt(index++);
-		
-		Room toOut = new Room(roomID);
-		toOut.setConnectedRoom("north", north);
-		toOut.setConnectedRoom("east", east);
-		toOut.setConnectedRoom("south", south);
-		toOut.setConnectedRoom("west", west);
-		//System.out.println(resultSet);
-		//System.out.println(toOut.getConnectedRoom("north") + ", " + toOut.getConnectedRoom("east") + ", " + toOut.getConnectedRoom("south") + ", " + toOut.getConnectedRoom("west"));
-		
-		return toOut;
-		
-	}
-	
-	
-	// END OF CLASS LOADING METHODS
-	
-	public<ResultType> ResultType executeTransaction(Transaction<ResultType> txn) {
-		try {
-			return doExecuteTransaction(txn);
-		} catch (SQLException e) {
-			throw new PersistenceException("Transaction failed", e);
-		}
-	}
-	
-	public<ResultType> ResultType doExecuteTransaction(Transaction<ResultType> txn) throws SQLException {
-		Connection conn = connect();
-		
-		try {
-			int numAttempts = 0;
-			boolean success = false;
-			ResultType result = null;
-			
-			while (!success && numAttempts < MAX_ATTEMPTS) {
-				try {
-					result = txn.execute(conn);
-					conn.commit();
-					success = true;
-				} catch (SQLException e) {
-					if (e.getSQLState() != null && e.getSQLState().equals("41000")) {
-						// Deadlock: retry (unless max retry count has been reached)
-						numAttempts++;
-					} else {
-						// Some other kind of SQLException
-						throw e;
-					}
-				}
-			}
-			
-			if (!success) {
-				throw new SQLException("Transaction failed (too many retries)");
-			}
-			
-			// Success!
-			return result;
-		} finally {
-			DBUtil.closeQuietly(conn);
-		}
-	}
-
-	private Connection connect() throws SQLException {
-		Connection conn = DriverManager.getConnection("jdbc:derby:test.db;create=true");
-		
-		// Set autocommit to false to allow execution of
-		// multiple queries/statements as part of the same transaction.
-		conn.setAutoCommit(false);
-		
-		return conn;
-	}
-	
-	public Boolean createTables() {
-		return executeTransaction(new Transaction<Boolean>() {
-			@Override
-			public Boolean execute(Connection conn) throws SQLException {				
-				Boolean isNewDatabase = true;
-				
-				// ITEM TYPES				
-				PreparedStatement itemStmt = conn.prepareStatement(
-						"create table itemTypes (" +
-								"	item_id int primary key" + 
-								"       generated always as identity (start with 1, increment by 1), " +									
-								"	name varchar(16), " +
-								"	description varchar(64) " +
-								")"
-						);
-
-				try {
-					itemStmt.executeUpdate();
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(itemStmt);
-				}
-				
-				
-				
-				// WEAPON TYPES
-				PreparedStatement weaponStmt = conn.prepareStatement(
-					"create table weaponTypes (" +
-							"	weapon_id int primary key" + 
-							"       generated always as identity (start with 1, increment by 1), " + 
-							"   item_id int unique, " + 
-							"		constraint item_id foreign key (item_id) references itemTypes(item_id), " + 
-							"	damage double" +
-							")"
-				);
-				
-				try {
-					weaponStmt.executeUpdate();
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(weaponStmt);
-				}
-				
-				
-				// ENTITIES
-				PreparedStatement entitiesStatement = conn.prepareStatement(
-						"create table entities ("
-						+ "id int primary key "
-						+ "generated always as identity (start with 1, increment by 1), "
-						+ "health double, "
-						+ "maxHealth double, "
-						+ "lives int, "
-						+ "currentRoom int, "
-						+ "name varchar(16), "
-						+ "description varchar(64)"
-						+ ")"
-						);
-				try {
-					entitiesStatement.executeUpdate();
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(entitiesStatement);
-				}
-				
-				
-
-				
-				
-				// INVENTORY
-				PreparedStatement inventoryStmt = conn.prepareStatement(
-					"create table inventories (" +
-							"   inventory_id int primary key" +
-							"       generated always as identity (start with 1, increment by 1), " + 
-							"	inventory_source int, " + 
-							"   item_id int, " + 
-							"		constraint inv_itemID foreign key (item_id) references itemTypes(item_id), " + 
-							"	item_quantity int" +
-					")"
-				);
-				
-				try {
-					inventoryStmt.executeUpdate();
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(inventoryStmt);
-				}
-				
-				
-				
-				// SLOT NAMES
-				PreparedStatement slotNamesStmt = conn.prepareStatement(
-					"create table slotNames (" +
-							"   slot_id int primary key" +
-							"       generated always as identity (start with 1, increment by 1), " + 
-							"	slot_name varchar(16)" +
-					")"
-				);
-				
-				
-				try {
-					slotNamesStmt.executeUpdate();
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(slotNamesStmt);
-				}
-				
-				
-				
-				// WEAPON SLOTS
-				PreparedStatement weaponSlotsStmt = conn.prepareStatement(
-					"create table weaponSlots (" +
-							"   slot_num int primary key" +
-							"       generated always as identity (start with 1, increment by 1), " + 
-							"	inventory_source int, " +
-							"   slot_id int, " +
-							"		constraint slotID foreign key (slot_id) references slotNames(slot_id), " +
-							"	item_id int, " + 
-							"		constraint weaponID foreign key (item_id) references itemTypes(item_id)" +
-					")"
-				);
-					
-				try {
-					weaponSlotsStmt.executeUpdate();
-						
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(weaponSlotsStmt);
-				}
-				
-				
-				// ROOMS
-				PreparedStatement roomsStatement = conn.prepareStatement(
-						"Create table rooms ("
-						+ "room_id int primary key"
-						+ " generated always as identity (start with 1, increment by 1), "
-						+ "name varchar(16), "
-						+ "description varchar(64)"
-						+ ")"
-						);
-				
-				try {
-					roomsStatement.executeUpdate();
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(roomsStatement);
-				}
-				
-
-				
-				//CONNECTIONS
-				//north|east|south|west
-				//0 = no room connection
-				PreparedStatement connectionsStatement = conn.prepareStatement(
-						"Create table connections ("
-						+ "room_id int primary key "
-						+ "generated always as identity (start with 1, increment by 1), "
-						+ "north int, east int, south int, west int)"
-						);
-				
-				
-				
-				try {
-					connectionsStatement.executeUpdate();
-					
-					
-				} catch (SQLException sql) {
-					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
-						isNewDatabase = false;
-					else
-						throw sql;
-					
-				} catch (Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(connectionsStatement);
-				}
-
-				//GameHistory
-				PreparedStatement historystmt = null;
-				try {
-					historystmt = conn.prepareStatement(
-					"create table GameHistory ("+
-					" printout varchar(32672))"
-					);
-					historystmt.executeUpdate();
-				} catch (SQLException sql){
-				if(sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) {
-					isNewDatabase = false;
-				}
-				}catch (Exception e){
-				throw e;
-				}finally{
-					DBUtil.closeQuietly(historystmt);
-				}
-
-				
-				return isNewDatabase;
-			}
-		});
-	}
-	
-	public void resetTable(String tableName, String primaryKeyName, Integer startingNum) {
-		executeTransaction(new Transaction<Boolean>() {
-			@Override
-			public Boolean execute(Connection conn) throws SQLException {
-				PreparedStatement clearDatabase = conn.prepareStatement("delete from " + tableName);
-				
-				try {
-					clearDatabase.execute();
-					DBUtil.closeQuietly(clearDatabase);
-		
-					clearDatabase = conn.prepareStatement(
-							"alter table " + tableName + 
-							" alter column " + primaryKeyName + 
-							" restart with " + startingNum.toString()
-					);
-					
-					clearDatabase.execute();
-				} catch(Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(clearDatabase);
 				}
 				
 				return true;
@@ -1189,226 +725,8 @@ public class DerbyDatabase implements IDatabase {
 		});
 	}
 	
-	public void loadInitialData(Boolean isNewDatabase) {
-		executeTransaction(new Transaction<Boolean>() {
-			@Override
-			public Boolean execute(Connection conn) throws SQLException {
-				List<String> slotList;
-				List<Item> itemList;
-				List<Weapon> weaponList;
-				Map<Integer, Inventory> inventoryMap;
-				PlayerModel player;
-				List<EnemyModel> enemies;
-				List<Room> rooms;
-				List<Room> connections;
-				
-				try {
-					slotList = InitialData.getSlotNames();
-					itemList = InitialData.getItemTypes();
-					weaponList = InitialData.getWeaponTypes();
-					inventoryMap = InitialData.getInventories();
-
-					player = InitialData.getPlayer();
-					enemies = InitialData.getEnemies();
-					rooms = InitialData.getRooms();
-					connections = InitialData.getConnections();
-					
-				} catch (IOException e) {
-					throw new SQLException("Couldn't read initial data", e);
-				}
-
-				
-				// if database already exists, reset it first
-				if (!isNewDatabase) {
-					resetTable("connections", "room_id", 1);
-					resetTable("rooms", "room_id", 1);
-					resetTable("weaponSlots", "slot_num", 2);// reset dependencies first (inventory_source)
-					resetTable("slotNames", "slot_id", 1);// reset dependencies first (slot_id)
-					resetTable("inventories", "inventory_id", 2);
-					resetTable("weaponTypes", "weapon_id", 1);
-					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
-					resetTable("entities", "id", 1);
-				}
-				
-				
-				// INSERT ITEMS
-				PreparedStatement insertItem = conn.prepareStatement(
-						"insert into itemTypes (name, description) values (?, ?)");
-
-				try {
-					for (Item item : itemList) {
-						insertItem.setString(1, item.GetName());
-						insertItem.setString(2, item.GetDescription());
-						insertItem.addBatch();
-					}
-					
-					insertItem.executeBatch();
-					
-				} catch(Exception e) {
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(insertItem);
-				}
-				
-				
-				// INSERT WEAPONS
-				PreparedStatement insertWeapon = conn.prepareStatement(
-						"insert into weaponTypes (item_id, damage) values (?, ?)");
-				
-				try {
-					for (Weapon weapon : weaponList) {
-						insertWeapon.setInt(1, weapon.GetID());
-						insertWeapon.setDouble(2, weapon.GetDamage());
-						insertWeapon.addBatch();
-					}
-
-					insertWeapon.executeBatch();
-					
-				} catch(Exception e) { 
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(insertWeapon);
-				}
-				
-				
-				
-				// INSERT (WEAPON) SLOT NAMES
-				PreparedStatement insertSlot = conn.prepareStatement(
-					"insert into slotNames (slot_name) values (?)"
-				);
-				
-				try {
-					for (String name : slotList) {
-						insertSlot.setString(1, name);
-						insertSlot.addBatch();
-					}
-
-					insertSlot.executeBatch();
-					
-				} catch(Exception e) { 
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(insertSlot);
-				}
-				
-				
-				
-				// INSERT INVENTORIES
-				PreparedStatement insertInventory = conn.prepareStatement(
-						"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)");
-				
-				PreparedStatement insertWeaponSlot = conn.prepareStatement(
-						"insert into weaponSlots (inventory_source, slot_id, item_id) values (?, ?, ?)");
-				
-				try {
-					for (Integer inventory_source : inventoryMap.keySet()) {
-						Map<Item, Integer> inventoryItems = inventoryMap.get(inventory_source).GetItems();
-						
-						// loop through inventory items
-						for (Item item : inventoryItems.keySet()) {
-							
-							// sources are split by 2 (even: entities, odd: rooms)
-							// the source should be shifted left by 1 to read from the database
-							// and be subsequently shifted right by 1 and added by 1 (accordingly) to push to the database
-							insertInventory.setInt(1, inventory_source);
-							insertInventory.setInt(2, item.GetID());
-							insertInventory.setInt(3, inventoryItems.get(item));
-							insertInventory.addBatch();
-						}
-						
-						// add equipped weapons
-						if (inventory_source % 2 == 1) {
-							Map<String, Weapon> weaponSlots = ((EntityInventory) inventoryMap.get(inventory_source)).GetWeaponsAsSlots();
-							
-							for (String slot : weaponSlots.keySet()) {
-								insertWeaponSlot.setInt(1, inventory_source);
-								insertWeaponSlot.setInt(2, slotList.indexOf(slot) + 1);
-								insertWeaponSlot.setInt(3, weaponSlots.get(slot).GetID());
-								insertWeaponSlot.addBatch();
-							}
-						}
-					}
-
-					insertInventory.executeBatch();
-					insertWeaponSlot.executeBatch();
-					
-				} catch(Exception e) { 
-					throw e;
-					
-				} finally {
-					DBUtil.closeQuietly(insertWeapon);
-				}
-				
-				
-				//Insert entities
-				PreparedStatement insertEntityStatement = conn.prepareStatement(
-						"insert into entities (health, maxHealth, lives, currentRoom, name, description) values (?, ?, ?, ?, ?, ?)");
-				//Player
-				insertEntityStatement.setDouble(1, player.getHealth());
-				insertEntityStatement.setDouble(2, player.getMaxHealth());
-				insertEntityStatement.setInt(3, player.getLives());
-				insertEntityStatement.setInt(4, player.getCurrentRoomIndex());
-				insertEntityStatement.setString(5, "");
-				insertEntityStatement.setString(6, "");
-				
-				insertEntityStatement.executeUpdate();
-				
-				//Enemies
-				for (EnemyModel enemy : enemies) {
-					insertEntityStatement.setDouble(1, enemy.getHealth());
-					insertEntityStatement.setDouble(2, enemy.getMaxHealth());
-					insertEntityStatement.setInt(3, enemy.getLives());
-					insertEntityStatement.setInt(4, enemy.getCurrentRoomIndex());
-					insertEntityStatement.setString(5, enemy.getName());
-					insertEntityStatement.setString(6, enemy.getDescription());
-					
-					insertEntityStatement.executeUpdate();
-				}
-				
-
-				//Insert Rooms
-				PreparedStatement insertRoomStatement = conn.prepareStatement(
-						"insert into rooms (name, description) values (?, ?)");
-						
-				
-				for(Room room : rooms) {
-					insertRoomStatement.setString(1, room.getShortRoomDescription());
-					insertRoomStatement.setString(2, room.getLongRoomDescription());
-					insertRoomStatement.executeUpdate();
-				}
-				
-				//Insert Connections
-				PreparedStatement insertConnectionsStatement = conn.prepareStatement(
-						"insert into connections (north, east, south, west) values (?, ?, ?, ?)");
-						
-				
-				
-				for(Room room : connections) {
-					insertConnectionsStatement.setInt(1, room.getConnectedRoom("north"));
-					insertConnectionsStatement.setInt(2, room.getConnectedRoom("east"));
-					insertConnectionsStatement.setInt(3, room.getConnectedRoom("south"));
-					insertConnectionsStatement.setInt(4, room.getConnectedRoom("west"));
-					insertConnectionsStatement.executeUpdate();
-				}
-				return true;
-			}
-		});
-	}
+	//Entities~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
-	public void create() {
-		System.out.println("Creating tables...");
-		Boolean isNewDatabase = createTables();
-		System.out.println(isNewDatabase);
-		
-		System.out.println("Loading initial data...");
-		loadInitialData(isNewDatabase);
-		
-		System.out.println("Success!");
-	}
-
 	@Override
 	public PlayerModel GetPlayer() {
 		return executeTransaction(new Transaction<PlayerModel>() {
@@ -1773,7 +1091,7 @@ public class DerbyDatabase implements IDatabase {
 
 	@Override
 	public void UpdatePlayerInventory(EntityInventory playerInventory) {
-		this.UpdateInventoryBySourceID(2, playerInventory);
+		this.UpdateInventoryBySourceID(3, playerInventory);
 	}
 	
 	@Override
@@ -1851,88 +1169,8 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
-
-
-	@Override
-	public void deleteDb(String dbName, String dblocation) {
-		// Set Derby system home if specified
-       if (dblocation != null && !dblocation.isEmpty()) {
-           System.setProperty("derby.system.home", dblocation);
-       }
-       try {
-           // Load Derby driver
-           Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-          
-           // Derby uses a special shutdown URL to close the database
-           String shutdownUrl = "jdbc:derby:;shutdown=true";
-           try {
-               DriverManager.getConnection(shutdownUrl);
-           } catch (SQLException e) {
-               // Expected exception when shutting down Derby
-               if (!e.getSQLState().equals("08006")) {
-                   throw e;
-               }
-           }
-          
-           // Delete the directory path
-           String dbPath = (dblocation == null) ? dbName : dblocation + "/" + dbName;
-           deleteDirectory(new java.io.File(dbPath));
-          
-           System.out.println("Derby database '" + dbName + "' deleted successfully");
-          
-       } catch (ClassNotFoundException e) {
-           System.err.println("Derby driver not found: " + e.getMessage());
-       } catch (SQLException e) {
-           System.err.println("Error deleting Derby database: " + e.getMessage());
-       }
-   }
-	private static boolean deleteDirectory(File directory) {
-       if (directory.exists()) {
-           File[] files = directory.listFiles();
-           if (files != null) {
-               for (File file : files) {
-                   if (file.isDirectory()) {
-                       deleteDirectory(file);
-                   } else {
-                       file.delete();
-                   }
-               }
-           }
-           return directory.delete();
-       }
-       return false;
-   }
 	
-	public List<String> loadHistory(){
-		return executeTransaction(new Transaction<List<String>>() {
-			public List<String> execute(Connection conn) throws SQLException {
-//	Connection conn = null;
-		PreparedStatement getHistoryStmt = null;
-		ResultSet resultSet = null;
-		List<String> history = new ArrayList<>();
-		try {
-//		conn = connect();
-			getHistoryStmt = conn.prepareStatement(
-					"SELECT * FROM GameHistory"
-				);
-			resultSet = getHistoryStmt.executeQuery();
-		
-		
-			while(resultSet.next()) {
-				String rowinfo = resultSet.getString(1);
-				history.add(rowinfo);	
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally {
-			DBUtil.closeQuietly(getHistoryStmt);
-			DBUtil.closeQuietly(resultSet);
-		}
-	
-		return history;
-			}
-		});
-	}
+	//GameHistory~~~~~~
 	
 	@Override
 	public List<String> getGameHistory() {
@@ -1999,7 +1237,754 @@ public class DerbyDatabase implements IDatabase {
 			}
 		});
 	}
+	
+	public Boolean clearGameHistory() {
+		return executeTransaction(new Transaction<Boolean>() {
+			public Boolean execute(Connection conn) throws SQLException {
+				PreparedStatement clearStatement = null;
+				
+				clearStatement = conn.prepareStatement(
+					"delete from GameHistory"
+				);
+				
+				try {
+					clearStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(clearStatement);
+				}
+				
+				return true;
+			}
+		});
+	}
 
+	
+	// END OF QUERIES / INSERTS
+
+	
+	// OUR CLASS LOADING METHODS GO HERE
+	private Item loadItem(ResultSet resultSet, int index) throws SQLException {
+		return new Item(
+			resultSet.getInt(index++),
+			resultSet.getString(index++),
+			resultSet.getString(index++)
+		);
+	}
+	
+	private Weapon loadWeapon(ResultSet resultSet, int index) throws SQLException {
+		return new Weapon(
+				resultSet.getInt(index++),
+				resultSet.getString(index++),
+				resultSet.getString(index++),
+				resultSet.getDouble(index++)
+			);
+	}
+	
+	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
+		int index = 2;
+		
+		double health = resultSet.getDouble(index++);
+		double maxHealth = resultSet.getDouble(index++);
+		int lives = resultSet.getInt(index++);
+		int currentRoom = resultSet.getInt(index++);
+		
+		PlayerModel toOut = new PlayerModel(health, lives, currentRoom);
+		toOut.setMaxHealth(maxHealth);
+		
+		EntityInventory playerInventory = this.GetPlayerInventory();
+		toOut.setInventory(playerInventory);
+		
+		return toOut;
+	}
+	
+	private EnemyModel loadEnemy(ResultSet resultSet) throws SQLException {
+		int index = 2;
+		
+		double health = resultSet.getDouble(index++);
+		double maxHealth = resultSet.getDouble(index++);
+		int lives = resultSet.getInt(index++);
+		int currentRoom = resultSet.getInt(index++);
+		String name = resultSet.getString(index++);
+		String description = resultSet.getString(index++);
+		
+		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
+		toOut.setMaxHealth(maxHealth);
+		
+		EntityInventory enemyInventory = this.GetEnemyInventoryByID(1 + (resultSet.getInt(1) << 1));
+		toOut.setInventory(enemyInventory);
+		
+		return toOut;
+	}
+	
+	private Room loadRoom(ResultSet resultSet) throws SQLException {
+		int index = 2;
+		String name = resultSet.getString(index++);
+		String description = resultSet.getString(index++);
+		Room toOut = new Room(name, description);
+		
+		return toOut;
+	}
+	
+	private Room loadConnection(ResultSet resultSet) throws SQLException{
+		int index = 1;
+		int roomID = resultSet.getInt(index++);
+		int north = resultSet.getInt(index++);
+		int east = resultSet.getInt(index++);
+		int south = resultSet.getInt(index++);
+		int west = resultSet.getInt(index++);
+		
+		Room toOut = new Room(roomID);
+		toOut.setConnectedRoom("north", north);
+		toOut.setConnectedRoom("east", east);
+		toOut.setConnectedRoom("south", south);
+		toOut.setConnectedRoom("west", west);
+		//System.out.println(resultSet);
+		//System.out.println(toOut.getConnectedRoom("north") + ", " + toOut.getConnectedRoom("east") + ", " + toOut.getConnectedRoom("south") + ", " + toOut.getConnectedRoom("west"));
+		
+		return toOut;
+		
+	}
+	
+	
+	// END OF CLASS LOADING METHODS
+	
+	public<ResultType> ResultType executeTransaction(Transaction<ResultType> txn) {
+		try {
+			return doExecuteTransaction(txn);
+		} catch (SQLException e) {
+			throw new PersistenceException("Transaction failed", e);
+		}
+	}
+	
+	public<ResultType> ResultType doExecuteTransaction(Transaction<ResultType> txn) throws SQLException {
+		Connection conn = connect();
+		
+		try {
+			int numAttempts = 0;
+			boolean success = false;
+			ResultType result = null;
+			
+			while (!success && numAttempts < MAX_ATTEMPTS) {
+				try {
+					result = txn.execute(conn);
+					conn.commit();
+					success = true;
+				} catch (SQLException e) {
+					if (e.getSQLState() != null && e.getSQLState().equals("41000")) {
+						// Deadlock: retry (unless max retry count has been reached)
+						numAttempts++;
+					} else {
+						// Some other kind of SQLException
+						throw e;
+					}
+				}
+			}
+			
+			if (!success) {
+				throw new SQLException("Transaction failed (too many retries)");
+			}
+			
+			// Success!
+			return result;
+		} finally {
+			DBUtil.closeQuietly(conn);
+		}
+	}
+
+	//TODO: add support for multiple databases
+	//Will likely need to have a field in the class for the type because connect is done every db method and i digress against having the db type as a param for every call
+	private Connection connect() throws SQLException {
+		Connection conn = DriverManager.getConnection("jdbc:derby:" + this.dbType + ".db;create=true");
+		
+		// Set autocommit to false to allow execution of
+		// multiple queries/statements as part of the same transaction.
+		conn.setAutoCommit(false);
+		
+		return conn;
+	}
+	
+	public Boolean createTables() {
+		return executeTransaction(new Transaction<Boolean>() {
+			@Override
+			public Boolean execute(Connection conn) throws SQLException {				
+				Boolean isNewDatabase = true;
+				
+				// ITEM TYPES				
+				PreparedStatement itemStmt = conn.prepareStatement(
+						"create table itemTypes (" +
+								"	item_id int primary key" + 
+								"       generated always as identity (start with 1, increment by 1), " +									
+								"	name varchar(16), " +
+								"	description varchar(64) " +
+								")"
+						);
+
+				try {
+					itemStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(itemStmt);
+				}
+				
+				
+				
+				// WEAPON TYPES
+				PreparedStatement weaponStmt = conn.prepareStatement(
+					"create table weaponTypes (" +
+							"	weapon_id int primary key" + 
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"   item_id int unique, " + 
+							"		constraint item_id foreign key (item_id) references itemTypes(item_id), " + 
+							"	damage double" +
+							")"
+				);
+				
+				try {
+					weaponStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(weaponStmt);
+				}
+				
+				
+				// ENTITIES
+				PreparedStatement entitiesStatement = conn.prepareStatement(
+						"create table entities ("
+						+ "id int primary key "
+						+ "generated always as identity (start with 1, increment by 1), "
+						+ "health double, "
+						+ "maxHealth double, "
+						+ "lives int, "
+						+ "currentRoom int, "
+						+ "name varchar(16), "
+						+ "description varchar(64)"
+						+ ")"
+						);
+				try {
+					entitiesStatement.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(entitiesStatement);
+				}
+				
+				
+
+				
+				
+				// INVENTORY
+				PreparedStatement inventoryStmt = conn.prepareStatement(
+					"create table inventories (" +
+							"   inventory_id int primary key" +
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"	inventory_source int, " + 
+							"   item_id int, " + 
+							"		constraint inv_itemID foreign key (item_id) references itemTypes(item_id), " + 
+							"	item_quantity int" +
+					")"
+				);
+				
+				try {
+					inventoryStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(inventoryStmt);
+				}
+				
+				
+				
+				// SLOT NAMES
+				PreparedStatement slotNamesStmt = conn.prepareStatement(
+					"create table slotNames (" +
+							"   slot_id int primary key" +
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"	slot_name varchar(16)" +
+					")"
+				);
+				
+				
+				try {
+					slotNamesStmt.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(slotNamesStmt);
+				}
+				
+				
+				
+				// WEAPON SLOTS
+				PreparedStatement weaponSlotsStmt = conn.prepareStatement(
+					"create table weaponSlots (" +
+							"   slot_num int primary key" +
+							"       generated always as identity (start with 1, increment by 1), " + 
+							"	inventory_source int, " +
+							"   slot_id int, " +
+							"		constraint slotID foreign key (slot_id) references slotNames(slot_id), " +
+							"	item_id int, " + 
+							"		constraint weaponID foreign key (item_id) references itemTypes(item_id)" +
+					")"
+				);
+					
+				try {
+					weaponSlotsStmt.executeUpdate();
+						
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(weaponSlotsStmt);
+				}
+				
+				
+				// ROOMS
+				PreparedStatement roomsStatement = conn.prepareStatement(
+						"Create table rooms ("
+						+ "room_id int primary key"
+						+ " generated always as identity (start with 1, increment by 1), "
+						+ "name varchar(16), "
+						+ "description varchar(64)"
+						+ ")"
+						);
+				
+				try {
+					roomsStatement.executeUpdate();
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(roomsStatement);
+				}
+				
+
+				
+				//CONNECTIONS
+				//north|east|south|west
+				//0 = no room connection
+				PreparedStatement connectionsStatement = conn.prepareStatement(
+						"Create table connections ("
+						+ "room_id int primary key "
+						+ "generated always as identity (start with 1, increment by 1), "
+						+ "north int, east int, south int, west int)"
+						);
+				
+				
+				
+				try {
+					connectionsStatement.executeUpdate();
+					
+					
+				} catch (SQLException sql) {
+					if (sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) 
+						isNewDatabase = false;
+					else
+						throw sql;
+					
+				} catch (Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(connectionsStatement);
+				}
+
+				
+				//GameHistory
+				PreparedStatement historystmt = null;
+				try {
+					historystmt = conn.prepareStatement(
+					"create table GameHistory ("+
+					" printout varchar(32672))"
+					);
+					historystmt.executeUpdate();
+				} catch (SQLException sql){
+				if(sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) {
+					isNewDatabase = false;
+				}
+				}catch (Exception e){
+				throw e;
+				}finally{
+					DBUtil.closeQuietly(historystmt);
+				}
+				
+				
+				//GameHistory
+				PreparedStatement foundCommandstmt = null;
+				try {
+				    foundCommandstmt = conn.prepareStatement(
+				        "create table FoundCommands (" +
+				        "   CommandName varchar(32672)" +
+				        ")"
+				    );
+				    foundCommandstmt.executeUpdate();
+				} catch (SQLException sql) {
+				    if (!sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) {
+				        throw sql; // Only ignore "already exists" errors
+				    }
+				    isNewDatabase = false;
+				} finally {
+				    DBUtil.closeQuietly(foundCommandstmt);
+				}
+				
+				
+				return isNewDatabase;
+			}
+		});
+	}
+	
+	public void resetTable(String tableName, String primaryKeyName, Integer startingNum) {
+		executeTransaction(new Transaction<Boolean>() {
+			@Override
+			public Boolean execute(Connection conn) throws SQLException {
+				PreparedStatement clearDatabase = conn.prepareStatement("delete from " + tableName);
+				
+				try {
+					clearDatabase.execute();
+					DBUtil.closeQuietly(clearDatabase);
+		
+					clearDatabase = conn.prepareStatement(
+							"alter table " + tableName + 
+							" alter column " + primaryKeyName + 
+							" restart with " + startingNum.toString()
+					);
+					
+					clearDatabase.execute();
+				} catch(Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(clearDatabase);
+				}
+				
+				return true;
+			}
+		});
+	}
+	
+	public void loadInitialData(Boolean isNewDatabase) {
+		executeTransaction(new Transaction<Boolean>() {
+			@Override
+			public Boolean execute(Connection conn) throws SQLException {
+				List<String> slotList;
+				List<Item> itemList;
+				List<Weapon> weaponList;
+				Map<Integer, Inventory> inventoryMap;
+				PlayerModel player;
+				List<EnemyModel> enemies;
+				List<Room> rooms;
+				List<Room> connections;
+				
+				try {
+					slotList = InitialData.getSlotNames();
+					itemList = InitialData.getItemTypes();
+					weaponList = InitialData.getWeaponTypes();
+					inventoryMap = InitialData.getInventories();
+
+					player = InitialData.getPlayer();
+					enemies = InitialData.getEnemies();
+					rooms = InitialData.getRooms();
+					connections = InitialData.getConnections();
+					
+				} catch (IOException e) {
+					throw new SQLException("Couldn't read initial data", e);
+				}
+
+				
+				// if database already exists, reset it first
+				if (!isNewDatabase) {
+					resetTable("connections", "room_id", 1);
+					resetTable("rooms", "room_id", 1);
+					resetTable("weaponSlots", "slot_num", 1);// reset dependencies first (inventory_source)
+					resetTable("slotNames", "slot_id", 1);// reset dependencies first (slot_id)
+					resetTable("inventories", "inventory_id", 1);
+					resetTable("weaponTypes", "weapon_id", 1);
+					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
+					resetTable("entities", "id", 1);
+				}
+				
+				
+				// INSERT ITEMS
+				PreparedStatement insertItem = conn.prepareStatement(
+						"insert into itemTypes (name, description) values (?, ?)");
+
+				try {
+					for (Item item : itemList) {
+						insertItem.setString(1, item.GetName());
+						insertItem.setString(2, item.GetDescription());
+						insertItem.addBatch();
+					}
+					
+					insertItem.executeBatch();
+					
+				} catch(Exception e) {
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertItem);
+				}
+				
+				
+				// INSERT WEAPONS
+				PreparedStatement insertWeapon = conn.prepareStatement(
+						"insert into weaponTypes (item_id, damage) values (?, ?)");
+				
+				try {
+					for (Weapon weapon : weaponList) {
+						insertWeapon.setInt(1, weapon.GetID());
+						insertWeapon.setDouble(2, weapon.GetDamage());
+						insertWeapon.addBatch();
+					}
+
+					insertWeapon.executeBatch();
+					
+				} catch(Exception e) { 
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertWeapon);
+				}
+				
+				
+				
+				// INSERT (WEAPON) SLOT NAMES
+				PreparedStatement insertSlot = conn.prepareStatement(
+					"insert into slotNames (slot_name) values (?)"
+				);
+				
+				try {
+					for (String name : slotList) {
+						insertSlot.setString(1, name);
+						insertSlot.addBatch();
+					}
+
+					insertSlot.executeBatch();
+					
+				} catch(Exception e) { 
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertSlot);
+				}
+				
+				
+				
+				// INSERT INVENTORIES
+				PreparedStatement insertInventory = conn.prepareStatement(
+						"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)");
+				
+				PreparedStatement insertWeaponSlot = conn.prepareStatement(
+						"insert into weaponSlots (inventory_source, slot_id, item_id) values (?, ?, ?)");
+				
+				try {
+					for (Integer inventory_source : inventoryMap.keySet()) {
+						Map<Item, Integer> inventoryItems = inventoryMap.get(inventory_source).GetItems();
+						
+						// loop through inventory items
+						for (Item item : inventoryItems.keySet()) {
+							
+							// sources are split by 2 (even: entities, odd: rooms)
+							// the source should be shifted left by 1 to read from the database
+							// and be subsequently shifted right by 1 and added by 1 (accordingly) to push to the database
+							insertInventory.setInt(1, inventory_source);
+							insertInventory.setInt(2, item.GetID());
+							insertInventory.setInt(3, inventoryItems.get(item));
+							insertInventory.addBatch();
+						}
+						
+						// add equipped weapons
+						if (inventory_source % 2 == 1) {
+							Map<String, Weapon> weaponSlots = ((EntityInventory) inventoryMap.get(inventory_source)).GetWeaponsAsSlots();
+							
+							for (String slot : weaponSlots.keySet()) {
+								insertWeaponSlot.setInt(1, inventory_source);
+								insertWeaponSlot.setInt(2, slotList.indexOf(slot) + 1);
+								insertWeaponSlot.setInt(3, weaponSlots.get(slot).GetID());
+								insertWeaponSlot.addBatch();
+							}
+						}
+					}
+
+					insertInventory.executeBatch();
+					insertWeaponSlot.executeBatch();
+					
+				} catch(Exception e) { 
+					throw e;
+					
+				} finally {
+					DBUtil.closeQuietly(insertWeapon);
+				}
+				
+				
+				//Insert entities
+				PreparedStatement insertEntityStatement = conn.prepareStatement(
+						"insert into entities (health, maxHealth, lives, currentRoom, name, description) values (?, ?, ?, ?, ?, ?)");
+				//Player
+				insertEntityStatement.setDouble(1, player.getHealth());
+				insertEntityStatement.setDouble(2, player.getMaxHealth());
+				insertEntityStatement.setInt(3, player.getLives());
+				insertEntityStatement.setInt(4, player.getCurrentRoomIndex());
+				insertEntityStatement.setString(5, "");
+				insertEntityStatement.setString(6, "");
+				
+				insertEntityStatement.executeUpdate();
+				
+				//Enemies
+				for (EnemyModel enemy : enemies) {
+					insertEntityStatement.setDouble(1, enemy.getHealth());
+					insertEntityStatement.setDouble(2, enemy.getMaxHealth());
+					insertEntityStatement.setInt(3, enemy.getLives());
+					insertEntityStatement.setInt(4, enemy.getCurrentRoomIndex());
+					insertEntityStatement.setString(5, enemy.getName());
+					insertEntityStatement.setString(6, enemy.getDescription());
+					
+					insertEntityStatement.executeUpdate();
+				}
+				
+
+				//Insert Rooms
+				PreparedStatement insertRoomStatement = conn.prepareStatement(
+						"insert into rooms (name, description) values (?, ?)");
+						
+				
+				for(Room room : rooms) {
+					insertRoomStatement.setString(1, room.getShortRoomDescription());
+					insertRoomStatement.setString(2, room.getLongRoomDescription());
+					insertRoomStatement.executeUpdate();
+				}
+				
+				//Insert Connections
+				PreparedStatement insertConnectionsStatement = conn.prepareStatement(
+						"insert into connections (north, east, south, west) values (?, ?, ?, ?)");
+						
+				
+				
+				for(Room room : connections) {
+					insertConnectionsStatement.setInt(1, room.getConnectedRoom("north"));
+					insertConnectionsStatement.setInt(2, room.getConnectedRoom("east"));
+					insertConnectionsStatement.setInt(3, room.getConnectedRoom("south"));
+					insertConnectionsStatement.setInt(4, room.getConnectedRoom("west"));
+					insertConnectionsStatement.executeUpdate();
+				}
+				return true;
+			}
+		});
+	}
+	
+	public void create() {
+//		System.out.println("Creating tables...");
+		Boolean isNewDatabase = createTables();
+		System.out.println(isNewDatabase);
+		
+//		System.out.println("Loading initial data...");
+		loadInitialData(isNewDatabase);
+		
+//		System.out.println("Success!");
+	}
+
+	public static void main(String[] args) {
+		DerbyDatabase db = new DerbyDatabase("test");
+		db.create();
+	}
+	
+	@Override
+	public void deleteDb(String dbName, String dblocation) {
+		// Set Derby system home if specified
+       if (dblocation != null && !dblocation.isEmpty()) {
+           System.setProperty("derby.system.home", dblocation);
+       }
+       try {
+           // Load Derby driver
+           Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+          
+           // Derby uses a special shutdown URL to close the database
+           String shutdownUrl = "jdbc:derby:;shutdown=true";
+           try {
+               DriverManager.getConnection(shutdownUrl);
+           } catch (SQLException e) {
+               // Expected exception when shutting down Derby
+               if (!e.getSQLState().equals("08006")) {
+                   throw e;
+               }
+           }
+          
+           // Delete the directory path
+           String dbPath = (dblocation == null) ? dbName : dblocation + "/" + dbName;
+           deleteDirectory(new java.io.File(dbPath));
+          
+           System.out.println("Derby database '" + dbName + "' deleted successfully");
+          
+       } catch (ClassNotFoundException e) {
+           System.err.println("Derby driver not found: " + e.getMessage());
+       } catch (SQLException e) {
+           System.err.println("Error deleting Derby database: " + e.getMessage());
+       }
+   }
+	private static boolean deleteDirectory(File directory) {
+       if (directory.exists()) {
+           File[] files = directory.listFiles();
+           if (files != null) {
+               for (File file : files) {
+                   if (file.isDirectory()) {
+                       deleteDirectory(file);
+                   } else {
+                       file.delete();
+                   }
+               }
+           }
+           return directory.delete();
+       }
+       return false;
+   }
 		
 	public boolean dbExists(String type) {
 		boolean exists = false;
@@ -2016,27 +2001,100 @@ public class DerbyDatabase implements IDatabase {
 		
 		return exists;
 	}
-		public void addToHistory(String add) {
-			Connection conn = null;
-			PreparedStatement addHistory = null;
-			try {
-				conn = connect();
-				addHistory = conn.prepareStatement(
-						"INSERT INTO GameHistory(printout) "+
-					    "VALUES(?)"
-						);
-				addHistory.setString(1,add);
-				addHistory.executeUpdate();	
-				conn.commit();
-			}catch(Exception e) {
-				e.printStackTrace();
-			}finally {
+	
+	
+	public List<String> getFoundCommands() {
+		return executeTransaction(new Transaction<List<String>>() {
+			@Override
+			public List<String> execute(Connection conn) throws SQLException {
+				PreparedStatement getFoundStmt = null;
+				ResultSet resultSet = null;
+				List<String> foundCommands = new ArrayList<>();
+				
 				try {
-					if(addHistory != null)addHistory.close();
-					if(conn != null)conn.close();
-				}catch(Exception e) {
-					e.printStackTrace();
+					// retreive all attributes from both Books and Authors tables
+					getFoundStmt = conn.prepareStatement(
+							"select FoundCommands.* from FoundCommands"
+					);
+					
+					
+					resultSet = getFoundStmt.executeQuery();
+					
+					// for testing that a result was returned
+					Boolean found = false;
+					
+					while (resultSet.next()) {
+						found = true;
+						
+						foundCommands.add(resultSet.getString(1));
+					}
+					
+					// check if the title was found
+					if (!found) {
+						System.out.println("Line was not found in the GameHistory table");
+					}
+					
+				} finally {
+					DBUtil.closeQuietly(resultSet);
+					DBUtil.closeQuietly(getFoundStmt);
 				}
+
+				return foundCommands;
 			}
-		}
+		});
+	}
+	
+	public String addToFound(String toAdd) {
+		return executeTransaction(new Transaction<String>() {
+			public String execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				insertStatement = conn.prepareStatement(
+					"insert into FoundCommands(CommandName) "
+					+ "values(?)"
+				);
+
+				insertStatement.setString(1, toAdd);
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return toAdd;
+			}
+		});
+	}
+	
+	public Boolean checkFound(String toCheck) {
+	    return executeTransaction(new Transaction<Boolean>() {
+	        @Override
+	        public Boolean execute(Connection conn) throws SQLException {
+	            PreparedStatement checkStatement = null;
+	            ResultSet resultSet = null;
+	            
+	            try {
+	                // Prepare SQL query to check if the command exists
+	                checkStatement = conn.prepareStatement(
+	                    "SELECT 1 FROM FoundCommands WHERE CommandName = ?"
+	                );
+	                checkStatement.setString(1, toCheck);
+	                
+	                resultSet = checkStatement.executeQuery();
+	                
+	                // If there's at least one row, the command exists
+	                return resultSet.next();
+	                
+	            } finally {
+	                DBUtil.closeQuietly(resultSet);
+	                DBUtil.closeQuietly(checkStatement);
+	            }
+	        }
+	    });
+	}
+	
+	
 }

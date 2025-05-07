@@ -12,8 +12,8 @@ public class ASCIIOutput {
     	try {
     		InputStream in = servlet.getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
 			Scanner reader = new Scanner(in);
-			if (prof.equals("hake")) toOut += "<div class=\"hake-ascii-art\">";
-			else if (prof.equals("babcock")) toOut += "<div class=\"babcock-ascii-art\">";
+			if (prof.equals("hake")) toOut += "<p class=\"hake-ascii-art\">";
+			else if (prof.equals("babcock")) toOut += "<p class=\"babcock-ascii-art\">";
 			while (reader.hasNextLine()) {
 				String asciiLine = reader.nextLine();
 				
@@ -25,7 +25,7 @@ public class ASCIIOutput {
 				
 				toOut += asciiLine + "\n";
 			}
-			toOut += "</div>";
+			toOut += "</p>";
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

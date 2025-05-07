@@ -21,7 +21,7 @@ public class DirectionsByRoomIdQuery {
 	
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
-		database = new DerbyDatabase();
+		database = new DerbyDatabase("test");
 		
 		// prompt user for item name
 		System.out.print("Room id to query: ");

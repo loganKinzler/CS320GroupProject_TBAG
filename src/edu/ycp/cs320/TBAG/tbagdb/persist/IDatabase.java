@@ -50,6 +50,7 @@ public interface IDatabase {
 	public String addToGameHistory(String add);
 	List<String> getGameHistory();
 	
-	public abstract List<String> loadHistory();
-	public abstract void addToHistory(String add);
+	public String addToFound(String add);
+	List<String> getFoundCommands();
+	public Boolean checkFound(String check);
 }

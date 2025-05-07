@@ -1,6 +1,10 @@
 package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,10 +39,9 @@ import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
-
-
 public class GameEngineServlet extends HttpServlet {
-    @Override
+
+	@Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     	HttpSession session = req.getSession();
         String userInput = (String) session.getAttribute("userInput");
@@ -48,26 +51,22 @@ public class GameEngineServlet extends HttpServlet {
             session.removeAttribute("userInput");
         }
         
-        List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
-        if (gameHistory == null) {
-            DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
-            if (db == null) {
-                db = new DerbyDatabase();
-                session.setAttribute("db", db);
-            }
-            gameHistory = db.getGameHistory();
-            session.setAttribute("gameHistory", gameHistory);
-        }
-        req.setAttribute("gameHistory", gameHistory);
-        
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
+        List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
         
+        DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
+        if (db == null) {
+            db = new DerbyDatabase("test");
+            session.setAttribute("db", db);
+        }
         
-        
-        
+        gameHistory = db.getGameHistory();
+        foundCommands = db.getFoundCommands();
 
+        
         req.setAttribute("gameHistory", gameHistory);
-        req.setAttribute("foundCommands", foundCommands);
+        req.setAttribute("foundCommands", foundCommands);        
+        sessionPlaySound(req, "playHakeSound");
         
         int sudoStage = 0;
         if (session.getAttribute("sudoStage") != null) {
@@ -82,8 +81,9 @@ public class GameEngineServlet extends HttpServlet {
 //        else {
 //        	System.out.println("Started sudo easter egg");
 //        }
-        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+        req.getRequestDispatcher("/_view/game.jsp").forward(req, resp);
     }
+      
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -92,14 +92,13 @@ public class GameEngineServlet extends HttpServlet {
         
         DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
         if (db == null) {
-            db = new DerbyDatabase();
+            db = new DerbyDatabase("test");
             session.setAttribute("db", db);
         }
 
         // Always pull fresh game history from DB
         List<String> gameHistory = db.getGameHistory();
         session.setAttribute("gameHistory", gameHistory);
-        System.out.println(session.getAttribute("gameHistory"));  
         ConsoleInterpreter interpreter = new ConsoleInterpreter();
         
         // Retrieve the game history from the session (or create a new one if it doesn't exist)
@@ -117,11 +116,8 @@ public class GameEngineServlet extends HttpServlet {
         
         
         // get found commands
-        List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
-        if (foundCommands == null) {
-        	foundCommands = new ArrayList<>();
-        	session.setAttribute("foundCommands", foundCommands);
-        }
+        List<String> foundCommands = db.getFoundCommands();
+
 
         List<Room> rooms = new ArrayList<>();
         //Room dummy = new Room();
@@ -219,22 +215,36 @@ public class GameEngineServlet extends HttpServlet {
 	        	        session.setAttribute("sudoStage", sudoStage);
         			break;
         			
+	        		case "quit":
+	        			resp.sendRedirect("index");;
+	        		break;
+        			
         			//hake easter egg test
 	        		case "hakeTest" :
 	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+	        			session.setAttribute("playHakeSound", true);
 	        		break;
 	        		case "babcockTest":
 	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
 	        		break;
 	        		case "newSave":
-	        			db = new DerbyDatabase();
+	        			db = new DerbyDatabase("test");
 	        			db.create();
 	        			systemResponse = "Creating new save...";
+	        		break;
+	        		case "clearChat":
+	        			db.clearGameHistory();
+	        			gameHistory.clear();
+	        			addToGameHistory(db, gameHistory, "Chat logs cleared...");
+	        		break;
+	        		case "showMap":
+	        			systemResponse = showMapString();
+	        			if (!foundCommands.contains("showMap")) addToFoundCommands(db,foundCommands,"showMap");
 	        		break;
             	
             		// TYPE 1 COMMANDS:
             		case "move":
-            			if (!foundCommands.contains("move")) foundCommands.add("move");
+            			if (!foundCommands.contains("move")) addToFoundCommands(db,foundCommands,"move");
             			
             			//Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
             					//params.get(0));
@@ -249,9 +259,6 @@ public class GameEngineServlet extends HttpServlet {
             					nextRoom = null;
             				}
             			
-            			
-            			
-            			
             			if (nextRoom == null) {
             				systemResponse = String.format("The current room doesn't have a room %s of it.",
             						params.get(0));
@@ -259,7 +266,6 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			player.setCurrentRoomIndex(nextRoom);
-            			System.out.println(player.getCurrentRoomIndex());
             			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
             			
             			//These used to be offset by 1
@@ -272,14 +278,14 @@ public class GameEngineServlet extends HttpServlet {
             		break;
             		
             		case "use":
-            			if (!foundCommands.contains("use")) foundCommands.add("use");
+            			if (!foundCommands.contains("use")) addToFoundCommands(db,foundCommands,"use");
             			
             			systemResponse = String.format("Used %s...", params.get(0));
             		break;
             		
             		// TYPE 3 COMMANDS
             		case "pickup":
-            			if (!foundCommands.contains("pickup")) foundCommands.add("pickup");
+            			if (!foundCommands.contains("pickup")) addToFoundCommands(db,foundCommands,"pickup");
             			
             			systemResponse = String.format("Picking up %s...<br><br>", params.get(1));
             			
@@ -309,14 +315,14 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             			}
             			
-            			Item pickupItem = rooms.get(player.getCurrentRoomIndex()).getRoomInventory().GetItemByName(params.get(1));
-            			if (pickupItem == null) {
+            			Item pickupItem = db.ItemsByNameQuery(params.get(1));
+            			if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
             				systemResponse = String.format("This room does not contain an item named %s.<br>",
             						params.get(1));
             				break;
             			}
             			
-            			Integer roomQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex()), pickupItem, pickupQuantity);
+            			Integer roomQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex() - 1), pickupItem, pickupQuantity);
             			systemResponse += String.format("Picked up %d %s<br>",
             					roomQuantity, params.get(1));
             			
@@ -325,7 +331,7 @@ public class GameEngineServlet extends HttpServlet {
             		break;
             		
             		case "drop":
-            			if (!foundCommands.contains("drop")) foundCommands.add("drop");
+            			if (!foundCommands.contains("drop")) addToFoundCommands(db,foundCommands,"drop");
             			
             			systemResponse = String.format("Dropping %s...<br><br>", params.get(1));
             			
@@ -346,7 +352,7 @@ public class GameEngineServlet extends HttpServlet {
             				
             				for (Item playerItem : playerInventoryKeys) {
             					Integer itemQuantity = player.Drop(
-            							rooms.get(player.getCurrentRoomIndex()),
+            							rooms.get(player.getCurrentRoomIndex() - 1),
             							playerItem, dropQuantity);
             					
                     			systemResponse += String.format("Dropped %d %s<br>",
@@ -360,24 +366,24 @@ public class GameEngineServlet extends HttpServlet {
             			
             			Item dropItem = player.getInventory().GetItemByName(params.get(1));
             			if (dropItem == null) {
-            				systemResponse = String.format("This room does not contain an item named %s.<br>",
+            				systemResponse = String.format("Your inventory does not contain an item named %s.<br>",
             						params.get(1));
             				break;
             			}
             			
             			Integer playerQuantity = player.Drop(
-            					rooms.get(player.getCurrentRoomIndex()),
+            					rooms.get(player.getCurrentRoomIndex() - 1),
             					dropItem, dropQuantity);
             			
             			systemResponse += String.format("Dropped %d %s<br>",
             					playerQuantity, params.get(1));
             			
-        				db.UpdateRoomInventory(player.getCurrentRoomIndex() + 1, rooms.get(player.getCurrentRoomIndex()).getRoomInventory());
+        				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
         				db.UpdatePlayerInventory(player.getInventory());
             		break;
             		
             		case "equip":
-            			if (!foundCommands.contains("equip")) foundCommands.add("equip");
+            			if (!foundCommands.contains("equip")) addToFoundCommands(db,foundCommands,"equip");
             			
             			systemResponse = String.format("Equipping %s...<br><br>", params.get(0));
             			
@@ -406,6 +412,10 @@ public class GameEngineServlet extends HttpServlet {
             			systemResponse += String.format("Equipped %s into %s.<br>",
             					params.get(0), weaponSlot);
             			
+            			for (Item i : player.getInventory().GetAllItems().keySet()) {
+            				System.out.println(i.GetName());
+            			}
+            			
             			db.UpdatePlayerInventory(player.getInventory());
             		break;
             		
@@ -420,8 +430,8 @@ public class GameEngineServlet extends HttpServlet {
             			
             			// using slot name
             			if (weaponSlots.containsKey(unequipName)) {
-            				if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
-            				if (!foundCommands.contains("unequip_slot")) foundCommands.add("unequip_slot");
+            				if (!foundCommands.contains("unequip")) addToFoundCommands(db,foundCommands,"unequip");
+            				if (!foundCommands.contains("unequip_slot")) addToFoundCommands(db,foundCommands,"unequip_slot");
             				
             				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
             				
@@ -434,8 +444,8 @@ public class GameEngineServlet extends HttpServlet {
             			
             			// no weapon in slot
             			if (EntityInventory.WeaponSlots.contains(unequipName)) {
-            				if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
-            				if (!foundCommands.contains("unequip_slot")) foundCommands.add("unequip_slot");
+            				if (!foundCommands.contains("unequip")) addToFoundCommands(db,foundCommands,"unequip");
+            				if (!foundCommands.contains("unequip_slot")) addToFoundCommands(db,foundCommands,"unequip_slot");
             				
             				systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
             						params.get(0));
@@ -452,8 +462,8 @@ public class GameEngineServlet extends HttpServlet {
         				
         				// using weapon name
         				if (weaponSlots.containsKey(unequipName)) {
-        					if (!foundCommands.contains("unequip")) foundCommands.add("unequip");
-        					if (!foundCommands.contains("unequip_weapon")) foundCommands.add("unequip_weapon");
+        					if (!foundCommands.contains("unequip")) addToFoundCommands(db,foundCommands,"unequip");
+        					if (!foundCommands.contains("unequip_weapon")) addToFoundCommands(db,foundCommands,"unequip_weapon");
         					
             				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
             				
@@ -472,8 +482,8 @@ public class GameEngineServlet extends HttpServlet {
             		case "describe":
             			switch (params.get(0)) {
             				case "room":
-            					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
-            					if (!foundCommands.contains("describe_room")) foundCommands.add("describe_room");
+            					if (!foundCommands.contains("describeGroup_room")) addToFoundCommands(db,foundCommands,"describeGroup_room");
+            					if (!foundCommands.contains("describe_room")) addToFoundCommands(db,foundCommands,"describe_room");
             					
             					System.out.println(db.GetPlayer().getCurrentRoomIndex());
             					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
@@ -484,8 +494,8 @@ public class GameEngineServlet extends HttpServlet {
             				//  [######--]
             				
             				case "stats":
-            					if (!foundCommands.contains("describeGroup_attack")) foundCommands.add("describeGroup_attack");
-            					if (!foundCommands.contains("describe_stats")) foundCommands.add("describe_stats");
+            					if (!foundCommands.contains("describeGroup_attack")) addToFoundCommands(db,foundCommands,"attack");
+            					if (!foundCommands.contains("describe_stats")) addToFoundCommands(db,foundCommands,"describe_stats");
             					
             					Integer healthBarSize = 10;
             					Double lifeRatio = player.getHealth() / player.getMaxHealth();
@@ -500,12 +510,12 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             				
             				case "enemies":
-            					if (!foundCommands.contains("describeGroup_attack")) foundCommands.add("describeGroup_attack");
-            					if (!foundCommands.contains("describe_enemies")) foundCommands.add("describe_enemies");
+            					if (!foundCommands.contains("describeGroup_attack")) addToFoundCommands(db,foundCommands,"describeGroup_attack");
+            					if (!foundCommands.contains("describe_enemies")) addToFoundCommands(db,foundCommands,"describe_enemies");
                 				
             					//TODO: Use this method once set up
 //            					ArrayList<EnemyModel> enemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-            					ArrayList<EnemyModel> enemies = db.GetEnemiesInRoom(db.GetPlayer().getCurrentRoomIndex());
+            					ArrayList<EnemyModel> enemies = db.GetEnemiesInRoom(DBController.getPlayerCurrentRoom(db));
             					systemResponse = String.format("Describing enemies...<br><br>");
             					
             					// remove dead enemies
@@ -546,8 +556,8 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             				
             				case "moves":
-            					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
-            					if (!foundCommands.contains("describe_moves")) foundCommands.add("describe_moves");
+            					if (!foundCommands.contains("describeGroup_room")) addToFoundCommands(db,foundCommands,"describeGroup_room");
+            					if (!foundCommands.contains("describe_moves")) addToFoundCommands(db,foundCommands,"describe_moves");
             					
             					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
             					
@@ -571,8 +581,8 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             				
             				case "directions":
-            					if (!foundCommands.contains("describeGroup_room")) foundCommands.add("describeGroup_room");
-            					if (!foundCommands.contains("describe_directions")) foundCommands.add("describe_directions");
+            					if (!foundCommands.contains("describeGroup_room")) addToFoundCommands(db,foundCommands,"describeGroup_room");
+            					if (!foundCommands.contains("describe_directions")) addToFoundCommands(db,foundCommands,"describe_directions");
             					
             					systemResponse = String.format("Describing directions...<br><br>Possible directions:<br>");
             				
@@ -582,8 +592,8 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             				
             				case "inventory":
-            					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
-            					if (!foundCommands.contains("describe_inventory")) foundCommands.add("describe_inventory");
+            					if (!foundCommands.contains("describeGroup_items")) addToFoundCommands(db,foundCommands,"describeGroup_items");
+            					if (!foundCommands.contains("describe_inventory")) addToFoundCommands(db,foundCommands,"describe_inventory");
                 				
             					EntityInventory playerInventory = db.GetPlayerInventory();
             					HashMap<Item, Integer> playerItems = playerInventory.GetItems();
@@ -618,8 +628,8 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             				
             				case "items":
-            					if (!foundCommands.contains("describeGroup_items")) foundCommands.add("describeGroup_items");
-            					if (!foundCommands.contains("describe_items")) foundCommands.add("describe_items");
+            					if (!foundCommands.contains("describeGroup_items")) addToFoundCommands(db,foundCommands,"describeGroup_items");
+            					if (!foundCommands.contains("describe_items")) addToFoundCommands(db,foundCommands,"describe_items");
                 				
             					RoomInventory roomInventory = db.GetRoomInventoryByID(player.getCurrentRoomIndex());
             					HashMap<Item, Integer> roomItems = roomInventory.GetItems();
@@ -655,7 +665,9 @@ public class GameEngineServlet extends HttpServlet {
             		
             		// TYPE 3 COMMANDS
             		case "attack":
-            			if (!foundCommands.contains("attack")) foundCommands.add("attack");
+            			if (!foundCommands.contains("attack")) { 
+            				addToFoundCommands(db,foundCommands,"attack");
+            			}
             			
             			EntityInventory playerInventory = db.GetPlayerInventory();
             			weaponSlots = playerInventory.GetWeaponsAsSlots();
@@ -715,7 +727,7 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			
-            			FightController fightController = new FightController(fighters);
+            			FightController fightController = new FightController(fighters, db);
             			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
         					systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
             						params.get(0));
@@ -765,7 +777,7 @@ public class GameEngineServlet extends HttpServlet {
             }
 
             addToGameHistory(db, gameHistory, systemResponse);
-
+            
             if (sudoStage == 0) {
             	addToGameHistory(db, gameHistory, "<br>");
             	addToGameHistory(db, gameHistory, "~-==============================-~");
@@ -781,21 +793,60 @@ public class GameEngineServlet extends HttpServlet {
         req.setAttribute("sudoStage", sudoStage);
 
         // Forward to the JSP file
-//        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
-        resp.sendRedirect("game");
+        req.getRequestDispatcher("/_view/game.jsp").forward(req, resp);
     }
     
     public void addToGameHistory(IDatabase db, List<String> gameHistory, String toAdd) {
     	gameHistory.add(toAdd);
     	db.addToGameHistory(toAdd);
     }
- 
+    
+    public void addToFoundCommands(IDatabase db, List<String> foundCommands, String toAdd) {
+    	foundCommands.add(toAdd);
+    	db.addToFound(toAdd);
+    }
     
     public String repeatString(String toRepeat, int amount) {
     	String toOut = "";
     	for (int i = 0; i < amount; i++) {
     		toOut += toRepeat;
     	}
+    	return toOut;
+    }
+    
+    public void sessionPlaySound(HttpServletRequest req, String attribute) {
+    	HttpSession session = req.getSession();
+    	
+    	Boolean playSound = (Boolean) session.getAttribute(attribute);
+        if (playSound != null && playSound) {
+            req.setAttribute(attribute, true);
+            session.removeAttribute(attribute); // ensure it's only played once
+        }
+    }
+    
+    public String showMapString() {
+    	String mapString = 
+    			  "        [L]                                    <br>" //1
+    	    	+ "         |                                     <br>" //vertical connection
+    	    	+ "    [L]–[H]–[L]                 [E]            <br>" //2
+    	    	+ "         |                       |             <br>" //vertical connection
+    	    	+ "    [E]–[H]–[E]–[G]     [M]     [H] [M]–[H]–[e]<br>" //3
+    	    	+ "     |   v       |       |       |   |         <br>" //vertical connection
+    	    	+ "[L]–[H]–[S] [L]–[H]–[b]–[H]–[E]–[H]–[L]        <br>" //4
+    	    	+ "         |           |           |   v         <br>" //vertical connection
+    	    	+ "        [e]         [H]         [G]–[H]        <br>" //5
+    	    	+ "                                 |   ^         <br>" //vertical connection
+    	    	+ "                                [E]–[L]        <br>" //6
+    	    	+ "                                 |             <br>" //vertical connection
+    	    	+ "                                [b]            <br>" //7
+    	    	+ "                                 |             <br>" //vertical connection
+    	    	+ "                                [C]            <br>"; //8
+    	mapString = mapString.replace(" ", "&nbsp"); 	
+    	String toOut =
+    	  "<p class=\"map-string\">"
+    	+ mapString
+    	+ "</p>"; 
+    	
     	return toOut;
     }
 }

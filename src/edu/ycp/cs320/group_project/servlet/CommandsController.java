@@ -122,7 +122,7 @@ public class CommandsController {
 			}
 		
 		if (nextRoom == null) {
-			systemResponse = String.format("The current room doesn't have a room %s of it.",
+			responseOut = String.format("The current room doesn't have a room %s of it.",
 					params.get(0));
 			return responseOut;
 		}
@@ -133,7 +133,7 @@ public class CommandsController {
 		//These used to be offset by 1
 		String short_description = rooms.get(nextRoom - 1).getShortRoomDescription();
 		String long_description = rooms.get(nextRoom - 1).getLongRoomDescription();
-		systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
+		responseOut = String.format("Moving %s...<br><br>Entered %s.<br>%s",
 				params.get(0),
 				short_description,
 				long_description);

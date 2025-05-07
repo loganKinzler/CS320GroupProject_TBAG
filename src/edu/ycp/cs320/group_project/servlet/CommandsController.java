@@ -191,7 +191,9 @@ public class CommandsController {
 			return responseOut;
 		}
 		
-		Item pickupItem = db.ItemsByNameQuery(params.get(1));
+		System.out.println(toTitleCase(params.get(1)));
+		
+		Item pickupItem = db.ItemsByNameQuery(toTitleCase(params.get(1)));
 		if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
 			responseOut = String.format("This room does not contain an item named %s.<br>",
 					params.get(1));
@@ -697,5 +699,28 @@ public class CommandsController {
 		}
 		
 		return responseOut;
+	}
+	
+	public static String toTitleCase(String input) {
+	    if (input == null || input.isEmpty()) {
+	        return input;
+	    }
+
+	    String[] words = input.toLowerCase().split(" ");
+	    StringBuilder titleCase = new StringBuilder();
+
+	    for (String word : words) {
+	        if (word.length() > 0) {
+	            titleCase.append(Character.toUpperCase(word.charAt(0)))
+	                     .append(word.substring(1))
+	                     .append(" ");
+	        }
+	    }
+	    
+	    String toOut = titleCase.toString().trim();
+	    
+	    System.out.println(toOut + "~~~~~~");
+
+	    return toOut;
 	}
 }

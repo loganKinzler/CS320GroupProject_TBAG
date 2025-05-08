@@ -50,20 +50,20 @@ public class GameEngineServlet extends HttpServlet {
             session.removeAttribute("userInput");
         }
         
-        DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
-        if (db == null) db = new DerbyDatabase("test");
-        session.setAttribute("db", db);
-        
+       
         List<String> foundCommands = (List<String>) session.getAttribute("foundCommands");
         List<String> gameHistory = (List<String>) session.getAttribute("gameHistory");
-        if (gameHistory == null) {
-            
-            
-            gameHistory = db.getGameHistory();
-            foundCommands = db.getFoundCommands();
-            session.setAttribute("gameHistory", gameHistory);
-            session.setAttribute("foundCommands", foundCommands);
+        
+        DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
+        if (db == null) {
+            db = new DerbyDatabase("test");
+            session.setAttribute("db", db);
+
         }
+        
+        gameHistory = db.getGameHistory();
+        foundCommands = db.getFoundCommands();
+
         
         req.setAttribute("gameHistory", gameHistory);
         req.setAttribute("foundCommands", foundCommands);   
@@ -228,7 +228,7 @@ public class GameEngineServlet extends HttpServlet {
         			break;
         			
 	        		case "quit":
-	        			resp.sendRedirect("index");
+	        			resp.sendRedirect("index");;
 	        		break;
         			
         			//hake easter egg test
@@ -280,9 +280,6 @@ public class GameEngineServlet extends HttpServlet {
             				}
             				
             				
-            			
-            			
-            			
             			
             			if (nextRoom == null) {
             				systemResponse = String.format("The current room doesn't have a room %s of it.",
@@ -370,8 +367,9 @@ public class GameEngineServlet extends HttpServlet {
             				break;
             			}
             			
-            			Item pickupItem = rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().GetItemByName(params.get(1));
-            			if (pickupItem == null) {
+            			Item pickupItem = db.ItemsByNameQuery(params.get(1));
+            			System.out.println(pickupItem.GetName());
+            			if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
             				systemResponse = String.format("This room does not contain an item named %s.<br>",
             						params.get(1));
             				break;
@@ -421,7 +419,7 @@ public class GameEngineServlet extends HttpServlet {
             			
             			Item dropItem = player.getInventory().GetItemByName(params.get(1));
             			if (dropItem == null) {
-            				systemResponse = String.format("This room does not contain an item named %s.<br>",
+            				systemResponse = String.format("Your inventory does not contain an item named %s.<br>",
             						params.get(1));
             				break;
             			}
@@ -466,6 +464,10 @@ public class GameEngineServlet extends HttpServlet {
             			
             			systemResponse += String.format("Equipped %s into %s.<br>",
             					params.get(0), weaponSlot);
+            			
+            			for (Item i : player.getInventory().GetAllItems().keySet()) {
+            				System.out.println(i.GetName());
+            			}
             			
             			db.UpdatePlayerInventory(player.getInventory());
             		break;
@@ -844,8 +846,7 @@ public class GameEngineServlet extends HttpServlet {
         req.setAttribute("sudoStage", sudoStage);
 
         // Forward to the JSP file
-//        req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
-        resp.sendRedirect("game");
+        req.getRequestDispatcher("/_view/game.jsp").forward(req, resp);
     }
     
     public void addToGameHistory(IDatabase db, List<String> gameHistory, String toAdd) {

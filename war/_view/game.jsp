@@ -27,11 +27,18 @@
 		        <button type="submit">Submit</button>
 		    </form>
 		</div>
-		<div class="buttons">
-			<button class="monitor-button" onclick="passed" style="display: none;">Clear Console</button>
-			<img src="${pageContext.request.contextPath}/recs/iPearDropShadow.png" class="ipear-logo">
+
+		<div class="bottom_row">
+			<div class="ipear_logo">
+                <img class="ipear_img" src="${pageContext.request.contextPath}/recs/iPearDropShadow.png">
+            </div>
+			
+			<div class="power_button">
+				<button type="submit"></button>
+			</div>
 		</div>
 	</div>
+
 	<div class=sticky-note-container>
 		<div class="sticky-note-3d">
           <div class="sticky-note-content">
@@ -44,7 +51,7 @@
 			</c:if>
 			
 			
-			<!-- Describe Group: Room-->
+			<!-- Describe Group: Room -->
 			<c:if test="${foundCommands.contains('describeGroup_room')}"><p>describe [</c:if>
 			<c:if test="${foundCommands.contains('describe_room')}">room</c:if>
 			<c:if test="${foundCommands.contains('describe_room') &&
@@ -65,7 +72,7 @@
 			<c:if test="${foundCommands.contains('describe_stats')}">stats</c:if>
 			<c:if test="${foundCommands.contains('describeGroup_attack')}">]</p></c:if>
 			
-			<!-- Describe Group: Items-->
+			<!-- Describe Group: Items -->
 			<c:if test="${foundCommands.contains('describeGroup_items')}"><p>describe [</c:if>
 			<c:if test="${foundCommands.contains('describe_items')}">items</c:if>
 			<c:if test="${foundCommands.contains('describe_items') &&

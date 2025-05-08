@@ -28,6 +28,7 @@ public class InitialData {
 	public static List<Item> getItemTypes() throws IOException {
 		InitialData.itemTypes = new ArrayList<Item>();
 		ReadCSV readItemTypes = new ReadCSV("itemTypes.csv");
+		readItemTypes.next();
 		
 		try {
 			Integer itemID = 0;
@@ -55,6 +56,7 @@ public class InitialData {
 		
 		InitialData.weaponTypes = new ArrayList<Weapon>();
 		ReadCSV readWeaponTypes = new ReadCSV("weaponTypes.csv");
+		readWeaponTypes.next();
 		
 		try {
 			while (true) {
@@ -114,6 +116,8 @@ public class InitialData {
 		Map<Integer, Inventory> inventories = new HashMap<Integer, Inventory>();
 		ReadCSV readInventories = new ReadCSV("inventories.csv");
 		ReadCSV readWeaponSlots = new ReadCSV("weaponSlots.csv");
+		readInventories.next();
+		readWeaponSlots.next();
 		
 		try {
 			while (true) {

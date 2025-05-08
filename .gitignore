@@ -1,6 +1,16 @@
+<<<<<<< HEAD
 /bin/*
 /test-bin/*
 test.db/*
+=======
+.classpath
+.project
+.settings/
+/test-db/
+/test.db/*
+>>>>>>> refs/heads/Logan_WorkBranch
 derby.log
 /bin/
+/bin/*
 /test-bin/
+/test-bin/*

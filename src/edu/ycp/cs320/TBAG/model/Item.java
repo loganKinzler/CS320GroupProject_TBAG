@@ -29,16 +29,12 @@ public class Item {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null || this.getClass() != obj.getClass()) return false;
-        
 		Item item = (Item) obj;
-        return this.name.equals(item.GetName()) &&
-        	this.description.equals(item.GetDescription());
+        return item.GetID() == this.GetID();
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.name, this.description);
+		return Objects.hash(this.GetID());
 	}
 }

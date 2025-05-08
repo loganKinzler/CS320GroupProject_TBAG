@@ -3,6 +3,8 @@ window.addEventListener('load', () => {
     historyBox.scrollTop = historyBox.scrollHeight;
 	
 	document.querySelector('input[name="userInput"]').focus();
+	
+	
 });
 
 

@@ -121,6 +121,7 @@ public class GameEngineServlet extends HttpServlet {
 
 
         List<Room> rooms = new ArrayList<>();
+        Integer nextRoom = null;
         //Room dummy = new Room();
        // rooms.add(dummy);
         List<Room> connections = new ArrayList<>();
@@ -262,10 +263,12 @@ public class GameEngineServlet extends HttpServlet {
             					//params.get(0));
             			//System.out.println(player.getCurrentRoomIndex());
             			//boolean doesconnectionexist = rooms.get(player.getCurrentRoomIndex()).doesKeyExist(params.get(0));
-            			Integer nextRoom = null;
+            			//Integer nextRoom = null;
             			
             			
             				nextRoom = rooms.get(player.getCurrentRoomIndex() - 1).getConnectedRoom(params.get(0));
+            				System.out.print(nextRoom);
+            				System.out.printf("%s", rooms.get(nextRoom).getRoom_key());
             				//This is a room that doesn't exist
             				if(nextRoom == 0) {
             					systemResponse = String.format("The current room doesn't have a room %s of it.",params.get(0));
@@ -273,19 +276,15 @@ public class GameEngineServlet extends HttpServlet {
             				}
             				
             				//This is a room that is locked
-            				else if(nextRoom < 0) {
+            				else if(!rooms.get(nextRoom - 1).getRoom_key().equals("none")) {
             					systemResponse = String.format("The room is locked... there is a key hole in the shape of a %s in the door",
-            							rooms.get(nextRoom).getRoom_key());
+            							rooms.get(nextRoom -1).getRoom_key());
             					break;
             				}
             				
             				
             			
-            			if (nextRoom == null) {
-            				systemResponse = String.format("The current room doesn't have a room %s of it.",
-            						params.get(0));
-            				break;
-            			}
+            			
             			
             			player.setCurrentRoomIndex(nextRoom);
             			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
@@ -314,8 +313,10 @@ public class GameEngineServlet extends HttpServlet {
             			//This is for unlocking doors
             			if(params.get(1).equals("north") || params.get(1).equals("south") || params.get(1).equals("east")  || params.get(1).equals("west")) {
             				//Check if the room is locked
-            				if(rooms.get(player.getCurrentRoomIndex()-1).getConnectedRoom(params.get(1))<0) {
-            					db.UpdateLockedRoom(player.getCurrentRoomIndex());
+            				//int nextroom = rooms.get(player.getCurrentRoomIndex()-1).getConnectedRoom(params.get(1));
+            				nextRoom = rooms.get(player.getCurrentRoomIndex() - 1).getConnectedRoom(params.get(1));
+            				if(!rooms.get(nextRoom - 1).getRoom_key().equals("none")) {
+            					db.UpdateLockedRoom(nextRoom, "none");
             					//systemResponse = String.format("Used %s...", params.get(0));
             					systemResponse = String.format("The room has been unlocked!");
             				}
@@ -368,7 +369,6 @@ public class GameEngineServlet extends HttpServlet {
             			}
             			
             			Item pickupItem = db.ItemsByNameQuery(params.get(1));
-            			System.out.println(pickupItem.GetName());
             			if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
             				systemResponse = String.format("This room does not contain an item named %s.<br>",
             						params.get(1));

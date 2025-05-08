@@ -235,6 +235,10 @@ public class ConsoleInterpreter {
 
     			if (item.equals("on")) return new Action("No target was included.");// there is no target included
     			
+    			if(inputWords.contains("door")) {
+    				inputWords.remove(inputWords.indexOf("door"));
+    			}
+    			
     			if (inputWords.indexOf("on") > 2) {
     				Integer withIndex = inputWords.indexOf("on");
     				
@@ -260,9 +264,8 @@ public class ConsoleInterpreter {
     				}
     			}
     			
-    			if(inputWords.contains("door")) {
-    				inputWords.remove(inputWords.indexOf("door"));
-    			}
+    			
+    			System.out.print(inputWords);
     			
     			
     			// combine words after 'using'

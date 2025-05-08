@@ -62,6 +62,27 @@ public class DerbyDatabase implements IDatabase {
 	
 	
 	// OUR QUERIES / INSERTS GO HERE
+	private String toTitleCase(String input) {
+		if (input == null || input.isEmpty()) {
+	        return input;
+	    }
+
+	    String[] words = input.toLowerCase().split(" ");
+	    StringBuilder titleCase = new StringBuilder();
+
+	    for (String word : words) {
+	        if (word.length() > 0) {
+	            titleCase.append(Character.toUpperCase(word.charAt(0)))
+	                     .append(word.substring(1))
+	                     .append(" ");
+	        }
+	    }
+	    
+	    String toOut = titleCase.toString().trim();
+
+	    return toOut;
+	}
+	
 	@Override
 	public Item ItemsByNameQuery(String itemName) {
 		return executeTransaction(new Transaction<Item>() {
@@ -79,7 +100,7 @@ public class DerbyDatabase implements IDatabase {
 					stmt = conn.prepareStatement(
 						"select itemTypes.* " +
 							" from itemTypes " + 
-							" where itemTypes.name = ?"
+							" where lower(itemTypes.name) = ?"
 					);
 					stmt.setString(1, itemName);
 					
@@ -351,7 +372,7 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	@Override
-	public Integer UpdateLockedRoom(int id) {
+	public Integer UpdateLockedRoom(int id, String key) {
 		return executeTransaction(new Transaction<Integer>() {
 			public Integer execute(Connection conn) throws SQLException {
 				PreparedStatement insertStatement = null;
@@ -359,11 +380,12 @@ public class DerbyDatabase implements IDatabase {
 				//This will make the locked room positive indicating that it is now unlocked
 				insertStatement = conn.prepareStatement(
 					"update rooms "
-					+ "set room_id = room_id * -1 "
+					+ "set room_key = ? "
 					+ "where rooms.room_id = ?"
 				);
 				
-				insertStatement.setInt(1, id);
+				insertStatement.setString(1, key);
+				insertStatement.setInt(2, id);
 				
 				
 				try {

@@ -32,9 +32,21 @@ public class EntityInventory extends Inventory {
 	
 	// getters / setters
 	public HashMap<String, Weapon> GetWeaponsAsSlots() {return this.weapons;}
-	public Weapon GetWeapon(String weaponSlot) {return this.weapons.get(weaponSlot);}
 	
-	public void EquipWeapon(String weaponSlot, Weapon weapon) {this.weapons.put(weaponSlot, weapon);}
+	public void EquipWeapon(String weaponSlot, Weapon weapon) {
+	    if (!WeaponSlots.contains(weaponSlot)) {
+	        throw new IllegalArgumentException("Invalid weapon slot: " + weaponSlot);
+	    }
+	    this.weapons.put(weaponSlot, weapon);
+	}
+
+	public Weapon GetWeapon(String weaponSlot) {
+	    if (!WeaponSlots.contains(weaponSlot)) {
+	        throw new IllegalArgumentException("Invalid weapon slot: " + weaponSlot);
+	    }
+	    return this.weapons.get(weaponSlot);
+	}
+	
 	public Weapon DropWeaponInSlot(String weaponSlot) {return this.weapons.remove(weaponSlot);}
 
 	public Weapon UnequipWeaponInSlot(String weaponSlot) {

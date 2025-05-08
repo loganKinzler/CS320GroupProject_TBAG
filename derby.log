@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Mon May 05 14:28:45 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-a1b5-2349-00000eb08e40 
-on database directory C:\Software Engineering 2025\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@70dea4e 
+Wed May 07 15:57:23 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-ac53-038d-00000eb851c0 
+on database directory C:\Software Engineering 2025\CS320GroupProject_TBAG\junit.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@70dea4e 
 Loaded from file:/C:/Software%20Engineering%202025/CS320_Derby/lib/derby.jar
 java.vendor=Eclipse Adoptium
 java.runtime.version=23.0.1+11

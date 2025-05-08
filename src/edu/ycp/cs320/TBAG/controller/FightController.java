@@ -8,6 +8,7 @@ import java.lang.Math;
 
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 import edu.ycp.cs320.TBAG.comparator.PlayerPreferedComparator;
+import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.StatusEffect;
@@ -15,7 +16,9 @@ import edu.ycp.cs320.TBAG.model.StatusEffect;
 public class FightController {
     private IDatabase database;
     private ArrayList<EntityModel> fightingEntities;
-    private HashMap<Integer, StatusEffect> statusEffects; // Track status effects by entity ID
+    public HashMap<Integer, StatusEffect> statusEffects; // Track status effects by entity ID
+    private static final double BLEED_DAMAGE = 5.0;
+    private static final int BLEED_DURATION = 3;
     
     public FightController(ArrayList<EntityModel> fighters, IDatabase db) {
         this.database = db;
@@ -29,7 +32,8 @@ public class FightController {
     }
     
     private Double TakeTurn(Integer entityIndex, Integer attackIndex, String weaponSlot) {
-        EntityModel attacker = fightingEntities.get(entityIndex);
+    	EntityModel attacker = fightingEntities.get(entityIndex);
+        EntityModel target = fightingEntities.get(attackIndex);
         
         // Check if attacker is stunned
         if (attacker.isStunned()) {
@@ -39,7 +43,17 @@ public class FightController {
         }
         
         Weapon weapon = attacker.getInventory().GetWeapon(weaponSlot);
-        EntityModel target = fightingEntities.get(attackIndex);
+        if (weapon == null) {
+            System.out.println("No weapon found in slot: " + weaponSlot);
+            return 0.0;
+        }
+        
+        // Apply stun effect BEFORE damage for blunt weapons
+        if (weapon.GetDamageType() != null && 
+            weapon.GetDamageType().equalsIgnoreCase("blunt")) {
+            target.setStunned(true);
+            System.out.println(target.getName() + " stunned by " + weapon.GetName());
+        }
         
         // Check for crit
         boolean isCrit = checkForCrit(weapon);
@@ -63,7 +77,7 @@ public class FightController {
         return Math.min(damage, target.getHealth());
     }
     
-    private boolean checkForCrit(Weapon weapon) {
+    public boolean checkForCrit(Weapon weapon) {
         int critRoll = (int)(Math.random() * 100);
         boolean isCrit = critRoll <= weapon.GetCritChance();
         if (isCrit) {
@@ -72,7 +86,7 @@ public class FightController {
         return isCrit;
     }
     
-    private double calculateDamage(Weapon weapon, boolean isCrit) {
+    public double calculateDamage(Weapon weapon, boolean isCrit) {
         double damage = weapon.GetDamage();
         if (isCrit) {
             damage *= 1.5; // 1.5x damage on crit
@@ -80,42 +94,61 @@ public class FightController {
         return damage;
     }
     
+    public void applyTestStatusEffect(EntityModel target, StatusEffect effect) {
+        statusEffects.put(target.getId(), effect);
+    }
+
+    // Updated applyCritEffects to ensure effects get added
     private void applyCritEffects(Weapon weapon, EntityModel target) {
+        // 1. Get weapon properties
         String damageType = weapon.GetDamageType();
         String statusEffect = weapon.GetStatusEffect();
         
-        // Handle damage type effects
+        // 2. Handle damage-type effects (always apply on crit)
         if (damageType != null && !damageType.isEmpty()) {
             switch (damageType.toLowerCase()) {
                 case "blunt":
+                    // Apply stun effect
                     target.setStunned(true);
-                    System.out.println(target.getName() + " was stunned by the blunt attack!");
+                    statusEffects.put(target.getId(), 
+                        new StatusEffect("stun", 0, 1, 0, false));
+                    System.out.println(target.getName() + " was stunned!");
                     break;
+                    
                 case "slashing":
-                    StatusEffect bleed = new StatusEffect("bleed", 5, 0, 0, true);
-                    statusEffects.put(target.getId(), bleed);
-                    System.out.println(target.getName() + " is bleeding!");
+                    // Apply bleed if not already present
+                    if (!statusEffects.containsKey(target.getId()) || 
+                        !statusEffects.get(target.getId()).getType().equals("bleed")) {
+                        StatusEffect bleed = new StatusEffect("bleed", 5.0, 3, 0, true);
+                        bleed.setActive(true);
+                        statusEffects.put(target.getId(), bleed);
+                        System.out.println(target.getName() + " is bleeding!");
+                    }
                     break;
             }
         }
         
-        // Handle status effect buildup
+        // 3. Handle weapon-specific status effects
         if (statusEffect != null && !statusEffect.isEmpty()) {
-            double buildupAmount = weapon.GetDamage() / 10; // 1/10 of base damage
+            double buildupAmount = weapon.GetDamage() * 0.1; // 10% of damage as buildup
             StatusEffect existingEffect = statusEffects.get(target.getId());
             
             if (existingEffect == null || !existingEffect.getType().equals(statusEffect)) {
-                // New effect
-                StatusEffect newEffect = createStatusEffect(statusEffect, buildupAmount, weapon.GetDamage());
+                // Create new effect
+                StatusEffect newEffect = createStatusEffect(
+                    statusEffect,
+                    buildupAmount,
+                    weapon.GetDamage()
+                );
                 statusEffects.put(target.getId(), newEffect);
-                System.out.println(target.getName() + " is building up " + statusEffect + "!");
+                System.out.println(target.getName() + " is building up " + statusEffect);
             } else {
                 // Add to existing effect
                 existingEffect.addBuildup(buildupAmount);
-                if (existingEffect.getBuildup() >= weapon.GetDamage() / 2 && !existingEffect.isActive()) {
-                    // Effect procs
+                if (!existingEffect.isActive() && 
+                    existingEffect.getBuildup() >= weapon.GetDamage() * 0.5) {
                     existingEffect.setActive(true);
-                    System.out.println(target.getName() + " is now affected by " + statusEffect + "!");
+                    System.out.println(target.getName() + " is now affected by " + statusEffect);
                 }
             }
         }
@@ -123,43 +156,40 @@ public class FightController {
     
     private StatusEffect createStatusEffect(String type, double buildup, double weaponDamage) {
         switch (type.toLowerCase()) {
-            case "paralysis":
-                return new StatusEffect("paralysis", 0, 2, weaponDamage / 2, false);
             case "poison":
-                return new StatusEffect("poison", 10, 0, weaponDamage / 2, false);
+                return new StatusEffect("poison", weaponDamage * 0.5, 3, weaponDamage * 0.5, false);
             case "burn":
-                return new StatusEffect("burn", 2.5, 0, weaponDamage / 2, true);
+                return new StatusEffect("burn", weaponDamage * 0.3, 2, weaponDamage * 0.5, true);
+            case "paralysis":
+                return new StatusEffect("paralysis", 0, 2, weaponDamage * 0.4, false);
             default:
-                return new StatusEffect(type, 0, 0, weaponDamage / 2, false);
+                return new StatusEffect(type, 0, 0, 0, false);
         }
     }
     
-    private void applyStatusEffects(EntityModel target) {
+    public void applyStatusEffects(EntityModel target) {
         StatusEffect effect = statusEffects.get(target.getId());
         if (effect != null && effect.isActive()) {
             switch (effect.getType().toLowerCase()) {
                 case "bleed":
-                    new EntityController(target).AddHealthClamped(-effect.getDamage());
-                    System.out.println(target.getName() + " takes " + effect.getDamage() + " bleed damage!");
-                    break;
                 case "poison":
+                case "burn":
                     new EntityController(target).AddHealthClamped(-effect.getDamage());
-                    System.out.println(target.getName() + " takes " + effect.getDamage() + " poison damage!");
+                    effect.reduceDuration();
                     break;
                 case "paralysis":
-                    if (effect.getDuration() > 0) {
-                        effect.reduceDuration();
-                        target.setStunned(true);
-                    } else {
-                        statusEffects.remove(target.getId());
-                        System.out.println(target.getName() + " is no longer paralyzed!");
-                    }
+                case "stun":
+                    target.setStunned(true);
+                    effect.reduceDuration();
                     break;
             }
             
-            // Remove effect if duration expired
-            if (effect.getDuration() == 0 && !effect.isPersistent()) {
+            if (effect.getDuration() <= 0 && !effect.isPersistent()) {
                 statusEffects.remove(target.getId());
+                if (effect.getType().equalsIgnoreCase("paralysis") || 
+                    effect.getType().equalsIgnoreCase("stun")) {
+                    target.setStunned(false);
+                }
             }
         }
     }
@@ -179,11 +209,11 @@ public class FightController {
     public Double TakeEnemyTurn(Integer enemyIndex) {
         EntityModel enemy = fightingEntities.get(enemyIndex);
         
-        // Check if enemy is stunned
+        // Check stun status
         if (enemy.isStunned()) {
-            enemy.setStunned(false);
-            System.out.println(enemy.getName() + " is stunned and skips their turn!");
-            return 0.0;
+            System.out.println(enemy.getName() + " is stunned and skips turn!");
+            enemy.setStunned(false); // Clear stun after skipping turn
+            return 0.0; // No damage dealt
         }
         
         Set<String> enemyWeaponSlots = enemy.getInventory().GetWeaponsAsSlots().keySet();
@@ -201,5 +231,9 @@ public class FightController {
         handleBurnEffects(fightingEntities.get(0)); // Assuming player is at index 0
         
         return damage;
+    }
+    
+    public StatusEffect getStatusEffect(int entityId) {
+        return statusEffects.get(entityId);
     }
 }

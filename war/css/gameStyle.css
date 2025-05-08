@@ -231,7 +231,7 @@ body {
   	padding-right: 20%;
   	padding-bottom: 2vh;
 }
-  
+
 .monitor-button {
   display: inline-block;
   width: auto;
@@ -320,7 +320,7 @@ body {
 	aspect-ratio: 1.75;
 }
 
-.power_button > button {
+#power_button {
 	position: relative;
 
 	height: 100%;
@@ -333,4 +333,18 @@ body {
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
+}
+
+@keyframes turnOnMoniter {
+	0% {
+		
+	}
+}
+
+.turnOn_moniter {
+	
+}
+
+.turnOff_moniter {
+	
 }

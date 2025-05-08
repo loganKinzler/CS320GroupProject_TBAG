@@ -34,7 +34,7 @@
             </div>
 			
 			<div class="power_button">
-				<button type="submit"></button>
+				<button id="power_button" type="submit"></button>
 			</div>
 		</div>
 	</div>

@@ -3,10 +3,11 @@ package edu.ycp.cs320.TBAG.controller;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.Room;
+import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
@@ -63,6 +64,10 @@ public class EntityController {
 	}
 	
 	public Integer Drop(Room room, Item toDrop, Integer quantity) {
+		if (room.getRoomInventory() == null) {
+	        room.setRoomInventory(new RoomInventory());
+	    }
+		
 		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
 		room.getRoomInventory().AddItems(toDrop, dropped);
 		return dropped;

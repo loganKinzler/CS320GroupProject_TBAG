@@ -713,11 +713,11 @@ public class DerbyDatabase implements IDatabase {
 						Boolean existsInDatabase = databaseInvResults.next();
 						Boolean existsInInventory = updateInventory.ContainsItem(item);
 						
-						System.out.println(String.format("%s is in the %s%s%s.",
-								item.GetName(),
-								existsInInventory? "inventory" : "",
-								(existsInInventory && existsInDatabase)? " and the " : "",
-								existsInDatabase? "database" : ""));
+//						System.out.println(String.format("%s is in the %s%s%s.",
+//								item.GetName(),
+//								existsInInventory? "inventory" : "",
+//								(existsInInventory && existsInDatabase)? " and the " : "",
+//								existsInDatabase? "database" : ""));
 						
 						Integer inventoryItemQuantity = updateInventory.GetItemAmount(item);
 						

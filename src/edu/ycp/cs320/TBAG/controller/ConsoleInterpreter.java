@@ -62,9 +62,11 @@ public class ConsoleInterpreter {
     		return new Action("move",
 					new ArrayList<String>( Arrays.asList("west") ));
     	}
-    	else if (userInput.equals("use mirror with camera") || userInput.equals("use camera with mirrror")) {
+    	else if (userInput.equals("use mirror with camera") || userInput.equals("use camera with mirror")) {
+    		System.out.println("Passed easter egg");
     		return new Action("mirrorEasterEgg", new ArrayList<String>(Arrays.asList("mirror")));
     	}
+    	System.out.println("No hardcoded command detected");
     	ArrayList<String> inputWords = new ArrayList<String>(Arrays.asList( userInput.toLowerCase().split(" ") ));
     	
     	

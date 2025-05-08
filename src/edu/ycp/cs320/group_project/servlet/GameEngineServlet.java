@@ -2,12 +2,8 @@ package edu.ycp.cs320.group_project.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,22 +14,16 @@ import javax.servlet.http.HttpSession;
 import edu.ycp.cs320.TBAG.controller.ASCIIOutput;
 // our imports
 import edu.ycp.cs320.TBAG.controller.ConsoleInterpreter;
-import edu.ycp.cs320.TBAG.controller.EntityController;
-import edu.ycp.cs320.TBAG.controller.FightController;
 import edu.ycp.cs320.TBAG.controller.PlayerController;
 import edu.ycp.cs320.TBAG.model.Action;
-import edu.ycp.cs320.TBAG.model.EnemyModel;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
-import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
-import edu.ycp.cs320.TBAG.tbagdb.DBController;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
-import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class GameEngineServlet extends HttpServlet {
 
@@ -99,6 +89,8 @@ public class GameEngineServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Get or create the session
         HttpSession session = req.getSession(true);
+        
+        session.setAttribute("playHakeSound", false); //dont ask
         
         DerbyDatabase db = (DerbyDatabase) session.getAttribute("db");
         if (db == null) {
@@ -263,7 +255,7 @@ public class GameEngineServlet extends HttpServlet {
 	        			if (!foundCommands.contains("showMap")) LogsController.addToFoundCommands(db,foundCommands,"showMap");
 	        		break;
 	        		case "mirrorEasterEgg":
-	        			Inventory inv = db.GetPlayerInventory(); //Get player inventory
+	        			EntityInventory inv = db.GetPlayerInventory(); //Get player inventory
 	        			
 	        			boolean hasMirror = (inv.GetItemByName("mirror") != null);
 	        			boolean hasCamera = (inv.GetItemByName("camera") != null);
@@ -273,8 +265,14 @@ public class GameEngineServlet extends HttpServlet {
 	        			String output = "You do not have the required items.";
 	        			if (hasMirror && hasCamera) {
 	        				output = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+	        				session.setAttribute("playHakeSound", true);
+	        				player.getInventory().ExtractItem(inv.GetItemByName("Mirror"));
+	        				db.UpdatePlayerInventory(player.getInventory());
+	        				//new Item(999, "Broken Mirror", "It shattered into a million teeny tiny bits...")
+	        				//code to explicitly put broken mirror in player inv through db (wait for logang)
 	        			}
 	        			systemResponse = output;
+	        			systemResponse += "Your mirror broke...";
 	        		break;
             	
             		// TYPE 1 COMMANDS:
@@ -370,7 +368,7 @@ public class GameEngineServlet extends HttpServlet {
             		break;
             		
             		case "drop":
-            			systemResponse = CommandsController.dropCommand(db, foundCommands, foundCommands, connections, player, systemResponse);
+            			systemResponse = CommandsController.dropCommand(db, foundCommands, params, connections, player, systemResponse);
 //            			
 //            			if (!foundCommands.contains("drop")) addToFoundCommands(db,foundCommands,"drop");
 //            			

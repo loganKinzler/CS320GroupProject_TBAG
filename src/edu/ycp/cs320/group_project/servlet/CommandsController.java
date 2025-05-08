@@ -191,8 +191,6 @@ public class CommandsController {
 			return responseOut;
 		}
 		
-		System.out.println(toTitleCase(params.get(1)));
-		
 		Item pickupItem = db.ItemsByNameQuery(toTitleCase(params.get(1)));
 		if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
 			responseOut = String.format("This room does not contain an item named %s.<br>",
@@ -203,6 +201,8 @@ public class CommandsController {
 		Integer roomQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex() - 1), pickupItem, pickupQuantity);
 		responseOut += String.format("Picked up %d %s<br>",
 				roomQuantity, params.get(1));
+		
+		System.out.println("~~~~~~~~" + player.getInventory().GetItemByName(pickupItem.GetName()) != null);
 		
 		db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
 		db.UpdatePlayerInventory(player.getInventory());
@@ -718,8 +718,6 @@ public class CommandsController {
 	    }
 	    
 	    String toOut = titleCase.toString().trim();
-	    
-	    System.out.println(toOut + "~~~~~~");
 
 	    return toOut;
 	}

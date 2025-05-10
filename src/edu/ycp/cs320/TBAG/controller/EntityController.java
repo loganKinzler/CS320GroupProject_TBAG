@@ -3,17 +3,16 @@ package edu.ycp.cs320.TBAG.controller;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.Item;
+import edu.ycp.cs320.TBAG.model.Room;
+import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 
 public class EntityController {
 	private EntityModel model;
-	private double maxHealth, health;
-	private int lives;
 	
 	public EntityController(EntityModel model) {
 			this.model = model;
@@ -65,11 +64,16 @@ public class EntityController {
 	}
 	
 	public Integer Drop(Room room, Item toDrop, Integer quantity) {
+		if (room.getRoomInventory() == null) {
+	        room.setRoomInventory(new RoomInventory());
+	    }
+		
 		Integer dropped = model.getInventory().ExtractItems(toDrop, quantity);
 		room.getRoomInventory().AddItems(toDrop, dropped);
 		return dropped;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean Die(IDatabase db, Room room) {
 		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
 		

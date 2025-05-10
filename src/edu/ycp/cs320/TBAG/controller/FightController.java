@@ -2,17 +2,12 @@ package edu.ycp.cs320.TBAG.controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.lang.Math;
 
 import edu.ycp.cs320.TBAG.tbagdb.persist.IDatabase;
 import edu.ycp.cs320.TBAG.comparator.PlayerPreferedComparator;
-
-import edu.ycp.cs320.TBAG.controller.EntityController;
 import edu.ycp.cs320.TBAG.model.EntityModel;
-
-import edu.ycp.cs320.TBAG.model.Weapon;
 
 public class FightController {
 	private IDatabase database;

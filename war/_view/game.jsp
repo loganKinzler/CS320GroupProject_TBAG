@@ -125,5 +125,13 @@
 			}, 1000);
 		</script>
 	</c:if>
+	<c:if test="${playHakeSound}">
+    <script>
+        window.addEventListener('load', function() {
+            new Audio('${pageContext.request.contextPath}/recs/hake-scream.mp3').play();
+            
+        });
+    </script>
+</c:if>
 </body>
 </html>

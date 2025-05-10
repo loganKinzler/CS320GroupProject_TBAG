@@ -1,2 +1,11 @@
+<<<<<<< HEAD
 balls
 2|4|1
+=======
+inventory id|item type id|amount
+2|4|1
+4|5|1
+6|6|1
+3|5|1
+3|6|1
+>>>>>>> refs/heads/development-branch

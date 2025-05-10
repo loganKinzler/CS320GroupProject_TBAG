@@ -297,6 +297,14 @@ body {
 	bottom: 1vh;
 	height: 6vh;
 	aspect-ratio: 1233/1500;/* image size */
+	
+}
+
+.item-ascii-art{
+	font-size: var(--item-ascii-font-size) !important;
+	white-space: pre;
+	line-height: 1;
+	
 }
 
 .item-ascii-art{
@@ -334,5 +342,5 @@ body {
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
->>>>>>> refs/heads/Logan_WorkBranch
+
 }

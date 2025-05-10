@@ -1,7 +1,6 @@
 package edu.ycp.cs320.TBAG.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,10 +10,12 @@ import java.util.Set;
 public class Room {
 	//Fields
 	private Map<String, Integer> connections = new HashMap<>();
+	
+
 	//Each room MUST have a unique room_id
 	private int room_id;
 	//This hashset will be used for checking that each room created is assigned a unique room_id
-	private static Set<Integer> room_id_set = new HashSet<>();
+	private Set<Integer> room_id_set = new HashSet<>();
 	private String long_description;
 	private String short_description;
 	private RoomInventory room_inventory;

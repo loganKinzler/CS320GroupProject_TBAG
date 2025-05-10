@@ -18,7 +18,6 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
-import edu.ycp.cs320.TBAG.controller.RoomContainer;
 
 public class InitialData {
 	private static List<Item> itemTypes;
@@ -28,7 +27,7 @@ public class InitialData {
 	public static List<Item> getItemTypes() throws IOException {
 		InitialData.itemTypes = new ArrayList<Item>();
 		ReadCSV readItemTypes = new ReadCSV("itemTypes.csv");
-		readItemTypes.next();
+
 		
 		try {
 			Integer itemID = 0;
@@ -118,6 +117,7 @@ public class InitialData {
 		ReadCSV readWeaponSlots = new ReadCSV("weaponSlots.csv");
 		readInventories.next();
 		readWeaponSlots.next();
+
 		
 		try {
 			while (true) {
@@ -246,6 +246,7 @@ public class InitialData {
 				
 				EnemyModel enemy = new EnemyModel(maxHealth, 1, currentRoom, name, desc);
 				enemy.setHealth(health);
+				enemy.setLives(lives);
 				
 				enemies.add(enemy);
 			}
@@ -262,6 +263,7 @@ public class InitialData {
 	public static List<Room> getRooms() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readRooms = new ReadCSV("rooms.csv"); 
+		readRooms.next();
 		
 		try {
 			
@@ -298,6 +300,7 @@ public class InitialData {
 	public static List<Room> getConnections() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readConnections = new ReadCSV("connections.csv"); 
+		readConnections.next();
 		
 		try {
 			//readConnections.next();

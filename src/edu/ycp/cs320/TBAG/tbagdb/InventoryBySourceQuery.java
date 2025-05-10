@@ -24,6 +24,7 @@ public class InventoryBySourceQuery {
 		return database.InventoryBySourceID(inventorySource);
 	}
 	
+	@SuppressWarnings("resource")
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
 		InventoryBySourceQuery.database = new DerbyDatabase("test");

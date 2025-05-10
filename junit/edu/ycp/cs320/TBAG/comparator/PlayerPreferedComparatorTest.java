@@ -1,12 +1,9 @@
 package edu.ycp.cs320.TBAG.comparator;
 
-import java.util.Comparator;
-
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-import edu.ycp.cs320.TBAG.comparator.PlayerPreferedComparator;
 import edu.ycp.cs320.TBAG.model.EntityModel;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.EnemyModel;

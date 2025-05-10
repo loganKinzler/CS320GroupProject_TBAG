@@ -2,6 +2,7 @@
 /bin/*
 /test-bin/*
 test.db/*
+<<<<<<< HEAD
 =======
 .classpath
 .project
@@ -9,6 +10,8 @@ test.db/*
 /test-db/
 /test.db/*
 >>>>>>> refs/heads/Logan_WorkBranch
+=======
+>>>>>>> refs/heads/development-branch
 derby.log
 /bin/
 /bin/*

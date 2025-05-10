@@ -12,4 +12,9 @@ public class EnemyController extends EntityController {
 	public EnemyController() {
 		super();
 	}
+	
+	public void setModel(EnemyModel model) {
+		this.model = model;
+	}
+	public EnemyModel getModel() {return this.model;}
 }

@@ -18,6 +18,7 @@ public class RoomsByIdQuery {
 		return database.RoomsByIdQuery(id);
 	}
 	
+	@SuppressWarnings("resource")
 	public static void main(String[] args) throws Exception {
 		Scanner keyboard = new Scanner(System.in);
 		database = new DerbyDatabase("test");

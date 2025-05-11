@@ -1,7 +1,7 @@
 @charset "UTF-8";
 
 :root {
-	 --console-background: #012b03;
+	 --console-background: #003502;
 	 --console-text-color: #07b60d;
 	 --caret-color: #019808;
 	 --submit-button-bg: #004103;
@@ -23,6 +23,10 @@ body {
 	overflow: hidden;
 }
 
+button {
+	cursor: pointer;
+}
+
 * {
 	margin:0;
 	padding:0;
@@ -41,12 +45,11 @@ body {
 	box-shadow: inset 0px 0px 32px 6px rgba(0,0,0,0.65);
 }
 
-.console {
+#console {
 	position: relative;
 	height: 80vh;
 	width: 85vw;
 	
-	padding: 1%;
 	margin-left: 7.5vw;
 	margin-right: 7.5vw;
 	margin-top: 10vh;
@@ -70,7 +73,14 @@ body {
 	z-index: 0;
 }
 
-.console::after {
+#console > div {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	padding: 1%;
+}
+
+#console::after {
   content: "";
   position: absolute;
   top: 0;
@@ -81,9 +91,9 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.15; /* Faded */
+  opacity: 0.15;
   filter: contrast(120%) brightness(80%);
-  mix-blend-mode: multiply; /* or overlay, screen, darken, etc. */
+  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 1;
 }
@@ -231,7 +241,7 @@ body {
   	padding-right: 20%;
   	padding-bottom: 2vh;
 }
-  
+
 .monitor-button {
   display: inline-block;
   width: auto;
@@ -329,7 +339,7 @@ body {
 	aspect-ratio: 1.75;
 }
 
-.power_button > button {
+#power_button {
 	position: relative;
 
 	height: 100%;
@@ -342,5 +352,44 @@ body {
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
+}
 
+.crt_close::after {
+    content: "";
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+
+    background-image: url("../recs/CRT_Close.gif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-clip: border-box;
+
+    z-index: 2;
+}
+
+.crt_off::after {
+    content: "";    
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+    
+    background-color: black;
+    background-size: contain;
+    background-clip: border-box;
+
+    z-index: 2;
 }

@@ -1,33 +1,42 @@
-var isMoniterOn;
+var crtIsOn = false;
+var clickTime = new Date().getSeconds() - 1;
+var firstClick = true;
 
-window.onload = function () {
-
+window.addEventListener('DOMContentLoaded', () => {
+    const crtContent = document.getElementById("crt_content");
+	
     const powerButton = document.getElementById("power_button");
-    powerButton.addEventListener("click", () => {
+    powerButton.addEventListener("click", clickPowerButton.bind(powerButton, crtContent));
+});
 
-        // get session info for power button
-        isMoniterOn = sessionStorage.getItem("moniterOn");
-        if (isMoniterOn == 'true') isMoniterOn = true;
-        else isMoniterOn = false;
-
-        if (isMoniterOn) {
-            console.log("turning moniter off...");
-
-            // turn off moniter
-            powerButton.classList.remove("turnOn_PowerButton");
-            void powerButton.offsetWidth;
-            powerButton.classList.add("turnOff_PowerButton");
+function clickPowerButton(over_div) {
+    const currentTime = new Date().getSeconds();
+	
+	const deltaClickTime = currentTime - clickTime;
+    if (deltaClickTime <= 1 && deltaClickTime >= 0) return;
+    clickTime = currentTime;
+    
+    if (!crtIsOn) {
+        over_div.classList.remove("crt_off");
+        over_div.classList.add("crt_open");
+		
+		if (firstClick) firstClick = false;	
+		else void over_div.offsetWidth;      
         
-        } else {
-            console.log("turning moniter on...");
+		setTimeout(() => {
+	   		over_div.classList.remove("crt_open");
+        }, 1500);
+        
+    } else {
+        over_div.classList.add("crt_close");
+		void over_div.offsetWidth;
 
-            // turn on moniter
-            powerButton.classList.remove("turnOff_PowerButton");
-            void powerButton.offsetWidth;
-            powerButton.classList.add("turnOn_PowerButton");
-        }
-
-        // get session info for power button
-        sessionStorage.setItem("moniterOn", !isMoniterOn);
-    });
-};
+        setTimeout(() => {
+            over_div.classList.remove("crt_close");
+            over_div.classList.add("crt_off");
+	    void over_div.offsetWidth;
+        }, 1500);
+    }
+    
+    crtIsOn = !crtIsOn;
+}

@@ -34,7 +34,7 @@ public class DerbyDatabase implements IDatabase {
 	// constructor
 	public DerbyDatabase(String dbType) {
 		this.dbType = dbType;
-	    if (this.dbExists("test")) {
+	    if (this.dbExists(dbType)) {
 	        // Verify tables exist
 	        if (!verifyTablesExist()) {
 	            create(); // Recreate if tables are missing
@@ -1416,8 +1416,9 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
-		int index = 2;
+		int index = 1;
 		
+		int id = resultSet.getInt(index++);
 		double health = resultSet.getDouble(index++);
 		double maxHealth = resultSet.getDouble(index++);
 		int lives = resultSet.getInt(index++);
@@ -1425,6 +1426,7 @@ public class DerbyDatabase implements IDatabase {
 		
 		PlayerModel toOut = new PlayerModel(health, lives, currentRoom);
 		toOut.setMaxHealth(maxHealth);
+		toOut.setId(id);
 		
 		EntityInventory playerInventory = this.GetPlayerInventory();
 		toOut.setInventory(playerInventory);
@@ -1433,8 +1435,9 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private EnemyModel loadEnemy(ResultSet resultSet) throws SQLException {
-		int index = 2;
+		int index = 1;
 		
+		int id = resultSet.getInt(index++);
 		double health = resultSet.getDouble(index++);
 		double maxHealth = resultSet.getDouble(index++);
 		int lives = resultSet.getInt(index++);
@@ -1444,6 +1447,7 @@ public class DerbyDatabase implements IDatabase {
 		
 		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
 		toOut.setMaxHealth(maxHealth);
+		toOut.setId(id);
 		
 		EntityInventory enemyInventory = this.GetEnemyInventoryByID(1 + (resultSet.getInt(1) << 1));
 		toOut.setInventory(enemyInventory);

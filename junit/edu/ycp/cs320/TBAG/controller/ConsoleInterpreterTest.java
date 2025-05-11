@@ -28,9 +28,9 @@ public class ConsoleInterpreterTest {
 		assertEquals(userInput.GetErrorMessage(), "Command given was not valid.");
 		
 		
-		userInput = model.ValidateInput("use ");
+		userInput = model.ValidateInput("use");
 		assertEquals(userInput.IsValid(), false);
-		assertEquals(userInput.GetErrorMessage(), "No parameters given.");
+		assertEquals(userInput.GetErrorMessage(), "Keyword 'on' is missing.");
 		
 		
 		userInput = model.ValidateInput("describe inventory");
@@ -40,11 +40,12 @@ public class ConsoleInterpreterTest {
 		assertEquals(userInput.GetParams().get(0), "inventory");
 
 		
-		userInput = model.ValidateInput("use health potion");
+		userInput = model.ValidateInput("use golden key on west door");
 		assertEquals(userInput.IsValid(), true);
 		assertEquals(userInput.GetErrorMessage(), null);
 		assertEquals(userInput.GetMethod(), "use");
-		assertEquals(userInput.GetParams().get(0), "health potion");
+		assertEquals(userInput.GetParams().get(0), "golden key");
+		assertEquals(userInput.GetParams().get(1), "west");
 		
 		
 		userInput = model.ValidateInput("attack ");

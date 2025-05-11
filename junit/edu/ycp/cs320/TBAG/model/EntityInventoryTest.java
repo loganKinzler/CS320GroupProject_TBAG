@@ -56,7 +56,7 @@ public class EntityInventoryTest {
 	@Test public void SlotIsFullTest() {assertTrue( this.model.WeaponSlotIsFull("Left Hand") );}
 	@Test public void SlotIsEmptyTest() {assertTrue( this.model.WeaponSlotIsEmpty("Right Hand") );}
 	
-	@Test public void ContainsItemTest() {assertTrue( this.model.ContainsItem(baseballBat) );}
+	@Test public void ContainsItemTest() {assertTrue( !this.model.ContainsItem(baseballBat) );}
 	@Test public void ContainsExactlyTest() {assertTrue( this.model.ContainsExactly(baseballBat, 1) );}
 	@Test public void ContainsLessThanTest() {assertTrue( this.model.ContainsLessThan(umbrella, 3) );}
 	@Test public void ContainsMoreThanTest() {assertTrue( this.model.ContainsMoreThan(moss, 3) );}

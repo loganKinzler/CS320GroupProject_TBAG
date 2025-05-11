@@ -1,7 +1,7 @@
 @charset "UTF-8";
 
 :root {
-	 --console-background: #012b03;
+	 --console-background: #003502;
 	 --console-text-color: #07b60d;
 	 --caret-color: #019808;
 	 --submit-button-bg: #004103;
@@ -12,8 +12,8 @@
 	 --sticky-note-color: #FED800;
 	 
 	 --font-size: 2rem;
-	 --ascii-font-size: .7rem;
 	 --hake-ascii-font-size: .45rem;
+	 --item-ascii-font-size: 1rem;
 }
 
 body {
@@ -21,6 +21,10 @@ body {
 	max-width: 100%;
 
 	overflow: hidden;
+}
+
+button {
+	cursor: pointer;
 }
 
 * {
@@ -41,12 +45,11 @@ body {
 	box-shadow: inset 0px 0px 32px 6px rgba(0,0,0,0.65);
 }
 
-.console {
+#console {
 	position: relative;
 	height: 80%;
 	width: 85;
 	
-	padding: 1%;
 	margin-left: 7.5vw;
 	margin-right: 7.5vw;
 	margin-top: 10vh;
@@ -70,7 +73,11 @@ body {
 	z-index: 0;
 }
 
-.console::after {
+#console > div {
+	padding: 1%;
+}
+
+#console::after {
 	content: "";
 
 	position: absolute;
@@ -210,4 +217,142 @@ body {
 	background-size: cover;
 	background-position: center;
 	background-repeat: no-repeat;
+}
+
+#crt_content {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.crt_open::after {
+    content: "";
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+
+    background-image: url("../recs/CRT_Open.gif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    z-index: 2;
+}
+
+.crt_close::after {
+    content: "";
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+
+    background-image: url("../recs/CRT_Close.gif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-clip: border-box;
+
+    z-index: 2;
+}
+
+.crt_off::after {
+    content: "";    
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+    
+    background-color: black;
+    background-size: contain;
+    background-clip: border-box;
+
+    z-index: 2;
+}
+
+.sticky-note-container {
+	pointer-events: none;
+	position: absolute;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    padding-bottom: 10%;
+    padding-right: 10%;
+    perspective: 1000px;
+  }
+
+.sticky-note-3d {
+    transform-style: preserve-3d;
+    transform-origin: top center;
+    animation: sway 4s ease-in-out infinite alternate;
+  }
+  
+@keyframes sway {
+    0%   { transform: rotateX(3deg) scaleY(1); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); }
+    10%  { transform: rotateX(3.5deg) scaleY(0.99); box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22); }
+    20%  { transform: rotateX(4.5deg) scaleY(0.985); box-shadow: 0 18px 35px rgba(0, 0, 0, 0.23); }
+    30%  { transform: rotateX(4deg) scaleY(0.99); box-shadow: 0 17px 33px rgba(0, 0, 0, 0.21); }
+    40%  { transform: rotateX(5deg) scaleY(0.975); box-shadow: 0 20px 38px rgba(0, 0, 0, 0.25); }
+    50%  { transform: rotateX(6deg) scaleY(0.98); box-shadow: 0 22px 40px rgba(0, 0, 0, 0.27); }
+    60%  { transform: rotateX(4.2deg) scaleY(0.982); box-shadow: 0 18px 35px rgba(0, 0, 0, 0.23); }
+    70%  { transform: rotateX(5.5deg) scaleY(0.97); box-shadow: 0 21px 39px rgba(0, 0, 0, 0.26); }
+    80%  { transform: rotateX(3.8deg) scaleY(0.99); box-shadow: 0 17px 33px rgba(0, 0, 0, 0.22); }
+    90%  { transform: rotateX(4.5deg) scaleY(0.985); box-shadow: 0 19px 36px rgba(0, 0, 0, 0.24); }
+    100% { transform: rotateX(3deg) scaleY(1); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); }
+}
+  
+.sticky-note-content {
+    width: 300px;
+    aspect-ratio: 1/1;
+    background-color: var(--sticky-note-color);
+    padding: 1rem;
+    border-radius: 2px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+    
+    font-family: "Shadows Into Light", cursive;
+  	font-weight: 400;
+  	font-style: normal;
+}
+
+.sticky-note-content::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 12%;
+    width: 100%;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.15), transparent);
+    pointer-events: none;
+    z-index: 1;
+}
+  
+.sticky-note-content::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 35%;
+    background: linear-gradient(to top, rgba(0,0,0,0.15), transparent);
+    pointer-events: none;
+    z-index: 2;
 }

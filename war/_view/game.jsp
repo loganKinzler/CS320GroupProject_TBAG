@@ -15,17 +15,20 @@
 </head>
 <body>
 	<div class="monitor">
-		<div class="console">
-		    <div class="history-box">
-		        <c:forEach items="${gameHistory}" var="entry">
-		            <div class="history-item">${entry}</div>
-		        </c:forEach>
-		    </div>
+		<div id="console">
+			<div id="crt_content">
+		    	<div class="history-box">
+		        	<c:forEach items="${gameHistory}" var="entry">
+		    	        <div class="history-item">${entry}</div>
+			        </c:forEach>
+			    </div>
 		
-		    <form action="${pageContext.request.contextPath}/game" method="post" class="input-area" id="submission">
-		        <input type="text" name="userInput" placeholder="Enter your input...">
-		        <button type="submit">Submit</button>
-		    </form>
+		    	<form action="${pageContext.request.contextPath}/game" method="post" class="input-area" id="submission">
+		       		<input type="text" name="userInput" placeholder="Enter your input...">
+		       		<button type="submit">Submit</button>
+					<input type="hidden" id="crt_field" name="moniterIsOn" value="${moniterIsOn}">
+		    	</form>
+			</div>
 		</div>
 
 		<div class="bottom_row">
@@ -34,7 +37,7 @@
             </div>
 			
 			<div class="power_button">
-				<button type="submit"></button>
+				<button id="power_button" onclick="clickPowerButton()"></button>
 			</div>
 		</div>
 	</div>

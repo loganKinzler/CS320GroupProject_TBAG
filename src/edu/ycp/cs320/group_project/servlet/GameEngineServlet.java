@@ -62,7 +62,6 @@ public class GameEngineServlet extends HttpServlet {
         gameHistory = db.getGameHistory();
         foundCommands = db.getFoundCommands();
 
-        
         req.setAttribute("gameHistory", gameHistory);
         req.setAttribute("foundCommands", foundCommands);   
         SessionInfoController.sessionPlaySound(req, "playHakeSound");
@@ -162,7 +161,6 @@ public class GameEngineServlet extends HttpServlet {
         String userInput = req.getParameter("userInput");
         req.getSession().setAttribute("userInput", userInput);
         String systemResponse;
-
         
         //Case for sudo easter egg (does not require input after initial stage so just goes anyway
         if (sudoStage > 0) {
@@ -231,8 +229,8 @@ public class GameEngineServlet extends HttpServlet {
         			break;
         			
 	        		case "quit":
-	        			resp.sendRedirect("index");;
-	        		break;
+	        			resp.sendRedirect("index");
+	        			return;
         			
         			//hake easter egg test
 	        		case "hakeTest" :
@@ -846,7 +844,7 @@ public class GameEngineServlet extends HttpServlet {
         req.setAttribute("sudoStage", sudoStage);
 
         // Forward to the JSP file
-        req.getRequestDispatcher("/_view/game.jsp").forward(req, resp);
+        resp.sendRedirect("game");
     }
     
     public String repeatString(String toRepeat, int amount) {

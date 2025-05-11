@@ -387,9 +387,10 @@ public class CommandsController {
 				healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
 				
 				responseOut += String.format("<br>&num;%d: %s<br> - Health: [%s%s] (%.1f / %.1f)<br> - %s<br>",
-						enemies.size(), enemies.get(i).getName(),
+						enemyCount, enemies.get(i).getName(),
 						"#".repeat(healthBarLength),
 						"-".repeat(healthBarSize - healthBarLength),
+						enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
 						enemies.get(i).getDescription());
 			}
 			
@@ -674,8 +675,6 @@ public class CommandsController {
 				return responseOut;
 		}
 		
-		//TODO: Use this method once set up
-//		ArrayList<EnemyModel> roomEnemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
 		ArrayList<EnemyModel> roomEnemies = db.GetEnemiesInRoom(player.getCurrentRoomIndex());
 		ArrayList<EntityModel> fighters = new ArrayList<EntityModel>();
 		fighters.add(db.GetPlayer());

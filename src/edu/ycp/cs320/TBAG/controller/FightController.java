@@ -26,9 +26,6 @@ public class FightController {
 				-fightingEntities.get(entityIndex).getInventory().GetWeapon(weaponSlot).GetDamage()
 		);
 		
-		System.out.println(fightingEntities.get(attackIndex).getId());
-		System.out.println(fightingEntities.get(attackIndex).getHealth());
-		
 		database.UpdateEnemyHealthById(
 				fightingEntities.get(attackIndex).getId(),
 				fightingEntities.get(attackIndex).getHealth());

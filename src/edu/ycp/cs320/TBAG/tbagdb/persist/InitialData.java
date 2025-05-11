@@ -27,7 +27,7 @@ public class InitialData {
 	public static List<Item> getItemTypes() throws IOException {
 		InitialData.itemTypes = new ArrayList<Item>();
 		ReadCSV readItemTypes = new ReadCSV("itemTypes.csv");
-
+		readItemTypes.next();
 		
 		try {
 			Integer itemID = 0;
@@ -223,17 +223,17 @@ public class InitialData {
 
 		ReadCSV readEnemies = new ReadCSV("entities.csv");
 
-		
-		
 		try {
-
 			readEnemies.next();
 			readEnemies.next();
+			
+			Integer entityID = 0;
 			
 			while (true) {
 				List<String> tuple = readEnemies.next();
 				
 				if (tuple == null) break;
+				entityID++;
 				
 				Iterator<String> i = tuple.iterator();
 				
@@ -247,6 +247,7 @@ public class InitialData {
 				EnemyModel enemy = new EnemyModel(maxHealth, 1, currentRoom, name, desc);
 				enemy.setHealth(health);
 				enemy.setLives(lives);
+				enemy.setId(entityID);
 				
 				enemies.add(enemy);
 			}

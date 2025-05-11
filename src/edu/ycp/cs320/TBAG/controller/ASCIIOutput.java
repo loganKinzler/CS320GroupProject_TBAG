@@ -40,8 +40,13 @@ public class ASCIIOutput {
     	try {
     		InputStream in = servlet.getServletContext().getResourceAsStream("/recs/shovel.txt");
 			Scanner reader = new Scanner(in);
+			
 			if (shovel.equals("biiig shovel")) toOut += "<p class=\"item-ascii-art\">";
-			else toOut += "<p>";
+			else {
+				reader.close();
+				return "<p>";
+			}
+			
 			//System.out.println("It worked");
 			while (reader.hasNextLine()) {
 				String asciiLine = reader.nextLine();

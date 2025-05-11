@@ -15,6 +15,7 @@ import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
+import edu.ycp.cs320.TBAG.model.StatusEffect;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
@@ -328,5 +329,30 @@ public class InitialData {
 		
 		return rooms;
 	}
-		
+	
+	public static List<StatusEffect> getStatusEffects() throws IOException {
+	    List<StatusEffect> statusEffects = new ArrayList<>();
+	    ReadCSV readStatusEffects = new ReadCSV("statusEffects.csv");
+	    
+	    try {
+	        while (true) {
+	            List<String> tuple = readStatusEffects.next();
+	            if (tuple == null) break;
+	            
+	            Iterator<String> i = tuple.iterator();
+	            
+	            String name = i.next();
+	            int duration = Integer.parseInt(i.next());
+	            double damage = Double.parseDouble(i.next());
+	            
+	            StatusEffect effect = new StatusEffect(name, duration, damage);
+	            statusEffects.add(effect);
+	        }
+	    } finally {
+	        readStatusEffects.close();
+	    }
+	    
+	    return statusEffects;
+	}
+	
 }

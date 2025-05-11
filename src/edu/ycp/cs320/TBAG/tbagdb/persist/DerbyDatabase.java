@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import edu.ycp.cs320.TBAG.model.Item;
 import edu.ycp.cs320.TBAG.model.PlayerModel;
 import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
+import edu.ycp.cs320.TBAG.model.StatusEffect;
 import edu.ycp.cs320.TBAG.model.Weapon;
 
 public class DerbyDatabase implements IDatabase {
@@ -1534,7 +1536,7 @@ public class DerbyDatabase implements IDatabase {
 
 	//TODO: add support for multiple databases
 	//Will likely need to have a field in the class for the type because connect is done every db method and i digress against having the db type as a param for every call
-	private Connection connect() throws SQLException {
+	public Connection connect() throws SQLException {
 		Connection conn = DriverManager.getConnection("jdbc:derby:" + this.dbType + ".db;create=true");
 		
 		// Set autocommit to false to allow execution of
@@ -1824,6 +1826,26 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 				
+				//Status Effects
+				PreparedStatement statuseffects = null;
+				try {
+					statuseffects = conn.prepareStatement(
+				        "create table StatusEffects (" +
+				        "   StatusName varchar(32672)" +
+				        "   StatusDuration int"+
+				        "   StatusDamage double"+
+				        ")"
+				    );
+					statuseffects.executeUpdate();
+				} catch (SQLException sql) {
+				    if (!sql.getMessage().matches("Table/View '.*' already exists in Schema 'APP'.")) {
+				        throw sql; // Only ignore "already exists" errors
+				    }
+				    isNewDatabase = false;
+				} finally {
+				    DBUtil.closeQuietly(statuseffects);
+				}
+				
 				return isNewDatabase;
 			}
 		});
@@ -2064,6 +2086,36 @@ public class DerbyDatabase implements IDatabase {
 					insertConnectionsStatement.setInt(4, room.getConnectedRoom("west"));
 					insertConnectionsStatement.executeUpdate();
 				}
+				
+				//Insert StatusEffects
+				
+				List<StatusEffect> statusEffects = null; // Initialize with empty list
+
+				try {
+				    statusEffects = InitialData.getStatusEffects();
+				} catch (IOException e) {
+				    throw new SQLException("Couldn't read status effects data", e);
+				}
+
+				// Add with the other table inserts
+				PreparedStatement insertStatusEffects = null;
+				try {
+				    insertStatusEffects = conn.prepareStatement(
+				        "insert into StatusEffects (StatusName, StatusDuration, StatusDamage) values (?, ?, ?)");
+				    
+				    for (StatusEffect effect : statusEffects) {
+				        insertStatusEffects.setString(1, effect.getType());
+				        insertStatusEffects.setInt(2, effect.getDuration());
+				        insertStatusEffects.setDouble(3, effect.getDamage());
+				        insertStatusEffects.addBatch();
+				    }
+				    
+				    insertStatusEffects.executeBatch();
+				} finally {
+				    DBUtil.closeQuietly(insertStatusEffects);
+				}
+				
+				
 				return true;
 			}
 		});

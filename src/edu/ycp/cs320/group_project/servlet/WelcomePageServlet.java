@@ -7,9 +7,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
+
 public class WelcomePageServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		DerbyDatabase db = new DerbyDatabase("test");
+		req.setAttribute("foundCommands", db.getFoundCommands());
+		
 		req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
 	}
 	
@@ -17,13 +23,18 @@ public class WelcomePageServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String endpoint = req.getParameter("endpoint");
 		
-		// send somewhere else
-		switch (endpoint) {
-			case "play":
-				resp.sendRedirect("game");
-			break;
-		}
+		DerbyDatabase db = new DerbyDatabase("test");
+		req.setAttribute("foundCommands", db.getFoundCommands());
 		
-		resp.sendRedirect("index");
+		try {
+			// send somewhere else
+			switch (endpoint) {
+				case "play":
+					resp.sendRedirect("game");
+				return;
+			}
+		} catch(Exception e) {}
+		
+		req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
 	}
 }

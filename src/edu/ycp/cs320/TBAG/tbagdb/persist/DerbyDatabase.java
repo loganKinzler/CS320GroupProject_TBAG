@@ -34,7 +34,7 @@ public class DerbyDatabase implements IDatabase {
 	// constructor
 	public DerbyDatabase(String dbType) {
 		this.dbType = dbType;
-	    if (this.dbExists("test")) {
+	    if (this.dbExists(dbType)) {
 	        // Verify tables exist
 	        if (!verifyTablesExist()) {
 	            create(); // Recreate if tables are missing

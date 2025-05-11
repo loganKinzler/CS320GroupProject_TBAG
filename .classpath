@@ -5,9 +5,9 @@
 	<classpathentry kind="src" output="bin" path="main"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CS320_Jetty9"/>
-	<classpathentry kind="lib" path="/CS320_Derby/lib/derby.jar">
+	<classpathentry kind="lib" path="C:/Users/j2mar/eclipse/Workspace/CS320_Derby/lib/derby.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="http://db.apache.org/derby/docs/10.10/publishedapi/jdbc4/"/>
+			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>

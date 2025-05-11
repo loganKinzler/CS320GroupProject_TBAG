@@ -761,46 +761,55 @@ public class GameEngineServlet extends HttpServlet {
             			
             			
             			FightController fightController = new FightController(fighters, db);
-            			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
-        					systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
-            						params.get(0));
-            				break;
-            			}
+            		    if (fightController.GetFighter(attackIndex).getHealth() == 0) {
+            		        systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
+            		                params.get(0));
+            		        break;
+            		    }
 
-            			String attackedName = ((EnemyModel) fightController.GetFighter(attackIndex)).getName();
-            			
-            			Double attackDamage = fightController.TakePlayerTurn(0, attackIndex, attackName);
-            			systemResponse = String.format("Attacked %s with %s.<br><br>%s took %.1f damage.<br>",
-            					attackedName,
-            					userAction.GetParams().get(1),
-            					attackedName,
-            					attackDamage
-            					);
-            			
-            			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
-            				new EntityController(fightController.GetFighter(attackIndex)).Die(
-            						db, rooms.get(player.getCurrentRoomIndex() - 1));
-            				
-            				systemResponse += String.format("%s has died.<br>",
-            						attackedName);
-            			}
-            			
-            			for (int i=0; i<roomEnemies.size(); i++) {
-            				if (i != 0) systemResponse += "<br>";
-            				
-            				if (player.getHealth() == 0) {
-            					player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1));
-            					break;
-            				}
-            				
-            				if (roomEnemies.get(i).getHealth() == 0) continue;
-            				Double enemyDamage = fightController.TakeEnemyTurn(i + 1);
-            				
-            				if (enemyDamage == 0) continue;
-            				systemResponse += String.format("%s attacked. You took %.1f damage.",
-            						((EnemyModel) fightController.GetFighter(i + 1)).getName(),
-            						enemyDamage);
-            			}
+            		    String attackedName = ((EnemyModel) fightController.GetFighter(attackIndex)).getName();
+            		    
+            		    // Player's turn
+            		    Double attackDamage = fightController.takePlayerTurn(0, attackIndex, attackName);
+            		    systemResponse = String.format("Attacked %s with %s.<br><br>%s took %.1f damage.<br>",
+            		            attackedName,
+            		            userAction.GetParams().get(1),
+            		            attackedName,
+            		            attackDamage
+            		            );
+            		    
+            		    if (fightController.GetFighter(attackIndex).getHealth() == 0) {
+            		        new EntityController(fightController.GetFighter(attackIndex)).Die(
+            		                db, rooms.get(player.getCurrentRoomIndex() - 1));
+            		        
+            		        systemResponse += String.format("%s has died.<br>",
+            		                attackedName);
+            		    }
+            		    
+            		    // Enemy's turn - fixed version
+            		    for (int i=0; i<roomEnemies.size(); i++) {
+            		        if (i != 0) systemResponse += "<br>";
+            		        
+            		        if (player.getHealth() == 0) {
+            		            player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1));
+            		            break;
+            		        }
+            		        
+            		        if (roomEnemies.get(i).getHealth() == 0) continue;
+            		        
+            		        // Modified enemy turn handling
+            		        Double enemyDamage = fightController.takeEnemyTurn(i + 1, 0); // Added playerIndex parameter
+            		        
+            		        if (enemyDamage == 0) {
+            		            systemResponse += String.format("%s is stunned and cannot attack!",
+            		                    ((EnemyModel) fightController.GetFighter(i + 1)).getName());
+            		            continue;
+            		        }
+            		        
+            		        systemResponse += String.format("%s attacked. You took %.1f damage.",
+            		                ((EnemyModel) fightController.GetFighter(i + 1)).getName(),
+            		                enemyDamage);
+            		    }
             		break;
             		
             		default:

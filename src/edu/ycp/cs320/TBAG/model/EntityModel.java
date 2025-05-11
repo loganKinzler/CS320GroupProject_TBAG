@@ -75,14 +75,17 @@ public abstract class EntityModel {
         return new HashMap<>(activeEffects);
     }
 
-    public void addEffect(StatusEffect effect) {
-        String type = effect.getType().toLowerCase();
-        if (activeEffects.containsKey(type)) {
-            // Stack duration if effect already exists
-            StatusEffect existing = activeEffects.get(type);
-            existing.setDuration(existing.getDuration() + effect.getDuration());
+    public void addEffect(StatusEffect newEffect) {
+        StatusEffect existingEffect = activeEffects.get(newEffect.getType());
+        if (existingEffect != null) {
+            // Keep the higher damage value
+            double newDamage = Math.max(existingEffect.getDamage(), newEffect.getDamage());
+            // Reset duration to the new effect's duration
+            int newDuration = newEffect.getDuration();
+            activeEffects.put(newEffect.getType(), 
+                             new StatusEffect(newEffect.getType(), newDuration, newDamage));
         } else {
-            activeEffects.put(type, effect);
+            activeEffects.put(newEffect.getType(), newEffect);
         }
     }
 
@@ -96,16 +99,13 @@ public abstract class EntityModel {
 
     // Stun methods
     public boolean isStunned() {
-        return stunned || (hasEffect("stun") && getEffect("stun").isActive());
+        // Only check the stunned flag, not effects
+        return stunned; 
     }
 
     public void setStunned(boolean stunned) {
         this.stunned = stunned;
-        if (stunned && !hasEffect("stun")) {
-            addEffect(new StatusEffect("stun", 1, 0));
-        } else if (!stunned && hasEffect("stun")) {
-            removeEffect("stun");
-        }
+        // Don't automatically manage effects here
     }
     public boolean isOnFire() { return onFire; }
     public void setFire(boolean onFire) { this.onFire = onFire; }

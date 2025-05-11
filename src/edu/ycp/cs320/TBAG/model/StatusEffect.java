@@ -5,6 +5,7 @@ public class StatusEffect {
     private int duration;
     private double damage;
     private boolean active;
+    private boolean newlyApplied = true;
     
     public StatusEffect(String type, int duration, double damage) {
         this.type = type.toLowerCase();
@@ -64,6 +65,13 @@ public class StatusEffect {
     }
     
     public boolean shouldExpire() {
-        return duration <= 0;
+        return duration <= 1; // Will expire after this turn
+    }
+    public boolean isNewlyApplied() {
+        return newlyApplied;
+    }
+
+    public void setNewlyApplied(boolean newlyApplied) {
+        this.newlyApplied = newlyApplied;
     }
 }

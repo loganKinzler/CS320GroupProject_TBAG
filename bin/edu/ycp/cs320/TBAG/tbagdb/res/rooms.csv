@@ -1,33 +1,33 @@
 name|desc|x pos|y pos|has entered|type (not read)
-Robot Room|There are two other robots hooked onto charging beds.|2|5|true|Starting room
-Hallway|Rats scurry past your wheels...|1|5|false|Hallway
-Enemy room3|This is an enemy room|1|6|false|Enemy
-Loot room4|This is a loot room|0|5|false|Loot
-Hallway 5|This is a hallway|2|6|false|Hallway
-Hallway 6|This is a hallway|2|7|false|Hallway (loot tri)
-Loot room7|This is a loot room|1|7|false|Loot
-Loot room8|This is a loot room|2|8|false|Loot
-Loot room9|This is a loot room|3|7|false|Loot
-Enemy room10|This is a enemy room|3|6|false|Enemy
-G room11|There's a hole in the ceiling! There's acid raining through it!|4|6|false|G room
-Hallway12|This is a hallway|4|5|false|Hallway
-Loot room13|This is a loot room|3|5|false|Loot
-Zeller's Office|The room is full of paper!|5|5|false|Enemy
-Hallway15|This is a hallway|5|4|false|Hallway
-Hallway16|This is a hallway|6|5|false|Hallway
-Mega Loot17|This is a mega loot room|6|6|false|Mega loot
-Enemy room18|This is an enemy room|7|5|false|Enemy
-Hallway 19|This is a hallway|8|5|false|Hallway
-Hallway 20|This is a hallway|8|6|false|Hallway
-Kec 119|Someone's time was wasted here...|8|7|false|Enemy
-G Room 22|There's a hole in the ceiling! There's acid raining through it!|8|4|false|G room
-Enemy room 23|This is an enemy room|8|3|false|Enemy
-mini boss 24|This is a mini boss|8|2|false|Mini boss
-End 25|This is where the game ends|8|1|false|End
-hallway 26|This is a hallway|9|4|false|Hallway
-loot room 27|This is a loot room|9|5|false|Loot
-loot room 28|This is a loot room|9|3|false|Loot
-Mega loot 29|This is a mega loot room|9|6|false|Mega loot
-Hallway 30|This is a hallway|10|6|false|Hallway
-Easter egg31|easter egg room|11|6|false|Easter egg
-easter egg 32|easter egg room|2|4|false|Easter egg
+Robot Room|There are two other robots hooked onto charging beds.|2|5|true|none|Starting room
+Hallway|Rats scurry past your wheels...|1|5|false|biiig shovel|Hallway
+Enemy room3|This is an enemy room|1|6|false|none|Enemy
+Loot room4|This is a loot room|0|5|false|none|Loot
+Hallway 5|This is a hallway|2|6|false|none|Hallway
+Hallway 6|This is a hallway|2|7|false|none|Hallway (loot tri)
+Loot room7|This is a loot room|1|7|false|none|Loot
+Loot room8|This is a loot room|2|8|false|none|Loot
+Loot room9|This is a loot room|3|7|false|none|Loot
+Enemy room10|This is a enemy room|3|6|false|none|Enemy
+G room11|There's a hole in the ceiling! There's acid raining through it!|4|6|false|none|G room
+Hallway12|This is a hallway|4|5|false|none|Hallway
+Loot room13|This is a loot room|3|5|false|none|Loot
+Zeller's Office|The room is full of paper!|5|5|false|none|Enemy
+Hallway15|This is a hallway|5|4|false|none|Hallway
+Hallway16|This is a hallway|6|5|false|none|Hallway
+Mega Loot17|This is a mega loot room|6|6|false|none|Mega loot
+Enemy room18|This is an enemy room|7|5|false|none|Enemy
+Hallway 19|This is a hallway|8|5|false|none|Hallway
+Hallway 20|This is a hallway|8|6|false|none|Hallway
+Kec 119|Someone's time was wasted here...|8|7|false|none|Enemy
+G Room 22|There's a hole in the ceiling! There's acid raining through it!|8|4|false|none|G room
+Enemy room 23|This is an enemy room|8|3|false|none|Enemy
+mini boss 24|This is a mini boss|8|2|false|none|Mini boss
+End 25|This is where the game ends|8|1|false|none|End
+hallway 26|This is a hallway|9|4|false|none|Hallway
+loot room 27|This is a loot room|9|5|false|none|Loot
+loot room 28|This is a loot room|9|3|false|none|Loot
+Mega loot 29|This is a mega loot room|9|6|false|none|Mega loot
+Hallway 30|This is a hallway|10|6|false|none|Hallway
+Easter egg31|easter egg room|11|6|false|none|Easter egg
+easter egg 32|easter egg room|2|4|false|none|Easter egg

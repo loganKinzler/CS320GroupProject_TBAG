@@ -1,9 +1,9 @@
 health|maxHealth|lives|room|name|desc
 100.0|100.0|3|1|Player|The Player
-60.0|60.0|1|3|Enemy 1|The first enemy to encounter
+60.0|60.0|1|3|Killer Bunny|If only you had a special grenade...
 70.0|70.0|1|10|Enemy 2|The second enemy to encounter
-150.0|150.0|1|14|Dean Zeller|You get the feeling that you won't learn much.
+150.0|150.0|1|14|Dean Zeller|You get the feeling that you won't learn much.|Mini boss
 100.0|100.0|1|18|Enemy 3|The third enemy raaa
-150.0|150.0|1|21|Liam Wingate|Ffs, why is he back?
+150.0|150.0|1|21|Sentient Bowling Pin|Strike three! You're out!
 120.0|120.0|1|23|Enemy 5|Another enemy raaaaa
-170.0|170.0|1|24|Mini boss 2|The final encounter
+170.0|170.0|1|24|David Babcock|His name is David, dad, he wants some ice cream!|Final boss

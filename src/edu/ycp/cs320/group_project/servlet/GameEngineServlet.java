@@ -164,43 +164,44 @@ public class GameEngineServlet extends HttpServlet {
         
         //Case for sudo easter egg (does not require input after initial stage so just goes anyway
         if (sudoStage > 0) {
-    		systemResponse = "";
-    		
-        	switch (sudoStage) {
-        	case 2:
-        		systemResponse = "<br><br>[INFO] Removing /etc...<br>";
-        		break;
-        	case 3:
-        		systemResponse = "[INFO] Removing /bin...<br>";
-        		break;
-        	case 4:
-        		systemResponse = "[INFO] Removing /home...<br>";
-        		break;
-        	case 5:
-        		systemResponse = "[INFO] Removing /reality...<br>";
-        		break;
-        	case 6:
-        		systemResponse = "[INFO] Removing /fourth_wall...<br>";
-        		break;
-        	case 7:
-        		systemResponse = "[ERROR] Failed to delete /player_conscience: Access Denied<br>";
-        		break;
-        	case 8:
-        		systemResponse = "[INFO] Corrupting game files...<br>";
-        		break;
-        	case 9:
-        		systemResponse = "<span class=\"ascii--art\">[INFO] Game integrity: 0%</span><br>";
-        		break;
-        	case 10:
-        		systemResponse = "<br>Segmentation fault (core melted)<br>";
-        		break;
-        	case 11:
-        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░. ░H░E░L░P░.";
-        		break;
-        	default:
-        		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
-        		break;
-        	}
+        	systemResponse = CommandsController.sudoEasterEgg(sudoStage);
+//    		systemResponse = "";
+//    		
+//        	switch (sudoStage) {
+//        	case 2:
+//        		systemResponse = "<br><br>[INFO] Removing /etc...<br>";
+//        		break;
+//        	case 3:
+//        		systemResponse = "[INFO] Removing /bin...<br>";
+//        		break;
+//        	case 4:
+//        		systemResponse = "[INFO] Removing /home...<br>";
+//        		break;
+//        	case 5:
+//        		systemResponse = "[INFO] Removing /reality...<br>";
+//        		break;
+//        	case 6:
+//        		systemResponse = "[INFO] Removing /fourth_wall...<br>";
+//        		break;
+//        	case 7:
+//        		systemResponse = "[ERROR] Failed to delete /player_conscience: Access Denied<br>";
+//        		break;
+//        	case 8:
+//        		systemResponse = "[INFO] Corrupting game files...<br>";
+//        		break;
+//        	case 9:
+//        		systemResponse = "<span class=\"ascii--art\">[INFO] Game integrity: 0%</span><br>";
+//        		break;
+//        	case 10:
+//        		systemResponse = "<br>Segmentation fault (core melted)<br>";
+//        		break;
+//        	case 11:
+//        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░. ░H░E░L░P░.";
+//        		break;
+//        	default:
+//        		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
+//        		break;
+//        	}
         	LogsController.addToGameHistory(db, gameHistory, systemResponse);
         }
         
@@ -255,24 +256,25 @@ public class GameEngineServlet extends HttpServlet {
 	        			if (!foundCommands.contains("showMap")) LogsController.addToFoundCommands(db,foundCommands,"showMap");
 	        		break;
 	        		case "mirrorEasterEgg":
-	        			EntityInventory inv = db.GetPlayerInventory(); //Get player inventory
-	        			
-	        			boolean hasMirror = (inv.GetItemByName("mirror") != null);
-	        			boolean hasCamera = (inv.GetItemByName("camera") != null);
-	        			
-	        			System.out.println(hasMirror + ", " + hasCamera);
-	        			
-	        			String output = "You do not have the required items.";
-	        			if (hasMirror && hasCamera) {
-	        				output = ASCIIOutput.profAsciiEasterEgg(this, "hake");
-	        				session.setAttribute("playHakeSound", true);
-	        				player.getInventory().ExtractItem(inv.GetItemByName("Mirror"));
-	        				db.UpdatePlayerInventory(player.getInventory());
-	        				player.addItemToInventory(new Item(7));
-	        				db.UpdatePlayerInventory(player.getInventory());
-	        			}
-	        			systemResponse = output;
-	        			systemResponse += "Your mirror broke...";
+	        			systemResponse = CommandsController.mirrorEasterEgg(this, session, db, player, systemResponse);
+//	        			EntityInventory inv = db.GetPlayerInventory(); //Get player inventory
+//	        			
+//	        			boolean hasMirror = (inv.GetItemByName("mirror") != null);
+//	        			boolean hasCamera = (inv.GetItemByName("camera") != null);
+//	        			
+//	        			System.out.println(hasMirror + ", " + hasCamera);
+//	        			
+//	        			String output = "You do not have the required items.";
+//	        			if (hasMirror && hasCamera) {
+//	        				output = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+//	        				session.setAttribute("playHakeSound", true);
+//	        				player.getInventory().ExtractItem(inv.GetItemByName("Mirror"));
+//	        				db.UpdatePlayerInventory(player.getInventory());
+//	        				player.addItemToInventory(new Item(7));
+//	        				db.UpdatePlayerInventory(player.getInventory());
+//	        			}
+//	        			systemResponse = output;
+//	        			systemResponse += "Your mirror broke...";
 	        		break;
             	
             		// TYPE 1 COMMANDS:

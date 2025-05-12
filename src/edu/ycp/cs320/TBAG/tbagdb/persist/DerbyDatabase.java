@@ -1556,8 +1556,8 @@ public class DerbyDatabase implements IDatabase {
 						"create table itemTypes (" +
 								"	item_id int primary key" + 
 								"       generated always as identity (start with 1, increment by 1), " +									
-								"	name varchar(16), " +
-								"	description varchar(64) " +
+								"	name varchar(64), " +
+								"	description varchar(128) " +
 								")"
 						);
 
@@ -1614,8 +1614,8 @@ public class DerbyDatabase implements IDatabase {
 						+ "maxHealth double, "
 						+ "lives int, "
 						+ "currentRoom int, "
-						+ "name varchar(16), "
-						+ "description varchar(64)"
+						+ "name varchar(64), "
+						+ "description varchar(128)"
 						+ ")"
 						);
 				try {
@@ -1671,7 +1671,7 @@ public class DerbyDatabase implements IDatabase {
 					"create table slotNames (" +
 							"   slot_id int primary key" +
 							"       generated always as identity (start with 1, increment by 1), " + 
-							"	slot_name varchar(16)" +
+							"	slot_name varchar(64)" +
 					")"
 				);
 				
@@ -1727,12 +1727,12 @@ public class DerbyDatabase implements IDatabase {
 						"Create table rooms ("
 						+ "room_id int primary key"
 						+ " generated always as identity (start with 1, increment by 1), "
-						+ "name varchar(16), "
+						+ "name varchar(64), "
 						+ "description varchar(64), "
 						+ "x_position int, "
 						+ "y_position int, "
 						+ "has_entered_room boolean, "
-						+ "room_key varchar(16)"
+						+ "room_key varchar(64)"
 						+ ")"
 						);
 				

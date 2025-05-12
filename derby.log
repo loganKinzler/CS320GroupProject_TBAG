@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-Mon May 12 01:20:11 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-c2ef-b36d-000007308ed0 
+Mon May 12 14:45:15 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-c5d0-c3ee-00000730a8e0 
 on database directory /Users/krimx/git/CS320GroupProject_TBAG/test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@45ee12a7 
 Loaded from file:/Users/krimx/Documents/EclipseWorkspace/CS320_Derby/lib/derby.jar
 java.vendor=Oracle Corporation

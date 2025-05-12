@@ -269,7 +269,6 @@ public class ConsoleInterpreter {
     				}
     			}
     			
-    			System.out.println("~~~~~~ " + inputWords.size());
     			// combine words between 'with' and 'using'
     			if (inputWords.size() <= 3) return new Action("No parameters after keyword 'on' given.");// nothing after 'with'
     			String location = inputWords.get(3);

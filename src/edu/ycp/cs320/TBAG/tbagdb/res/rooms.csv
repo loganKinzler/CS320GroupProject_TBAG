@@ -1,6 +1,6 @@
 name|desc|x-pos|y-pos|entered|key
 Robot Room|This is the starting room|2|5|true|none
-Hallway 2|This is hallway|1|5|false|Biiig Shovel
+Hallway 2|This is hallway|1|5|false|biiig shovel
 Enemy room3|This is an enemy room|1|6|false|none
 Loot room4|This is a loot room|0|5|false|none
 Hallway 5|This is a hallway|2|6|false|none

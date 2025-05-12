@@ -77,6 +77,8 @@ public class ItemDbTest {
 	
 	@Test
 	public void UpdateInventoryTest() {
+		RoomInventory intialRoomInv = db.GetRoomInventoryByID(1);
+		
 		RoomInventory testRoomInv = new RoomInventory();
 		testRoomInv.AddItems(new Weapon(1, "Shovel", "Don't dig straight down", 5.0), 4);
 //		testRoomInv.AddItems(new Item(4, "Biiig shovel", "It's like really big"), 1);
@@ -94,5 +96,8 @@ public class ItemDbTest {
 		db.UpdateInventoryBySourceID(2, testRoomInv);
 		dbRoomInv = db.GetRoomInventoryByID(1);
 		assertEquals(testRoomInv, dbRoomInv);
+		
+		// put the initial room back to how it was
+		db.UpdateRoomInventory(1, intialRoomInv);
 	}
 }

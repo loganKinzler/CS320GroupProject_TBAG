@@ -51,7 +51,7 @@ public class EntityInventoryTest {
 		this.model.DropWeaponInSlot("Left Hand");
 		assertTrue(this.model.WeaponSlotIsEmpty("Left Hand"));
 	}
-	
+	 
 	@Test public void WeaponIsEquipedTest() {assertTrue( this.model.WeaponIsEquiped(baseballBat) );}
 	@Test public void WeaponIsEquipedInSlotTest() {assertTrue( this.model.WeaponIsEquippedInSlot("Left Hand", baseballBat) );} 
 	@Test public void SlotIsFullTest() {assertTrue( this.model.WeaponSlotIsFull("Left Hand") );}

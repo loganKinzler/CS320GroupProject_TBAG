@@ -15,6 +15,11 @@ public class Item {
 		this.name = name;
 		this.description = description;
 	}
+	public Item(Integer id) {
+		this.itemID = id;
+		this.name = "";
+		this.description = "";
+	}
 	
 	
 	// getters / setters

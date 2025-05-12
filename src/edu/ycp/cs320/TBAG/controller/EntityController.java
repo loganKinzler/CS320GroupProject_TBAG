@@ -85,5 +85,9 @@ public class EntityController {
 		
 		return this.model.getLives() == 0;
 	}
+	
+	public void addItemToInventory(Item item) {
+		this.model.getInventory().AddItem(item);
+	}
 
 }

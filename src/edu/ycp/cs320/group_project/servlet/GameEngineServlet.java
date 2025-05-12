@@ -268,8 +268,8 @@ public class GameEngineServlet extends HttpServlet {
 	        				session.setAttribute("playHakeSound", true);
 	        				player.getInventory().ExtractItem(inv.GetItemByName("Mirror"));
 	        				db.UpdatePlayerInventory(player.getInventory());
-	        				//new Item(999, "Broken Mirror", "It shattered into a million teeny tiny bits...")
-	        				//code to explicitly put broken mirror in player inv through db (wait for logang)
+	        				player.addItemToInventory(new Item(7));
+	        				db.UpdatePlayerInventory(player.getInventory());
 	        			}
 	        			systemResponse = output;
 	        			systemResponse += "Your mirror broke...";

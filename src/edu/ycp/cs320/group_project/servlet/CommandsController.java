@@ -155,7 +155,7 @@ public class CommandsController {
 	public static String useCommand(IDatabase db, List<String> foundCommands, List<String> params, List<Room> rooms, String systemResponse, PlayerController player) {
 		String responseOut = systemResponse;
 		if (!foundCommands.contains("use")) LogsController.addToFoundCommands(db,foundCommands,"use");
-		Item key = db.ItemsByNameQuery(params.get(0));
+		Item key = db.ItemByNameQuery(params.get(0));
 		
 		if(!player.getInventory().ContainsItem(key)) {
 			//System.out.print("omg this worked yaaaaay");
@@ -232,7 +232,7 @@ public class CommandsController {
 			return responseOut;
 		}
 		
-		Item pickupItem = db.ItemsByNameQuery(toTitleCase(params.get(1)));
+		Item pickupItem = db.ItemByNameQuery(toTitleCase(params.get(1)));
 		if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
 			responseOut = String.format("This room does not contain an item named %s.<br>",
 					params.get(1));

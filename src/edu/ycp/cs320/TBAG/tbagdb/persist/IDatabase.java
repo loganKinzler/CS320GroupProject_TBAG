@@ -13,7 +13,7 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 
 public interface IDatabase {
 	public abstract List<Room> DirectionsByRoomIdQuery(int id);
-	public abstract Item ItemsByNameQuery(String itemName);
+	public abstract Item ItemByNameQuery(String itemName);
 	public abstract Integer GetItemIDQuery(String itemName, String itemDescrition);
 
 	public abstract List<Room> getRooms();

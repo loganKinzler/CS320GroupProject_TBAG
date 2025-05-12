@@ -84,7 +84,7 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	@Override
-	public Item ItemsByNameQuery(String itemName) {
+	public Item ItemByNameQuery(String itemName) {
 		return executeTransaction(new Transaction<Item>() {
 			@Override
 			public Item execute(Connection conn) throws SQLException {
@@ -518,7 +518,6 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement onlyWeaponsStmt = null;
 				ResultSet onlyWeaponsResults = null;
 				
-//				List<Item> result = new ArrayList<Item>();
 				Inventory resultInventory = new EntityInventory();
 				
 				try {
@@ -587,9 +586,6 @@ public class DerbyDatabase implements IDatabase {
 						resultInventory.AddItems(resultWeapon, onlyWeaponsResults.getInt(5));
 					}
 					
-					
-					
-					return resultInventory;
 				} finally {
 					
 					DBUtil.closeQuietly(equippedWeaponsStmt);
@@ -601,6 +597,8 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(onlyWeaponsStmt);
 					DBUtil.closeQuietly(onlyWeaponsResults);
 				}
+
+				return resultInventory;
 			}
 		});
 	}

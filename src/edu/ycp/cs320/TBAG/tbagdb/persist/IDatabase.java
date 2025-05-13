@@ -13,12 +13,13 @@ import edu.ycp.cs320.TBAG.model.RoomInventory;
 
 public interface IDatabase {
 	public abstract List<Room> DirectionsByRoomIdQuery(int id);
-	public abstract Item ItemsByNameQuery(String itemName);
+	public abstract Item ItemByNameQuery(String itemName);
 	public abstract Integer GetItemIDQuery(String itemName, String itemDescrition);
 
 	public abstract List<Room> getRooms();
 	public abstract List<Room> getConnections();
 	public abstract Integer UpdateEnteredRoom(boolean entered, int id);
+	public abstract Integer UpdateLockedRoom(int id, String key);
 	public abstract List<Room> RoomsByIdQuery(int id);
 	
 	public abstract Inventory InventoryBySourceID(Integer sourceID);
@@ -55,5 +56,6 @@ public interface IDatabase {
 	public Boolean checkFound(String check);
 	public abstract Room getConnectionsByRoomId(int roomId);
 	
-	
+	public void create();
+	public Boolean clearGameHistory();
 }

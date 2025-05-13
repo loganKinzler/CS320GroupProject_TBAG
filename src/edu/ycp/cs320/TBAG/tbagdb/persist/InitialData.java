@@ -28,6 +28,7 @@ public class InitialData {
 	public static List<Item> getItemTypes() throws IOException {
 		InitialData.itemTypes = new ArrayList<Item>();
 		ReadCSV readItemTypes = new ReadCSV("itemTypes.csv");
+		readItemTypes.next();
 		
 		try {
 			Integer itemID = 0;
@@ -55,6 +56,7 @@ public class InitialData {
 		
 		InitialData.weaponTypes = new ArrayList<Weapon>();
 		ReadCSV readWeaponTypes = new ReadCSV("weaponTypes.csv");
+		readWeaponTypes.next();
 		
 		try {
 			while (true) {
@@ -64,15 +66,21 @@ public class InitialData {
 				Iterator<String> i = tuple.iterator();
 				
 				Integer weaponID = Integer.parseInt(i.next());
-
 				Item weaponItem = InitialData.itemTypes.get(weaponID - 1);
-
 				
+				Double damageAmt = Double.parseDouble(i.next());
+				String damageType = i.next();
+				Integer critChance = Integer.parseInt(i.next());
+				String statusEffect = i.next();
+
 				Weapon weapon = new Weapon(
 						weaponID,
 						weaponItem.GetName(),
 						weaponItem.GetDescription(),
-						Double.parseDouble(i.next()));
+						damageAmt,
+						damageType,
+						critChance,
+						statusEffect);
 				
 
 				InitialData.weaponTypes.add(weapon);
@@ -114,6 +122,9 @@ public class InitialData {
 		Map<Integer, Inventory> inventories = new HashMap<Integer, Inventory>();
 		ReadCSV readInventories = new ReadCSV("inventories.csv");
 		ReadCSV readWeaponSlots = new ReadCSV("weaponSlots.csv");
+		readInventories.next();
+		readWeaponSlots.next();
+
 		
 		try {
 			while (true) {
@@ -219,17 +230,17 @@ public class InitialData {
 
 		ReadCSV readEnemies = new ReadCSV("entities.csv");
 
-		
-		
 		try {
-
 			readEnemies.next();
 			readEnemies.next();
+			
+			Integer entityID = 0;
 			
 			while (true) {
 				List<String> tuple = readEnemies.next();
 				
 				if (tuple == null) break;
+				entityID++;
 				
 				Iterator<String> i = tuple.iterator();
 				
@@ -243,6 +254,7 @@ public class InitialData {
 				EnemyModel enemy = new EnemyModel(maxHealth, 1, currentRoom, name, desc);
 				enemy.setHealth(health);
 				enemy.setLives(lives);
+				enemy.setId(entityID);
 				
 				enemies.add(enemy);
 			}
@@ -259,6 +271,7 @@ public class InitialData {
 	public static List<Room> getRooms() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readRooms = new ReadCSV("rooms.csv"); 
+		readRooms.next();
 		
 		try {
 			
@@ -276,9 +289,10 @@ public class InitialData {
 				int x_position = Integer.parseInt(i.next());
 				int y_position = Integer.parseInt(i.next());
 				boolean has_entered_room = Boolean.parseBoolean(i.next());
+				String room_key = i.next();
 				
 				
-				Room room = new Room(name, description, x_position, y_position, has_entered_room);
+				Room room = new Room(name, description, x_position, y_position, has_entered_room, room_key);
 				rooms.add(room);
 			}
 		}
@@ -294,6 +308,7 @@ public class InitialData {
 	public static List<Room> getConnections() throws IOException{
 		List<Room> rooms = new ArrayList<>();
 		ReadCSV readConnections = new ReadCSV("connections.csv"); 
+		readConnections.next();
 		
 		try {
 			//readConnections.next();
@@ -354,5 +369,4 @@ public class InitialData {
 	    
 	    return statusEffects;
 	}
-	
 }

@@ -1,7 +1,7 @@
 @charset "UTF-8";
 
 :root {
-	 --console-background: #001701;
+	 --console-background: #003502;
 	 --console-text-color: #07b60d;
 	 --caret-color: #019808;
 	 --submit-button-bg: #004103;
@@ -12,8 +12,19 @@
 	 --sticky-note-color: #FED800;
 	 
 	 --font-size: 2rem;
-	 --ascii-font-size: .7rem;
 	 --hake-ascii-font-size: .45rem;
+	 --item-ascii-font-size: 1rem;
+}
+
+body {
+	max-height: 100%;
+	max-width: 100%;
+
+	overflow: hidden;
+}
+
+button {
+	cursor: pointer;
 }
 
 * {
@@ -26,26 +37,28 @@
 	position: absolute;
 	width: 100vw;
 	height: 100vh;
+
+	margin-bottom: 0%;
+
 	background-color: var(--monitor-color);
-	
-	display: flex;
-	justify-content: center;
-	align-items: center;
 	
 	box-shadow: inset 0px 0px 32px 6px rgba(0,0,0,0.65);
 }
 
-.console {
+#console {
 	position: relative;
-	height: 80%;
-	width: 85%;
+	height: 80vh;
+	width: 85vw;
 	
-	padding: 1%;
+	margin-left: 7.5vw;
+	margin-right: 7.5vw;
+	margin-top: 10vh;
+	margin-bottom: 2vh;
 	
 	display: flex;
 	flex-direction: column;
 	align-items: start;
-	justify-content: end;
+	justify-content: middle;
 	
 	background-color: var(--console-background);
 	color: var(--console-text-color);
@@ -60,7 +73,14 @@
 	z-index: 0;
 }
 
-.console::after {
+#console > div {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	padding: 1%;
+}
+
+#console::after {
   content: "";
   position: absolute;
   top: 0;
@@ -71,9 +91,9 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.15; /* Faded */
+  opacity: 0.15;
   filter: contrast(120%) brightness(80%);
-  mix-blend-mode: multiply; /* or overlay, screen, darken, etc. */
+  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 1;
 }
@@ -221,7 +241,7 @@
   	padding-right: 20%;
   	padding-bottom: 2vh;
 }
-  
+
 .monitor-button {
   display: inline-block;
   width: auto;
@@ -254,11 +274,7 @@
   	background-color: var(--darker-monitor-color);
 }
 
-.ascii-art {
-	font-size: var(--ascii-font-size) !important;
-	white-space: pre;
-	line-height: 1;
-}
+
 .hake-ascii-art {
 	font-size: var(--hake-ascii-font-size) !important;
 	white-space: pre;
@@ -271,17 +287,109 @@
 	line-height: 1;
 }
 
-.ipear-logo {
+.bottom_row {
+	position: relative;
+	
+	height: 8vh;
+	width: 100vw;
+	
+	align-content: center;
+}
+
+.bottom_row > div {
 	position: absolute;
-	height: 6vh;
+
+	transform: translate(-50%);
+}
+
+.ipear_logo {
 	left: 50vw;
-	bottom: 0;
-	transform: translateX(-50%);
-	margin-bottom: 1vh;
+	bottom: 1vh;
+	height: 6vh;
+	aspect-ratio: 1233/1500;/* image size */
+	
 }
 
 .item-ascii-art{
 	font-size: var(--item-ascii-font-size) !important;
 	white-space: pre;
 	line-height: 1;
+	
+}
+
+.item-ascii-art{
+	font-size: var(--item-ascii-font-size) !important;
+	white-space: pre;
+	line-height: 1;
+}
+
+.ipear_img {
+	position: absolute;
+	
+	width: 100%;
+	height: 100%;
+}
+
+.power_button {
+	position: absolute;
+	left: 90vw;
+	bottom: 1vh;
+
+	height: 6vh;
+	aspect-ratio: 1.75;
+}
+
+#power_button {
+	position: relative;
+
+	height: 100%;
+	width: 100%;
+
+	border: none;
+
+	background-color: transparent;
+	background-image: url("../recs/powerButton.png");
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.crt_close::after {
+    content: "";
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+
+    background-image: url("../recs/CRT_Close.gif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-clip: border-box;
+
+    z-index: 2;
+}
+
+.crt_off::after {
+    content: "";    
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+    
+    background-color: black;
+    background-size: contain;
+    background-clip: border-box;
+
+    z-index: 2;
 }

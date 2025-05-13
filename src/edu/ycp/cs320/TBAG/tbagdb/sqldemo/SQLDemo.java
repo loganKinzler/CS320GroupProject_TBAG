@@ -154,6 +154,7 @@ public class SQLDemo {
 		while (resultSet.next()) {
 			List<String> row = new ArrayList<String>();
 			for (int i = 1; i <= numColumns; i++) {
+				System.out.println(String.format("%d: %s", i, resultSet.getObject(i) == null? "null" : resultSet.getObject(i).toString()));
 				row.add(resultSet.getObject(i).toString());
 			}
 			rowList.add(row);

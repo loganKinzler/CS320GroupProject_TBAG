@@ -31,7 +31,7 @@ public class PlayerDbTest {
 	@Test
 	public void startHealthTest() {
 		setup();
-		assertEquals(db.GetPlayer().getHealth(), 50.0, .001);
+		assertEquals(db.GetPlayer().getHealth(), 100.0, .001);
 	}
 	
 	@Test

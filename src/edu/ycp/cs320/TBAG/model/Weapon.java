@@ -55,27 +55,4 @@ public class Weapon extends Item {
     public void SetStatusEffect(String statusEffect) {
         this.statusEffect = statusEffect != null ? statusEffect : "";
     }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) return false;
-        if (!(obj instanceof Weapon)) return false;
-        
-        Weapon other = (Weapon) obj;
-        return Double.compare(this.damage, other.damage) == 0 &&
-               this.critChance == other.critChance &&
-               this.damageType.equals(other.damageType) &&
-               this.statusEffect.equals(other.statusEffect);
-    }
-    
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + Double.hashCode(damage);
-        result = prime * result + damageType.hashCode();
-        result = prime * result + critChance;
-        result = prime * result + statusEffect.hashCode();
-        return result;
-    }
 }

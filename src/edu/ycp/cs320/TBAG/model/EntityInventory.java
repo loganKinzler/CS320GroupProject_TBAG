@@ -26,7 +26,7 @@ public class EntityInventory extends Inventory {
 	
 	public EntityInventory(HashMap<Item, Integer> items, HashMap<String, Weapon> weapons) {
 		super(items);
-		this.weapons = new HashMap<String, Weapon>();
+		this.weapons = weapons;
 	}
 	
 	
@@ -56,16 +56,10 @@ public class EntityInventory extends Inventory {
 	}
 	
 	public Boolean WeaponIsEquiped(Weapon weapon) {return this.weapons.containsValue( weapon );}
+	public Boolean WeaponIsEquippedInSlot(String weaponSlot, Weapon weapon) {return this.weapons.get(weaponSlot).equals(weapon);}
 	public Boolean WeaponSlotIsFull(String weaponSlot) {return this.weapons.containsKey( weaponSlot );}
 	public Boolean WeaponSlotIsEmpty(String weaponSlot) {return !this.WeaponSlotIsFull( weaponSlot );}
 	
-	@Override
-	public Boolean ContainsItem(Item item) {
-		if (item.getClass() == Item.class) return super.ContainsItem(item);// item is a base item : only check inventory
-		if (this.WeaponIsEquiped((Weapon) item)) return true;// weapon could potentially be equipped
-		return this.items.containsKey(item);// weapon could potentially be in regular inventory
-	}
-
 	public HashMap<Item, Integer> GetAllItems() {
 		
 		@SuppressWarnings("unchecked")
@@ -82,24 +76,24 @@ public class EntityInventory extends Inventory {
 			
 		return totalItems;
 	}
-
-	@Override
-	public Integer GetItemAmount(Item item) {
-		Integer quantity = super.GetItemAmount(item);// inventory item amount
-		if (item.getClass() == Item.class) return quantity;// item is a base item : only in regular inventory
-		
-		for (String slot : this.weapons.keySet())// run through weapons and count instances
-			quantity += this.weapons.get(slot).equals((Weapon) item)? 1:0;// weapon is in slot : +1
-		
-		return quantity;// total is weapon slot amount + inventory amount
-	}
 	
 	@Override public Boolean ContainsMoreThan(Item item, Integer itemAmount) {return this.GetItemAmount(item) > itemAmount;}
 	@Override public Boolean ContainsExactly(Item item, Integer itemAmount) {return this.GetItemAmount(item) == itemAmount;}
 	@Override public Boolean ContainsLessThan(Item item, Integer itemAmount) {return this.GetItemAmount(item) < itemAmount;}
 
-	public Object getEquippedWeapons() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	@Override
+	public boolean equals(Object obj) {
+		EntityInventory inv = null;
+		
+		try {inv = (EntityInventory) obj;}
+		catch (Exception e) {return false;}
+		
+		for (String slot : inv.GetWeaponsAsSlots().keySet()) {
+			Weapon weaponInSlot = inv.GetWeapon(slot);
+			if (!this.WeaponIsEquippedInSlot(slot, weaponInSlot)) return false;
+		}
+		
+		return super.equals(obj);
 	}
 }

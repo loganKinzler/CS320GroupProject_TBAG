@@ -94,4 +94,19 @@ public abstract class Inventory {
 		if (!this.ContainsItem(item)) return true;// item must be in inventory
 		return this.GetItemAmount(item) < itemAmount;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		Inventory inv = null;
+		
+		try {inv = (Inventory) obj;}
+		catch(Exception e) {return false;}
+		
+		for (Item item : inv.GetItems().keySet()) {
+			if (!this.ContainsExactly(item, inv.GetItemAmount(item)))
+				return false;
+		}
+		
+		return true;
+	}
 }

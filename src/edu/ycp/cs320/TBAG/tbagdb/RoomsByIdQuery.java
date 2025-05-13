@@ -29,9 +29,9 @@ public class RoomsByIdQuery {
 		
 		List<Room> roomsWithId = RoomsByIdQuery.queryDatabase(room_id);
 		
-		System.out.println("   NAME   | DESCRIPTION | X_POSITION | Y_POSITION | HAS_ENTERED_ROOM");
+		System.out.println("   NAME   | DESCRIPTION | X_POSITION | Y_POSITION | HAS_ENTERED_ROOM | KEY");
 		for (Room room : roomsWithId) {
-			System.out.println(String.format("%10s|%s|%d|%d|%b", room.getShortRoomDescription(), room.getLongRoomDescription(), room.getX_Position(), room.getY_Position(), room.getHas_Entered_Room()));
+			System.out.println(String.format("%10s|%s|%d|%d|%b|%s", room.getShortRoomDescription(), room.getLongRoomDescription(), room.getX_Position(), room.getY_Position(), room.getHas_Entered_Room(), room.getRoom_key()));
 		}
 	}
 }

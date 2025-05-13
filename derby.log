@@ -1,11 +1,11 @@
 ----------------------------------------------------------------
-Sat May 10 20:43:55 EDT 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-bccc-6c29-00000ec00000 
-on database directory memory:C:\Software Engineering 2025\CS320GroupProject_TBAG\testdb.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@70dea4e 
-Loaded from file:/C:/Software%20Engineering%202025/CS320_Derby/lib/derby.jar
-java.vendor=Eclipse Adoptium
-java.runtime.version=23.0.1+11
-user.dir=C:\Software Engineering 2025\CS320GroupProject_TBAG
+Mon May 12 21:15:11 EDT 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.10.2.0 - (1582446): instance a816c00e-0196-c735-c225-00000ef043c0 
+on database directory C:\Users\j2mar\eclipse\Workspace\CS320GroupProject_TBAG\test.db with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5fd0d5ae 
+Loaded from file:/C:/Users/j2mar/eclipse/Workspace/CS320_Derby/lib/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=23.0.1+11-39
+user.dir=C:\Users\j2mar\eclipse\Workspace\CS320GroupProject_TBAG
 os.name=Windows 11
 os.arch=amd64
 os.version=10.0

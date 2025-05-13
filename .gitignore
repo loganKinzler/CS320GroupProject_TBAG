@@ -1,6 +1,7 @@
-/bin/*
-/test-bin/*
+.classpath
+.project
+.settings/
+test-db/
 test.db/*
 derby.log
 /bin/
-/test-bin/

@@ -40,6 +40,8 @@ public class FightController {
             applyWeaponEffects(weapon, target);
         }
         
+        
+        database.UpdateEnemyHealthById(target.getId(), target.getHealth());
         return damage;
     }
     

@@ -14,7 +14,7 @@ public class ItemsByNameQuery {
 	}
 	
 	public static Item queryDatabase(String itemName) {
-		return database.ItemsByNameQuery(itemName);
+		return database.ItemByNameQuery(itemName);
 	}
 	
 	@SuppressWarnings("resource")

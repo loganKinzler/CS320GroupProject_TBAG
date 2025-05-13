@@ -25,7 +25,6 @@ import edu.ycp.cs320.TBAG.model.Weapon;
 public class DerbyDatabase implements IDatabase {
 	private String dbType;
 	
-	
 	static {
 		try {
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -37,7 +36,7 @@ public class DerbyDatabase implements IDatabase {
 	// constructor
 	public DerbyDatabase(String dbType) {
 		this.dbType = dbType;
-	    if (this.dbExists("test")) {
+	    if (this.dbExists(dbType)) {
 	        // Verify tables exist
 	        if (!verifyTablesExist()) {
 	            create(); // Recreate if tables are missing
@@ -65,24 +64,48 @@ public class DerbyDatabase implements IDatabase {
 	
 	
 	// OUR QUERIES / INSERTS GO HERE
+	private String toTitleCase(String input) {
+		if (input == null || input.isEmpty()) {
+	        return input;
+	    }
+
+	    String[] words = input.toLowerCase().split(" ");
+	    StringBuilder titleCase = new StringBuilder();
+
+	    for (String word : words) {
+	        if (word.length() > 0) {
+	            titleCase.append(Character.toUpperCase(word.charAt(0)))
+	                     .append(word.substring(1))
+	                     .append(" ");
+	        }
+	    }
+	    
+	    String toOut = titleCase.toString().trim();
+
+	    return toOut;
+	}
+	
 	@Override
-	public Item ItemsByNameQuery(String itemName) {
+	public Item ItemByNameQuery(String itemName) {
 		return executeTransaction(new Transaction<Item>() {
 			@Override
 			public Item execute(Connection conn) throws SQLException {
 				PreparedStatement stmt = null;
 				ResultSet resultSet = null;
 				
+				PreparedStatement weaponStmt = null;
+				ResultSet weaponResults = null;
+				Item result = null;
+				
 				try {
 					// retreive all attributes from both Books and Authors tables
 					stmt = conn.prepareStatement(
 						"select itemTypes.* " +
 							" from itemTypes " + 
-							" where itemTypes.name = ?"
+							" where lower(itemTypes.name) = ?"
 					);
-					stmt.setString(1, itemName);
+					stmt.setString(1, itemName.toLowerCase());
 					
-					List<Item> result = new ArrayList<Item>();
 					
 					resultSet = stmt.executeQuery();
 					
@@ -90,28 +113,47 @@ public class DerbyDatabase implements IDatabase {
 					Boolean found = false;
 					Integer itemID = 0;
 					
-					while (resultSet.next()) {
+					if (resultSet.next()) {
 						found = true;
-						itemID++;
+						result = loadItem(resultSet, 1);
+					
+						weaponStmt = conn.prepareStatement(
+							"select weaponTypes.damage, weaponTypes.damage_type, weaponTypes.crit_chance, weaponTypes.status_effect" + 
+							"	from weaponTypes" +
+							"	where weaponTypes.item_id = ?"
+						);
 						
-						// create new Author object
-						// retrieve attributes from resultSet starting with index 1
-						Item item = loadItem(resultSet, 1);
-						result.add(item);
+						weaponStmt.setInt(1, result.GetID());
+						weaponResults = weaponStmt.executeQuery();
+						
+						if (weaponResults.next()) {
+							result = new Weapon(
+								result.GetID(),
+								result.GetName(),
+								result.GetDescription(),
+								weaponResults.getDouble(1),
+								weaponResults.getString(2),
+								weaponResults.getInt(3),
+								weaponResults.getString(4)
+							);
+						}
 					}
 					
 					// check if the title was found
-					if (!found) {
+					else {
 						System.out.println("<" + itemName + "> was not found in the items table");
-						return null;
 					}
 					
 					conn.commit();
-					return result.getFirst();
 				} finally {
 					DBUtil.closeQuietly(resultSet);
 					DBUtil.closeQuietly(stmt);
+					
+					DBUtil.closeQuietly(weaponStmt);
+					DBUtil.closeQuietly(weaponResults);
 				}
+
+				return result;
 			}
 		});
 	}
@@ -337,6 +379,37 @@ public class DerbyDatabase implements IDatabase {
 		
 	}
 	
+	@Override
+	public Integer UpdateLockedRoom(int id, String key) {
+		return executeTransaction(new Transaction<Integer>() {
+			public Integer execute(Connection conn) throws SQLException {
+				PreparedStatement insertStatement = null;
+				
+				//This will make the locked room positive indicating that it is now unlocked
+				insertStatement = conn.prepareStatement(
+					"update rooms "
+					+ "set room_key = ? "
+					+ "where rooms.room_id = ?"
+				);
+				
+				insertStatement.setString(1, key);
+				insertStatement.setInt(2, id);
+				
+				
+				try {
+					insertStatement.executeUpdate();
+					conn.commit();
+				}
+				finally {
+					DBUtil.closeQuietly(insertStatement);
+				}
+				
+				return id;
+			}
+		});
+		
+	}
+	
 	public List<Room> DirectionsByRoomIdQuery(int id) {
 		return executeTransaction(new Transaction<List<Room>>() {
 			@Override
@@ -450,7 +523,6 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement onlyWeaponsStmt = null;
 				ResultSet onlyWeaponsResults = null;
 				
-//				List<Item> result = new ArrayList<Item>();
 				Inventory resultInventory = new EntityInventory();
 				
 				try {
@@ -460,8 +532,8 @@ public class DerbyDatabase implements IDatabase {
 						
 						// weaponSlots
 						equippedWeaponsStmt = conn.prepareStatement(
-								"select itemTypes.item_id, itemTypes.name, itemTypes.description, weaponTypes.damage, slotNames.slot_name" +
-								"	from weaponSlots" +
+								"select itemTypes.item_id, itemTypes.name, itemTypes.description, weaponTypes.damage, weaponTypes.damage_type, weaponTypes.crit_chance, weaponTypes.status_effect, slotNames.slot_name" +
+						"	from weaponSlots" +
 								"		inner join weaponTypes on weaponTypes.item_id = weaponSlots.item_id" +
 								"		inner join itemTypes on itemTypes.item_id = weaponSlots.item_id" +
 								"		inner join slotNames on slotNames.slot_id = weaponSlots.slot_id" +
@@ -473,7 +545,7 @@ public class DerbyDatabase implements IDatabase {
 						
 						while (equippedWeaponsResults.next()) {
 							Weapon resultWeapon = loadWeapon(equippedWeaponsResults, 1);
-							((EntityInventory) resultInventory).EquipWeapon(equippedWeaponsResults.getString(5), resultWeapon);
+							((EntityInventory) resultInventory).EquipWeapon(equippedWeaponsResults.getString(8), resultWeapon);
 						}
 						
 					} else {
@@ -504,7 +576,7 @@ public class DerbyDatabase implements IDatabase {
 					
 					// weapons (without base items)
 					onlyWeaponsStmt = conn.prepareStatement(
-						"select weaponTypes.item_id, itemTypes.name, itemTypes.description, weaponTypes.damage, inventories.item_quantity" +
+						"select weaponTypes.item_id, itemTypes.name, itemTypes.description, weaponTypes.damage, weaponTypes.damage_type, weaponTypes.crit_chance, weaponTypes.status_effect, inventories.item_quantity" +
 						"		from inventories," +
 						"			weaponTypes join itemTypes on itemTypes.item_id = weaponTypes.item_id" +
 						"		where inventories.inventory_source = ?" +
@@ -516,12 +588,9 @@ public class DerbyDatabase implements IDatabase {
 					
 					while (onlyWeaponsResults.next()) {
 						Weapon resultWeapon = loadWeapon(onlyWeaponsResults, 1);
-						resultInventory.AddItems(resultWeapon, onlyWeaponsResults.getInt(5));
+						resultInventory.AddItems(resultWeapon, onlyWeaponsResults.getInt(8));
 					}
 					
-					
-					
-					return resultInventory;
 				} finally {
 					
 					DBUtil.closeQuietly(equippedWeaponsStmt);
@@ -533,6 +602,8 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(onlyWeaponsStmt);
 					DBUtil.closeQuietly(onlyWeaponsResults);
 				}
+
+				return resultInventory;
 			}
 		});
 	}
@@ -551,10 +622,6 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement slotsUpdateStmt = null;
 				PreparedStatement slotsInsertStmt = null;
 				PreparedStatement slotsDeleteStmt = null;
-				PreparedStatement slotsShiftStmt = null;
-				
-				PreparedStatement slotsLastStmt = null;
-				ResultSet slotsLastResults = null;
 					
 				// update weapon slots (if updateInventory is an entityInventory)
 				if (sourceID % 2 == 1) {
@@ -571,7 +638,7 @@ public class DerbyDatabase implements IDatabase {
 							
 							// determine existence combination (database and updateInventory)
 							databaseSlotsStmt = conn.prepareStatement(
-								"select weaponSlots.slot_id, weaponSlots.item_id" +
+								"select weaponSlots.*" +
 									"	from weaponSlots" +
 									"	where weaponSlots.inventory_source = ?" +
 									"		and weaponSlots.slot_id = ?"
@@ -588,11 +655,13 @@ public class DerbyDatabase implements IDatabase {
 							Integer inventoryItemID = null;
 							if (existsInInventory) inventoryItemID = ((EntityInventory) updateInventory).GetWeapon(slotName).GetID();
 							
+							Integer databaseSlotNum = null;
 							Integer databaseSlotID = null;
 							Integer databaseItemID = null;
 							if (existsInDatabase) {
-								databaseSlotID = databaseSlotsResults.getInt(1);
-								databaseItemID = databaseSlotsResults.getInt(2);
+								databaseSlotNum = databaseSlotsResults.getInt(1);
+								databaseSlotID = databaseSlotsResults.getInt(3);
+								databaseItemID = databaseSlotsResults.getInt(4);
 							}
 							
 							
@@ -634,51 +703,13 @@ public class DerbyDatabase implements IDatabase {
 							// exists in database, but not inventory (remove it)
 							else if (existsInDatabase && !existsInInventory) {
 								
-								// get num items in all inventories
-								slotsLastStmt = conn.prepareStatement(
-									"select max(inventories.inventory_id) from inventories"
-								);
-								
-								slotsLastResults = slotsLastStmt.executeQuery();
-								
-								Integer numSlots = null;
-								if (slotsLastResults.next()) numSlots = slotsLastResults.getInt(1);
-								
-								
-								// run through all items that are above and shift them down 1
-								// this will overwrite the current item and place the duplicate into the last slot
-								// which will then be removed from database
-								for (int i=databaseSlotID; i<numSlots; i++) {
-									slotsShiftStmt = conn.prepareStatement(
-										"update weaponSlots" +
-											"	set weaponSlots.inventory_source = (" +
-											"		select slots.inventory_source" +
-											"			from weaponSlots as slots" +
-											"			where slots.slot_num = weaponSlots.slot_num + 1), " +
-											
-											"	weaponSlots.slot_id = (" +
-											"		select slots.slot_id" +
-											"			from weaponSlots as slots" +
-											"			where slots.slot_num = weaponSlots.slot_num + 1), " +
-											
-											"	weaponSlots.item_id = (" +
-											"		select slots.item_id" +
-											"			from weaponSlots as slots" +
-											"			where slots.slot_num = weaponSlots.slot_num + 1)" +
-											"	where weaponSlots.slot_num = ?"
-									);
-
-									slotsShiftStmt.setInt(1, i);
-									slotsShiftStmt.executeUpdate();
-								}
-								
 								// delete the slot
 								slotsDeleteStmt = conn.prepareStatement(
 									"delete from weaponSlots" +
-										"	where weaponSlots.slot_num = (" +
-										"		select max(slots.slot_num) from weaponSlots as slots)"
+										"	where weaponSlots.slot_num = ?"
 								);
 								
+								slotsDeleteStmt.setInt(1, databaseSlotNum);
 								slotsDeleteStmt.executeUpdate();
 							}
 						}
@@ -695,7 +726,6 @@ public class DerbyDatabase implements IDatabase {
 						DBUtil.closeQuietly(slotsUpdateStmt);
 						DBUtil.closeQuietly(slotsInsertStmt);
 						DBUtil.closeQuietly(slotsDeleteStmt);
-						DBUtil.closeQuietly(slotsShiftStmt);
 					}
 				}
 				
@@ -710,10 +740,6 @@ public class DerbyDatabase implements IDatabase {
 				PreparedStatement invUpdateStmt = null;
 				PreparedStatement invInsertStmt = null;
 				PreparedStatement invDeleteStmt = null;
-				PreparedStatement invShiftStmt = null;
-				
-				PreparedStatement lastInvStmt = null;
-				ResultSet lastInvResults = null;
 				
 				try {
 					// get all items
@@ -753,10 +779,12 @@ public class DerbyDatabase implements IDatabase {
 						
 						
 						// item isn't in database nor inventory (nothing to do, continue)
-						if (!existsInDatabase && !existsInInventory) continue;
+						if (!existsInDatabase && !existsInInventory) {
+							continue;						
+						}
 						
 						// both slots are full
-						else if (existsInDatabase && existsInInventory) {
+						if (existsInDatabase && existsInInventory) {
 							
 							// the database quantity is different than the inventory (update it)
 							if (inventoryItemQuantity == databaseItemQuantity) continue;
@@ -772,10 +800,12 @@ public class DerbyDatabase implements IDatabase {
 							invUpdateStmt.setInt(2, sourceID);
 							invUpdateStmt.setInt(3, item.GetID());
 							invUpdateStmt.executeUpdate();
+							
+							continue;
 						}
 						
 						// exists in inventory, but not database (insert it)
-						else if (!existsInDatabase && existsInInventory) {
+						if (!existsInDatabase && existsInInventory) {
 							
 							invInsertStmt = conn.prepareStatement(
 								"insert into inventories (inventory_source, item_id, item_quantity) values (?, ?, ?)"
@@ -785,57 +815,24 @@ public class DerbyDatabase implements IDatabase {
 							invInsertStmt.setInt(2, item.GetID());
 							invInsertStmt.setInt(3, inventoryItemQuantity);
 							invInsertStmt.executeUpdate();
+							
+							continue;
 						}
 						
 						// exists in database, but not inventory (remove it)
-						else if (existsInDatabase && !existsInInventory) {
-							
-							// get num items in all inventories
-							lastInvStmt = conn.prepareStatement(
-								"select max(inventories.inventory_id) from inventories"
-							);
-							
-							lastInvResults = lastInvStmt.executeQuery();
-							
-							Integer numInvs = null;
-							if (lastInvResults.next()) numInvs = lastInvResults.getInt(1);
-							
-							
-							// run through all items that are above and shift them down 1
-							// this will overwrite the current item and place the duplicate into the last slot
-							// which will then be removed from database
-							for (int i=databaseInventoryID; i<numInvs; i++) {
-								invShiftStmt = conn.prepareStatement(
-									"update inventories" +
-										"	set inventories.inventory_source = (" +
-										"		select inv.inventory_source" +
-										"			from inventories as inv" +
-										"			where inv.inventory_id = inventories.inventory_id + 1), " +
-										
-										"	inventories.item_id = (" +
-										"		select inv.item_id" +
-										"			from inventories as inv" +
-										"			where inv.inventory_id = inventories.inventory_id + 1), " +
-										
-										"	inventories.item_quantity = (" +
-										"		select inv.item_quantity" +
-										"			from inventories as inv" +
-										"			where inv.inventory_id = inventories.inventory_id + 1)" +
-										"	where inventories.inventory_id = ?"
-								);
-
-								invShiftStmt.setInt(1, i);
-								invShiftStmt.executeUpdate();
-							}
+						if (existsInDatabase && !existsInInventory) {
 							
 							// delete the slot
 							invDeleteStmt = conn.prepareStatement(
 								"delete from inventories" +
-									"	where inventories.inventory_id = (" +
-									"		select max(inv.inventory_id) from inventories as inv)"
+									"	where inventories.inventory_id = ?"
 							);
 							
+							System.out.println(databaseInventoryID);
+							invDeleteStmt.setInt(1, databaseInventoryID);
 							invDeleteStmt.executeUpdate();
+							
+							continue;
 						}
 					}
 				} catch (Exception e) {
@@ -851,7 +848,6 @@ public class DerbyDatabase implements IDatabase {
 					DBUtil.closeQuietly(invUpdateStmt);
 					DBUtil.closeQuietly(invInsertStmt);
 					DBUtil.closeQuietly(invDeleteStmt);
-					DBUtil.closeQuietly(invShiftStmt);
 				}
 				
 				return true;
@@ -1225,7 +1221,7 @@ public class DerbyDatabase implements IDatabase {
 
 	@Override
 	public void UpdatePlayerInventory(EntityInventory playerInventory) {
-		this.UpdateInventoryBySourceID(2, playerInventory);
+		this.UpdateInventoryBySourceID(3, playerInventory);
 	}
 	
 	@Override
@@ -1420,8 +1416,9 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private PlayerModel loadPlayer(ResultSet resultSet) throws SQLException {
-		int index = 2;
+		int index = 1;
 		
+		int id = resultSet.getInt(index++);
 		double health = resultSet.getDouble(index++);
 		double maxHealth = resultSet.getDouble(index++);
 		int lives = resultSet.getInt(index++);
@@ -1429,6 +1426,7 @@ public class DerbyDatabase implements IDatabase {
 		
 		PlayerModel toOut = new PlayerModel(health, lives, currentRoom);
 		toOut.setMaxHealth(maxHealth);
+		toOut.setId(id);
 		
 		EntityInventory playerInventory = this.GetPlayerInventory();
 		toOut.setInventory(playerInventory);
@@ -1437,8 +1435,9 @@ public class DerbyDatabase implements IDatabase {
 	}
 	
 	private EnemyModel loadEnemy(ResultSet resultSet) throws SQLException {
-		int index = 2;
+		int index = 1;
 		
+		int id = resultSet.getInt(index++);
 		double health = resultSet.getDouble(index++);
 		double maxHealth = resultSet.getDouble(index++);
 		int lives = resultSet.getInt(index++);
@@ -1448,6 +1447,7 @@ public class DerbyDatabase implements IDatabase {
 		
 		EnemyModel toOut = new EnemyModel(health, lives, currentRoom, name, description);
 		toOut.setMaxHealth(maxHealth);
+		toOut.setId(id);
 		
 		EntityInventory enemyInventory = this.GetEnemyInventoryByID(1 + (resultSet.getInt(1) << 1));
 		toOut.setInventory(enemyInventory);
@@ -1463,7 +1463,8 @@ public class DerbyDatabase implements IDatabase {
 		int x_position = resultSet.getInt(index++);
 		int y_position = resultSet.getInt(index++);
 		boolean has_entered_room = resultSet.getBoolean(index++);
-		Room toOut = new Room(id, name, description, x_position, y_position, has_entered_room);
+		String key = resultSet.getString(index++);
+		Room toOut = new Room(id, name, description, x_position, y_position, has_entered_room, key);
 		
 		return toOut;
 	}
@@ -1557,7 +1558,7 @@ public class DerbyDatabase implements IDatabase {
 						"create table itemTypes (" +
 								"	item_id int primary key" + 
 								"       generated always as identity (start with 1, increment by 1), " +									
-								"	name varchar(16), " +
+								"	name varchar(32), " +
 								"	description varchar(64) " +
 								")"
 						);
@@ -1620,7 +1621,7 @@ public class DerbyDatabase implements IDatabase {
 						+ "maxHealth double, "
 						+ "lives int, "
 						+ "currentRoom int, "
-						+ "name varchar(16), "
+						+ "name varchar(32), "
 						+ "description varchar(64)"
 						+ ")"
 						);
@@ -1677,7 +1678,7 @@ public class DerbyDatabase implements IDatabase {
 					"create table slotNames (" +
 							"   slot_id int primary key" +
 							"       generated always as identity (start with 1, increment by 1), " + 
-							"	slot_name varchar(16)" +
+							"	slot_name varchar(32)" +
 					")"
 				);
 				
@@ -1733,11 +1734,12 @@ public class DerbyDatabase implements IDatabase {
 						"Create table rooms ("
 						+ "room_id int primary key"
 						+ " generated always as identity (start with 1, increment by 1), "
-						+ "name varchar(16), "
+						+ "name varchar(32), "
 						+ "description varchar(64), "
 						+ "x_position int, "
 						+ "y_position int, "
-						+ "has_entered_room boolean"
+						+ "has_entered_room boolean, "
+						+ "room_key varchar(32)"
 						+ ")"
 						);
 				
@@ -1793,7 +1795,7 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					historystmt = conn.prepareStatement(
 					"create table GameHistory ("+
-					" printout varchar(32672))"
+					" printout varchar(16672))"
 					);
 					historystmt.executeUpdate();
 				} catch (SQLException sql){
@@ -1807,12 +1809,12 @@ public class DerbyDatabase implements IDatabase {
 				}
 				
 				
-				//GameHistory
+				//Found commands
 				PreparedStatement foundCommandstmt = null;
 				try {
 				    foundCommandstmt = conn.prepareStatement(
 				        "create table FoundCommands (" +
-				        "   CommandName varchar(32672)" +
+				        "   CommandName varchar(16672)" +
 				        ")"
 				    );
 				    foundCommandstmt.executeUpdate();
@@ -1831,8 +1833,10 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					statuseffects = conn.prepareStatement(
 				        "create table StatusEffects (" +
-				        "   StatusName varchar(32672)" +
-				        "   StatusDuration int"+
+				        "   status_id int primary key " + 
+				        "       generated always as identity (start with 1, increment by 1), " + 
+				        "   StatusName varchar(32), " +
+				        "   StatusDuration int, "+
 				        "   StatusDamage double"+
 				        ")"
 				    );
@@ -1911,11 +1915,12 @@ public class DerbyDatabase implements IDatabase {
 				
 				// if database already exists, reset it first
 				if (!isNewDatabase) {
+					resetTable("StatusEffects", "status_id", 1);
 					resetTable("connections", "room_id", 1);
 					resetTable("rooms", "room_id", 1);
-					resetTable("weaponSlots", "slot_num", 2);// reset dependencies first (inventory_source)
+					resetTable("weaponSlots", "slot_num", 1);// reset dependencies first (inventory_source)
 					resetTable("slotNames", "slot_id", 1);// reset dependencies first (slot_id)
-					resetTable("inventories", "inventory_id", 2);
+					resetTable("inventories", "inventory_id", 1);
 					resetTable("weaponTypes", "weapon_id", 1);
 					resetTable("itemTypes", "item_id", 1);// reset dependencies first (item_id)
 					resetTable("entities", "id", 1);
@@ -1945,12 +1950,15 @@ public class DerbyDatabase implements IDatabase {
 				
 				// INSERT WEAPONS
 				PreparedStatement insertWeapon = conn.prepareStatement(
-						"insert into weaponTypes (item_id, damage) values (?, ?)");
+						"insert into weaponTypes (item_id, damage, damage_type, crit_chance, status_effect) values (?, ?, ?, ?, ?)");
 				
 				try {
 					for (Weapon weapon : weaponList) {
 						insertWeapon.setInt(1, weapon.GetID());
 						insertWeapon.setDouble(2, weapon.GetDamage());
+						insertWeapon.setString(3, weapon.GetDamageType());
+						insertWeapon.setInt(4, weapon.GetCritChance());
+						insertWeapon.setString(5, weapon.GetStatusEffect());
 						insertWeapon.addBatch();
 					}
 
@@ -2061,7 +2069,7 @@ public class DerbyDatabase implements IDatabase {
 				
 
 				PreparedStatement insertRoomStatement = conn.prepareStatement(
-						"insert into rooms (name, description, x_position, y_position, has_entered_room) values (?, ?, ?, ?, ?)");
+						"insert into rooms (name, description, x_position, y_position, has_entered_room, room_key) values (?, ?, ?, ?, ?, ?)");
 						
 				
 				for(Room room : rooms) {
@@ -2070,6 +2078,7 @@ public class DerbyDatabase implements IDatabase {
 					insertRoomStatement.setInt(3, room.getX_Position());
 					insertRoomStatement.setInt(4, room.getY_Position());
 					insertRoomStatement.setBoolean(5, room.getHas_Entered_Room());
+					insertRoomStatement.setString(6, room.getRoom_key());
 					insertRoomStatement.executeUpdate();
 				}
 				
@@ -2132,6 +2141,11 @@ public class DerbyDatabase implements IDatabase {
 //		System.out.println("Success!");
 	}
 
+	public static void main(String[] args) {
+		DerbyDatabase db = new DerbyDatabase("test");
+		db.create();
+	}
+	
 	@Override
 	public void deleteDb(String dbName, String dblocation) {
 		// Set Derby system home if specified

@@ -15,23 +15,33 @@
 </head>
 <body>
 	<div class="monitor">
-		<div class="console">
-		    <div class="history-box">
-		        <c:forEach items="${gameHistory}" var="entry">
-		            <div class="history-item">${entry}</div>
-		        </c:forEach>
-		    </div>
+		<div id="console">
+			<div id="crt_content">
+		    	<div class="history-box">
+		        	<c:forEach items="${gameHistory}" var="entry">
+		    	        <div class="history-item">${entry}</div>
+			        </c:forEach>
+			    </div>
 		
-		    <form action="${pageContext.request.contextPath}/game" method="post" class="input-area" id="submission">
-		        <input type="text" name="userInput" placeholder="Enter your input...">
-		        <button type="submit">Submit</button>
-		    </form>
+		    	<form action="${pageContext.request.contextPath}/game" method="post" class="input-area" id="submission">
+		       		<input type="text" name="userInput" placeholder="Enter your input...">
+		       		<button type="submit">Submit</button>
+					<input type="hidden" id="crt_field" name="moniterIsOn" value="${moniterIsOn}">
+		    	</form>
+			</div>
 		</div>
-		<div class="buttons">
-			<button class="monitor-button" onclick="passed" style="display: none;">Clear Console</button>
-			<img src="${pageContext.request.contextPath}/recs/iPearDropShadow.png" class="ipear-logo">
+
+		<div class="bottom_row">
+			<div class="ipear_logo">
+                <img class="ipear_img" src="${pageContext.request.contextPath}/recs/iPearDropShadow.png">
+            </div>
+			
+			<div class="power_button">
+				<button id="power_button" onclick="clickPowerButton()"></button>
+			</div>
 		</div>
 	</div>
+
 	<div class=sticky-note-container>
 		<div class="sticky-note-3d">
           <div class="sticky-note-content">
@@ -44,7 +54,7 @@
 			</c:if>
 			
 			
-			<!-- Describe Group: Room-->
+			<!-- Describe Group: Room -->
 			<c:if test="${foundCommands.contains('describeGroup_room')}"><p>describe [</c:if>
 			<c:if test="${foundCommands.contains('describe_room')}">room</c:if>
 			<c:if test="${foundCommands.contains('describe_room') &&
@@ -65,7 +75,7 @@
 			<c:if test="${foundCommands.contains('describe_stats')}">stats</c:if>
 			<c:if test="${foundCommands.contains('describeGroup_attack')}">]</p></c:if>
 			
-			<!-- Describe Group: Items-->
+			<!-- Describe Group: Items -->
 			<c:if test="${foundCommands.contains('describeGroup_items')}"><p>describe [</c:if>
 			<c:if test="${foundCommands.contains('describe_items')}">items</c:if>
 			<c:if test="${foundCommands.contains('describe_items') &&
@@ -118,5 +128,13 @@
 			}, 1000);
 		</script>
 	</c:if>
+	<c:if test="${playHakeSound}">
+    <script>
+        window.addEventListener('load', function() {
+            new Audio('${pageContext.request.contextPath}/recs/hake-scream.mp3').play();
+            
+        });
+    </script>
+</c:if>
 </body>
 </html>

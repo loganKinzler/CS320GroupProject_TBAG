@@ -9,14 +9,14 @@ import javax.servlet.http.HttpSession;
 
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
 
-public class WelcomePageServlet extends HttpServlet {
+public class CreditsPageServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
 		DerbyDatabase db = new DerbyDatabase("test");
 		req.setAttribute("foundCommands", db.getFoundCommands());
 		
-		req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+		req.getRequestDispatcher("/_view/credits.jsp").forward(req, resp);
 	}
 	
 	@Override
@@ -29,16 +29,14 @@ public class WelcomePageServlet extends HttpServlet {
 		try {
 			// send somewhere else
 			switch (endpoint) {
-				case "play":
-					resp.sendRedirect("game");
-				return;
 				
-				case "credits":
-					resp.sendRedirect("credits");
+				
+				case "back":
+					resp.sendRedirect("index");
 				return;
 			}
 		} catch(Exception e) {}
 		
-		req.getRequestDispatcher("/_view/index.jsp").forward(req, resp);
+		req.getRequestDispatcher("/_view/credits.jsp").forward(req, resp);
 	}
 }

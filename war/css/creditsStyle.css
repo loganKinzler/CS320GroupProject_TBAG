@@ -13,7 +13,10 @@
 	 
 	 --font-size: 2rem;
 	 --hake-ascii-font-size: .45rem;
-	 --credits-ascii-font-size: .15rem;
+	 --credits-ascii-font-size: .13rem;
+	 --credits-ascii-line-spacing: .18rem;
+	 --credits-babock-font-size: .18rem;
+	 --credits-babcock-line-spacing: .23rem;
 	 --item-ascii-font-size: 1rem;
 }
 
@@ -158,24 +161,26 @@ button {
 
 .special_thanks{
 	display: flex;
-		gap: 100px;
-		flex-direction: row;
-		position: absolute;
-		left: 55%;
-		top: 105%;
-		transform: translate(-50%, -80%);
+	gap: 100px;
+	flex-direction: row;
+	position: absolute;
+	left: 55%;
+	top: 105%;
+	transform: translate(-50%, -80%);
 
-		height: 60%;
-		width: 80%;
+	height: 60%;
+	width: 80%;
 	
 }
 
-#evan{
+#face{
 	font-size: var(--credits-ascii-font-size);
+	line-height: var(--credits-ascii-line-spacing);
 }
 
 #babcock{
-	font-size: .20rem;
+	font-size: var(--credits-babock-font-size);
+	line-height: var(--credits-babcock-line-spacing);
 	
 }
 
@@ -186,7 +191,6 @@ button {
 
 #bab{
 	text-align: center;
-	padding-right: 250px;
 }
 
 

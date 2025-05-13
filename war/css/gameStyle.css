@@ -354,6 +354,26 @@ button {
 	background-repeat: no-repeat;
 }
 
+.crt_open::after {
+    content: "";
+    
+    display: block;
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+
+    background-image: url("../recs/CRT_Open.gif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    z-index: 2;
+}
+
 .crt_close::after {
     content: "";
     

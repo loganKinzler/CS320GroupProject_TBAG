@@ -211,10 +211,15 @@ public class GameEngineServlet extends HttpServlet {
         if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
             // Add user input to the game history
 
-        	LogsController.addToGameHistory(db, gameHistory, "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
+        	systemResponse =  "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput) + "<br>";// add user input to console (for user's reference)
             
             Action userAction = interpreter.ValidateInput(userInput);
-            systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
+            systemResponse += userAction.GetErrorMessage() == null? "" : userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
+            
+            if (userAction.IsValid())
+            	if (!userAction.GetMethod().equals("quit"))
+            		LogsController.addToGameHistory(db, gameHistory, systemResponse);
+            systemResponse = "";
             
             Map<String, Weapon> weaponSlots = player.getInventory().GetWeaponsAsSlots();
             

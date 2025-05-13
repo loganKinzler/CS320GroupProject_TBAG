@@ -18,7 +18,7 @@
 <body>
 	<div class="monitor">
 		<div id="console">
-			<div id="crt_content" class="crt_off">
+			<div id="crt_content">
 				<div class="title_card"><p>
 				-  The Green Light District  -
 				</p></div>
@@ -40,7 +40,7 @@
             </div>
 			
 			<div class="power_button_container">
-				<button id="power_button" type="button"></button>
+				<button id="power_button" type="button" onclick="clickPowerButton()"></button>
 			</div>
 		</div>
 	</div>

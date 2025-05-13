@@ -40,7 +40,7 @@ public class InitialData {
 				
 				Iterator<String> i = tuple.iterator();
 				
-				Item item = new Item(itemID, i.next(),i.next());
+				Item item = new Item(itemID, i.next(), i.next());
 				InitialData.itemTypes.add(item);
 			}
 		} finally {

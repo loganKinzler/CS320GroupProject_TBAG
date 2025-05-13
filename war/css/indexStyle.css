@@ -12,6 +12,7 @@
 	 --sticky-note-color: #FED800;
 	 
 	 --font-size: 2rem;
+	 --title-card-size: 3rem;
 	 --hake-ascii-font-size: .45rem;
 	 --item-ascii-font-size: 1rem;
 }
@@ -114,16 +115,16 @@ button {
 .title_card > p {
 	text-align: center;
 	word-spacing: pre;
-	font-size: var(--font-size);
+	font-size: var(--title-card-size);
 }
 
 .main_menu {
 	position: absolute;
 	left: 50%;
-	top: 60%;
+	top: 55%;
 	transform: translate(-50%, -50%);
 
-	height: 60%;
+	height: 45%;
 	width: 80%;
 }
 
@@ -131,7 +132,7 @@ button {
 	display: flex;
 	flex-direction: column;
 	
-	justify-content: space-around;
+	justify-content: space-between;
 	align-items: center;
 
 	height: 100%;
@@ -141,7 +142,7 @@ button {
 .main_menu > form > button {
 	position: inherit;
 
-	height: 20%;
+	height: 40%;
 	width: 100%;
 	
 	font-family: "VT323", monospace;
@@ -282,77 +283,5 @@ button {
     background-size: contain;
     background-clip: border-box;
 
-    z-index: 2;
-}
-
-.sticky-note-container {
-	pointer-events: none;
-	position: absolute;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    padding-bottom: 10%;
-    padding-right: 10%;
-    perspective: 1000px;
-  }
-
-.sticky-note-3d {
-    transform-style: preserve-3d;
-    transform-origin: top center;
-    animation: sway 4s ease-in-out infinite alternate;
-  }
-  
-@keyframes sway {
-    0%   { transform: rotateX(3deg) scaleY(1); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); }
-    10%  { transform: rotateX(3.5deg) scaleY(0.99); box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22); }
-    20%  { transform: rotateX(4.5deg) scaleY(0.985); box-shadow: 0 18px 35px rgba(0, 0, 0, 0.23); }
-    30%  { transform: rotateX(4deg) scaleY(0.99); box-shadow: 0 17px 33px rgba(0, 0, 0, 0.21); }
-    40%  { transform: rotateX(5deg) scaleY(0.975); box-shadow: 0 20px 38px rgba(0, 0, 0, 0.25); }
-    50%  { transform: rotateX(6deg) scaleY(0.98); box-shadow: 0 22px 40px rgba(0, 0, 0, 0.27); }
-    60%  { transform: rotateX(4.2deg) scaleY(0.982); box-shadow: 0 18px 35px rgba(0, 0, 0, 0.23); }
-    70%  { transform: rotateX(5.5deg) scaleY(0.97); box-shadow: 0 21px 39px rgba(0, 0, 0, 0.26); }
-    80%  { transform: rotateX(3.8deg) scaleY(0.99); box-shadow: 0 17px 33px rgba(0, 0, 0, 0.22); }
-    90%  { transform: rotateX(4.5deg) scaleY(0.985); box-shadow: 0 19px 36px rgba(0, 0, 0, 0.24); }
-    100% { transform: rotateX(3deg) scaleY(1); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2); }
-}
-  
-.sticky-note-content {
-    width: 300px;
-    aspect-ratio: 1/1;
-    background-color: var(--sticky-note-color);
-    padding: 1rem;
-    border-radius: 2px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-    position: relative;
-    overflow: hidden;
-    
-    font-family: "Shadows Into Light", cursive;
-  	font-weight: 400;
-  	font-style: normal;
-}
-
-.sticky-note-content::before {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 12%;
-    width: 100%;
-    background: linear-gradient(to top, rgba(255, 255, 255, 0.15), transparent);
-    pointer-events: none;
-    z-index: 1;
-}
-  
-.sticky-note-content::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 35%;
-    background: linear-gradient(to top, rgba(0,0,0,0.15), transparent);
-    pointer-events: none;
     z-index: 2;
 }

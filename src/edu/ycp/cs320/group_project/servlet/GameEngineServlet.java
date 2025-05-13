@@ -212,7 +212,7 @@ public class GameEngineServlet extends HttpServlet {
             Action userAction = interpreter.ValidateInput(userInput);
             systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
             
-            Map<String, Weapon> weaponSlots = player.getInventory().GetWeaponsAsSlots();
+            Map<String, Weapon> weaponSlots = db.GetPlayerInventory().GetWeaponsAsSlots();
             
             // action details here (strings for now, need more structure for true game)
             if (userAction.IsValid()) {

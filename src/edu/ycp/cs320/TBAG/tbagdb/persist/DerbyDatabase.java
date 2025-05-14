@@ -1796,7 +1796,7 @@ public class DerbyDatabase implements IDatabase {
 				try {
 					historystmt = conn.prepareStatement(
 					"create table GameHistory ("+
-					" printout varchar(16672))"
+					" printout varchar(32672))"
 					);
 					historystmt.executeUpdate();
 				} catch (SQLException sql){

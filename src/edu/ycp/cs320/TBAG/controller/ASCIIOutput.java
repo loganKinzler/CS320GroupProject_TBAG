@@ -6,11 +6,11 @@ import java.util.Scanner;
 import edu.ycp.cs320.group_project.servlet.GameEngineServlet;
 
 public class ASCIIOutput {
-	public static String profAsciiEasterEgg(GameEngineServlet servlet, String prof) {
+	public static String profAsciiEasterEgg(GameEngineServlet gameEngineServlet, String prof) {
     	System.out.println(prof);
     	String toOut = "";
     	try {
-    		InputStream in = servlet.getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
+    		InputStream in = gameEngineServlet.getServletContext().getResourceAsStream("/recs/" + prof + ".txt");
 			Scanner reader = new Scanner(in);
 			if (prof.equals("hake")) toOut += "<p class=\"hake-ascii-art\">";
 			else if (prof.equals("babcock")) toOut += "<p class=\"babcock-ascii-art\">";

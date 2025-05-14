@@ -56,7 +56,11 @@ public class EntityInventory extends Inventory {
 	}
 	
 	public Boolean WeaponIsEquiped(Weapon weapon) {return this.weapons.containsValue( weapon );}
-	public Boolean WeaponIsEquippedInSlot(String weaponSlot, Weapon weapon) {return this.weapons.get(weaponSlot).equals(weapon);}
+	public Boolean WeaponIsEquippedInSlot(String weaponSlot, Weapon weapon) {
+		if (weapon == null) return false;
+		if (this.weapons.get(weaponSlot) == null) return false;	
+		return this.weapons.get(weaponSlot).equals(weapon);
+	}
 	public Boolean WeaponSlotIsFull(String weaponSlot) {return this.weapons.containsKey( weaponSlot );}
 	public Boolean WeaponSlotIsEmpty(String weaponSlot) {return !this.WeaponSlotIsFull( weaponSlot );}
 	

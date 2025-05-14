@@ -735,7 +735,18 @@ public class CommandsController {
 			if (i != 0) responseOut += "<br>";
 			
 			if (player.getHealth() == 0) {
-				player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1));
+				if (player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1))) {
+					responseOut += String.format("You have died!<br>You have %d lives left.<br>Respawning...",
+							player.getLives());
+					db.UpdateEnemyRoomById(1, 1);
+					
+				// player has lives left
+				} else {
+					responseOut += String.format("You have died!<br>You have no lives left.<br>GAME OVER!",
+							player.getLives());
+					db.create();
+				}
+				
 				break;
 			}
 			

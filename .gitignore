@@ -4,6 +4,7 @@
 test-db/
 test.db/*
 derby.log
+/bin/*
 /bin/
 /test-bin/*
 /test-bin/

@@ -43,7 +43,7 @@ public class ItemDbTest {
 	
 	@Test
 	public void getItemIDTest() {
-		assertTrue(db.GetItemIDQuery("Ballpoint Pen", "It uses blue ink") == 3);
+		assertTrue(db.GetItemIDQuery("Flimsy Orange Key", "A 3D printed key made of orange filament") == 3);
 		assertTrue(db.GetItemIDQuery("Nonexistent Item", "I don't exist") == -1);
 	}
 	

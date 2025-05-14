@@ -133,6 +133,7 @@ public class InitialData {
 				
 				Iterator<String> i = tuple.iterator();
 				Integer inventorySource = Integer.parseInt(i.next());
+				System.out.println(inventorySource);
 				
 				// add new inventory
 				if (inventories.get(inventorySource) == null) {

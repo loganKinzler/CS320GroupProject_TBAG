@@ -24,9 +24,12 @@ import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
-import edu.ycp.cs320.group_project.servlet.*;
 
 public class GameEngineServlet extends HttpServlet {
+
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
 
 	@SuppressWarnings("unchecked")
@@ -63,12 +66,6 @@ public class GameEngineServlet extends HttpServlet {
         req.setAttribute("foundCommands", foundCommands);   
         SessionInfoController.sessionPlaySound(req, "playHakeSound");
         
-        Boolean combatLocked = (Boolean) session.getAttribute("combatLock");
-        if (combatLocked == null) {
-        	session.setAttribute("combatLock", false);
-        	combatLocked = false;
-        }
-        	
         int sudoStage = 0;
         if (session.getAttribute("sudoStage") != null) {
         	sudoStage = ((Integer) session.getAttribute("sudoStage"));
@@ -117,8 +114,6 @@ public class GameEngineServlet extends HttpServlet {
         
         PlayerController player = new PlayerController(playerModel);
         
-        Boolean combatLocked = (Boolean) session.getAttribute("combatLock");
-        if (combatLocked == null) combatLocked = false;
         
         // get found commands
         List<String> foundCommands = db.getFoundCommands();
@@ -169,174 +164,108 @@ public class GameEngineServlet extends HttpServlet {
         
         //Case for sudo easter egg (does not require input after initial stage so just goes anyway
         if (sudoStage > 0) {
-    		systemResponse = "";
-    		
-        	switch (sudoStage) {
-        	case 2:
-        		systemResponse = "<br><br>[INFO] Removing /etc...<br>";
-        		break;
-        	case 3:
-        		systemResponse = "[INFO] Removing /bin...<br>";
-        		break;
-        	case 4:
-        		systemResponse = "[INFO] Removing /home...<br>";
-        		break;
-        	case 5:
-        		systemResponse = "[INFO] Removing /reality...<br>";
-        		break;
-        	case 6:
-        		systemResponse = "[INFO] Removing /fourth_wall...<br>";
-        		break;
-        	case 7:
-        		systemResponse = "[ERROR] Failed to delete /player_conscience: Access Denied<br>";
-        		break;
-        	case 8:
-        		systemResponse = "[INFO] Corrupting game files...<br>";
-        		break;
-        	case 9:
-        		systemResponse = "<span class=\"ascii--art\">[INFO] Game integrity: 0%</span><br>";
-        		break;
-        	case 10:
-        		systemResponse = "<br>Segmentation fault (core melted)<br>";
-        		break;
-        	case 11:
-        		systemResponse = "[GLITCH] ░D░A░T░A░ ░C░O░R░R░U░P░T░E░D░. ░H░E░L░P░.";
-        		break;
-        	default:
-        		System.exit(0); //Closes the program (crashing breaks the illusion cause it throws an error. The only way to make this work is to close the program entirely)
-        		break;
-        	}
+        	systemResponse = CommandsController.sudoEasterEgg(sudoStage);
         	LogsController.addToGameHistory(db, gameHistory, systemResponse);
         }
         
         if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
             // Add user input to the game history
 
-        	systemResponse =  "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput) + "<br>";// add user input to console (for user's reference)
+        	LogsController.addToGameHistory(db, gameHistory, "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
             
             Action userAction = interpreter.ValidateInput(userInput);
-            systemResponse += userAction.GetErrorMessage() == null? "" : userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
-            if (userAction.IsValid())
-            	if (!userAction.GetMethod().equals("quit"))
-            		LogsController.addToGameHistory(db, gameHistory, systemResponse);
-            systemResponse = "";
-            Map<String, Weapon> weaponSlots = db.GetPlayerInventory().GetWeaponsAsSlots();
+            systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
+            
+            Map<String, Weapon> weaponSlots = player.getInventory().GetWeaponsAsSlots();
             
             // action details here (strings for now, need more structure for true game)
             if (userAction.IsValid()) {
             	ArrayList<String> params = userAction.GetParams();
             	
-            	
-            	// lock player into combat (force them to attack)
-            	if (combatLocked && !(
-            			userAction.GetMethod().equals("attack") ||
-            			userAction.GetMethod().equals("describe") ||
-            			userAction.GetMethod().equals("show map") ||
-            			userAction.GetMethod().equals("quit") ||
-            			userAction.GetMethod().equals("clear chat"))) {
-            		
-            		systemResponse = "I should porbably focus on the enemies in front of me...";
-            	} else {
-            		switch (userAction.GetMethod()) {
-            			//sudo rm -rf \ easter egg
-            			case "sudoEasterEgg" :
-	        				systemResponse = "Warning: executing 'rm -rf /' is extremely dangerous.<br>"
-	        						+ "Proceeding anyway...<br>"
-	        						+ "Deleting system...";
-	        				sudoStage = 1;
-	        				session.setAttribute("sudoStage", sudoStage);
-	        	        break;
+            	switch (userAction.GetMethod()) {
+        			//sudo rm -rf \ easter egg
+	        		case "sudoEasterEgg" :
+	        			systemResponse = "Warning: executing 'rm -rf /' is extremely dangerous.<br>"
+	        					+ "Proceeding anyway...<br>"
+	        					+ "Deleting system...";
+	        			sudoStage = 1;
+	        	        session.setAttribute("sudoStage", sudoStage);
+        			break;
         			
-	        			case "quit":
-	        				resp.sendRedirect("index");
+	        		case "quit":
+	        			resp.sendRedirect("index");
 	        			return;
         			
-	        			//hake easter egg test
-	        			case "hakeTest" :
-	        				systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
-	        				session.setAttribute("playHakeSound", true);
-	        			break;
-	        			case "babcockTest":
-	        				systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
-	        			break;
-	        			case "newSave":
-	        				db = new DerbyDatabase("test");
-	        				db.create();
-	        				systemResponse = "Creating new save...";
-	        			break;
-	        			case "clearChat":
-	        				db.clearGameHistory();
-	        				gameHistory.clear();
-	        				LogsController.addToGameHistory(db, gameHistory, "Chat logs cleared...");
-	        			break;
-	        			case "showMap":
-	        				systemResponse = MapController.modularMakeMap(db);
-	        				if (!foundCommands.contains("showMap")) LogsController.addToFoundCommands(db,foundCommands,"showMap");
-	        			break;
-	        			case "mirrorEasterEgg":
-	        				EntityInventory inv = db.GetPlayerInventory(); //Get player inventory
-	        				
-	        				boolean hasMirror = (inv.GetItemByName("mirror") != null);
-	        				boolean hasCamera = (inv.GetItemByName("camera") != null);
-	        				
-	        				System.out.println(hasMirror + ", " + hasCamera);
-	        				
-	        				String output = "You do not have the required items.";
-	        				if (hasMirror && hasCamera) {
-	        					output = ASCIIOutput.profAsciiEasterEgg(this, "hake");
-	        					session.setAttribute("playHakeSound", true);
-	        					player.getInventory().ExtractItem(inv.GetItemByName("Mirror"));
-	        					db.UpdatePlayerInventory(player.getInventory());
-	        					//new Item(999, "Broken Mirror", "It shattered into a million teeny tiny bits...")
-	        					//code to explicitly put broken mirror in player inv through db (wait for logang)
-	        				}
-	        				systemResponse = output;
-	        				systemResponse += "Your mirror broke...";
-	        			break;
+        			//hake easter egg test
+	        		case "hakeTest" :
+	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+	        			session.setAttribute("playHakeSound", true);
+	        		break;
+	        		case "babcockTest":
+	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
+	        		break;
+	        		case "newSave":
+	        			db = new DerbyDatabase("test");
+	        			db.create();
+	        			systemResponse = "Creating new save...";
+	        		break;
+	        		case "clearChat":
+	        			db.clearGameHistory();
+	        			gameHistory.clear();
+	        			LogsController.addToGameHistory(db, gameHistory, "Chat logs cleared...");
+	        		break;
+	        		case "showMap":
+	        			systemResponse = MapController.modularMakeMap(db);
+	        			if (!foundCommands.contains("showMap")) LogsController.addToFoundCommands(db,foundCommands,"showMap");
+	        		break;
+	        		case "mirrorEasterEgg":
+	        			systemResponse = CommandsController.mirrorEasterEgg(this, session, db, player, systemResponse);
+	        		break;
             	
-	        			// TYPE 1 COMMANDS:
-	        			case "move":
-            				systemResponse = CommandsController.moveCommand(db, foundCommands, params, rooms, player, systemResponse);
-            			break;
+            		// TYPE 1 COMMANDS:
+            		case "move":
+            			systemResponse = CommandsController.moveCommand(db, foundCommands, params, rooms, player, systemResponse);
+            		break;
             		
-            			//TYPE 6 COMMANDS
-            			case "use":
-            				systemResponse = CommandsController.useCommand(db, foundCommands, params, rooms, systemResponse, player);
-            			break;
-            		
-            			// TYPE 3 COMMANDS
-            			case "pickup":
-            				systemResponse = CommandsController.pickupCommand(this, db, rooms, foundCommands, params, gameHistory, player, systemResponse);
-            			break;
-            		
-            			case "drop":
-            				systemResponse = CommandsController.dropCommand(db, foundCommands, params, connections, player, systemResponse);
-            			break;
-            		
-            			case "equip":
-            				systemResponse = CommandsController.equipCommand(db, foundCommands, params, player, systemResponse);
-            			break;
-            		
-            			case "unequip":
-            				weaponSlots = player.getInventory().GetWeaponsAsSlots();
-            				systemResponse = CommandsController.unequipCommand(db, player, foundCommands, params, weaponSlots, systemResponse);
-            			break;
-            		
-            			// DESCRIBE COMMANDS
-            			case "describe":
-            				systemResponse = CommandsController.describeCommand(db, params, foundCommands, player, rooms, systemResponse);
-            			break;
-            		
-            			// TYPE 3 COMMANDS
-            			case "attack":
-            				systemResponse = CommandsController.attackCommand(db, userAction, foundCommands, params, weaponSlots, rooms, player, systemResponse);
-            				combatLocked = !CommandsController.allEnemiesAreDead(db, rooms, player);
-            			break;
+            		//TYPE 6 COMMANDS
+            		case "use":
 
-            			default:
-            				systemResponse = String.format("User inputted valid command of type: %s<br>", userAction.GetMethod());
-            			break;
-            		}
+            			systemResponse = CommandsController.useCommand(db, foundCommands, params, rooms, systemResponse, player);
+
+            		break;
+            		
+            		// TYPE 3 COMMANDS
+            		case "pickup":
+
+            			systemResponse = CommandsController.pickupCommand(this, db, rooms, foundCommands, params, gameHistory, player, systemResponse);
+            		break;
+            		
+            		case "drop":
+            			systemResponse = CommandsController.dropCommand(db, foundCommands, params, connections, player, systemResponse);
+            		break;
+            		
+            		case "equip":
+            			systemResponse = CommandsController.equipCommand(db, foundCommands, params, player, systemResponse);
+            		break;
+            		
+            		case "unequip":
+            			weaponSlots = player.getInventory().GetWeaponsAsSlots();
+            			systemResponse = CommandsController.unequipCommand(db, player, foundCommands, params, weaponSlots, systemResponse);
+            		break;
+            		
+            		// DESCRIBE COMMANDS
+            		case "describe":
+            			systemResponse = CommandsController.describeCommand(db, params, foundCommands, player, rooms, systemResponse);
+            		break;
+            		
+            		// TYPE 3 COMMANDS
+            		case "attack":
+            			systemResponse = CommandsController.attackCommand(db, userAction, foundCommands, params, weaponSlots, rooms, player, systemResponse);
+            		break;
+            		
+            		default:
+            			systemResponse = String.format("User inputted valid command of type: %s<br>", userAction.GetMethod());
+            		break;
             	}
             }
 
@@ -349,9 +278,7 @@ public class GameEngineServlet extends HttpServlet {
             }
         }
 
-        System.out.println(String.format("The player is%s combat locked.", combatLocked? "" : "n't"));
         // Set the game history as a request attribute for the JSP
-        session.setAttribute("combatLock", combatLocked);
         session.setAttribute("player", playerModel);
         session.setAttribute("rooms", rooms);
         req.setAttribute("gameHistory", gameHistory);

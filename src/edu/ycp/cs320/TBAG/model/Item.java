@@ -16,6 +16,12 @@ public class Item {
 		this.description = description;
 	}
 	
+	public Item(Integer id) {
+		this.itemID = id;
+		this.name = "";
+		this.description = "";
+	}
+	
 	
 	// getters / setters
 	public Integer GetID() {return this.itemID;}

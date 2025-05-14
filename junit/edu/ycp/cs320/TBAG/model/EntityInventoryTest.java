@@ -13,6 +13,7 @@ public class EntityInventoryTest {
 	private Weapon baseballBat = new Weapon(3, "Baseball Bat", "Swing, batta-batta! | Deals 5 dmg", 5.0);
 	private Weapon umbrella = new Weapon(4, "Umbrella", "Keeps you dry. | Deals 2 dmg", 2.0);
 	
+	
 	@Before
 	public void SetUp() {
 		this.model = new EntityInventory();
@@ -20,6 +21,8 @@ public class EntityInventoryTest {
 		this.model.AddItem(hotChocolate);
 		this.model.AddItems(moss, 5);
 		this.model.EquipWeapon("Left Hand", baseballBat);
+		
+		
 	}
 
 	@Test
@@ -51,7 +54,7 @@ public class EntityInventoryTest {
 		this.model.DropWeaponInSlot("Left Hand");
 		assertTrue(this.model.WeaponSlotIsEmpty("Left Hand"));
 	}
-	
+	 
 	@Test public void WeaponIsEquipedTest() {assertTrue( this.model.WeaponIsEquiped(baseballBat) );}
 	@Test public void WeaponIsEquipedInSlotTest() {assertTrue( this.model.WeaponIsEquippedInSlot("Left Hand", baseballBat) );} 
 	@Test public void SlotIsFullTest() {assertTrue( this.model.WeaponSlotIsFull("Left Hand") );}
@@ -61,4 +64,6 @@ public class EntityInventoryTest {
 	@Test public void ContainsExactlyTest() {assertTrue( this.model.ContainsExactly(baseballBat, 0) );}
 	@Test public void ContainsLessThanTest() {assertTrue( this.model.ContainsLessThan(umbrella, 3) );}
 	@Test public void ContainsMoreThanTest() {assertTrue( this.model.ContainsMoreThan(moss, 3) );}
+	
+	  
 }

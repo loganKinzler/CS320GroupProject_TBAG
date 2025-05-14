@@ -24,12 +24,9 @@ import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.tbagdb.persist.DerbyDatabase;
+import edu.ycp.cs320.group_project.servlet.*;
 
 public class GameEngineServlet extends HttpServlet {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	@SuppressWarnings("unchecked")
@@ -66,6 +63,12 @@ public class GameEngineServlet extends HttpServlet {
         req.setAttribute("foundCommands", foundCommands);   
         SessionInfoController.sessionPlaySound(req, "playHakeSound");
         
+        Boolean combatLocked = (Boolean) session.getAttribute("combatLock");
+        if (combatLocked == null) {
+        	session.setAttribute("combatLock", false);
+        	combatLocked = false;
+        }
+        	
         int sudoStage = 0;
         if (session.getAttribute("sudoStage") != null) {
         	sudoStage = ((Integer) session.getAttribute("sudoStage"));
@@ -114,6 +117,8 @@ public class GameEngineServlet extends HttpServlet {
         
         PlayerController player = new PlayerController(playerModel);
         
+        Boolean combatLocked = (Boolean) session.getAttribute("combatLock");
+        if (combatLocked == null) combatLocked = false;
         
         // get found commands
         List<String> foundCommands = db.getFoundCommands();
@@ -207,623 +212,131 @@ public class GameEngineServlet extends HttpServlet {
         if (userInput != null && !userInput.trim().isEmpty() && sudoStage == 0) {
             // Add user input to the game history
 
-        	LogsController.addToGameHistory(db, gameHistory, "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput));// add user input to console (for user's reference)
+        	systemResponse =  "C:&bsol;Users&bsol;exampleUser&gt; " + ((userInput == null)? "": userInput) + "<br>";// add user input to console (for user's reference)
             
             Action userAction = interpreter.ValidateInput(userInput);
-            systemResponse = userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
-            
+            systemResponse += userAction.GetErrorMessage() == null? "" : userAction.GetErrorMessage();// if the userAction isn't valid, it stays as the error msg
+            if (userAction.IsValid())
+            	if (!userAction.GetMethod().equals("quit"))
+            		LogsController.addToGameHistory(db, gameHistory, systemResponse);
+            systemResponse = "";
             Map<String, Weapon> weaponSlots = db.GetPlayerInventory().GetWeaponsAsSlots();
             
             // action details here (strings for now, need more structure for true game)
             if (userAction.IsValid()) {
             	ArrayList<String> params = userAction.GetParams();
             	
-            	switch (userAction.GetMethod()) {
-        			//sudo rm -rf \ easter egg
-	        		case "sudoEasterEgg" :
-	        			systemResponse = "Warning: executing 'rm -rf /' is extremely dangerous.<br>"
-	        					+ "Proceeding anyway...<br>"
-	        					+ "Deleting system...";
-	        			sudoStage = 1;
-	        	        session.setAttribute("sudoStage", sudoStage);
-        			break;
+            	
+            	// lock player into combat (force them to attack)
+            	if (combatLocked && !(
+            			userAction.GetMethod().equals("attack") ||
+            			userAction.GetMethod().equals("describe") ||
+            			userAction.GetMethod().equals("show map") ||
+            			userAction.GetMethod().equals("quit") ||
+            			userAction.GetMethod().equals("clear chat"))) {
+            		
+            		systemResponse = "I should porbably focus on the enemies in front of me...";
+            	} else {
+            		switch (userAction.GetMethod()) {
+            			//sudo rm -rf \ easter egg
+            			case "sudoEasterEgg" :
+	        				systemResponse = "Warning: executing 'rm -rf /' is extremely dangerous.<br>"
+	        						+ "Proceeding anyway...<br>"
+	        						+ "Deleting system...";
+	        				sudoStage = 1;
+	        				session.setAttribute("sudoStage", sudoStage);
+	        	        break;
         			
-	        		case "quit":
-	        			resp.sendRedirect("index");
+	        			case "quit":
+	        				resp.sendRedirect("index");
 	        			return;
         			
-        			//hake easter egg test
-	        		case "hakeTest" :
-	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
-	        			session.setAttribute("playHakeSound", true);
-	        		break;
-	        		case "babcockTest":
-	        			systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
-	        		break;
-	        		case "newSave":
-	        			db = new DerbyDatabase("test");
-	        			db.create();
-	        			systemResponse = "Creating new save...";
-	        		break;
-	        		case "clearChat":
-	        			db.clearGameHistory();
-	        			gameHistory.clear();
-	        			LogsController.addToGameHistory(db, gameHistory, "Chat logs cleared...");
-	        		break;
-	        		case "showMap":
-	        			systemResponse = MapController.modularMakeMap(db);
-	        			if (!foundCommands.contains("showMap")) LogsController.addToFoundCommands(db,foundCommands,"showMap");
-	        		break;
-	        		case "mirrorEasterEgg":
-	        			EntityInventory inv = db.GetPlayerInventory(); //Get player inventory
-	        			
-	        			boolean hasMirror = (inv.GetItemByName("mirror") != null);
-	        			boolean hasCamera = (inv.GetItemByName("camera") != null);
-	        			
-	        			System.out.println(hasMirror + ", " + hasCamera);
-	        			
-	        			String output = "You do not have the required items.";
-	        			if (hasMirror && hasCamera) {
-	        				output = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+	        			//hake easter egg test
+	        			case "hakeTest" :
+	        				systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "hake");
 	        				session.setAttribute("playHakeSound", true);
-	        				player.getInventory().ExtractItem(inv.GetItemByName("Mirror"));
-	        				db.UpdatePlayerInventory(player.getInventory());
-	        				//new Item(999, "Broken Mirror", "It shattered into a million teeny tiny bits...")
-	        				//code to explicitly put broken mirror in player inv through db (wait for logang)
-	        			}
-	        			systemResponse = output;
-	        			systemResponse += "Your mirror broke...";
-	        		break;
+	        			break;
+	        			case "babcockTest":
+	        				systemResponse = ASCIIOutput.profAsciiEasterEgg(this, "babcock");
+	        			break;
+	        			case "newSave":
+	        				db = new DerbyDatabase("test");
+	        				db.create();
+	        				systemResponse = "Creating new save...";
+	        			break;
+	        			case "clearChat":
+	        				db.clearGameHistory();
+	        				gameHistory.clear();
+	        				LogsController.addToGameHistory(db, gameHistory, "Chat logs cleared...");
+	        			break;
+	        			case "showMap":
+	        				systemResponse = MapController.modularMakeMap(db);
+	        				if (!foundCommands.contains("showMap")) LogsController.addToFoundCommands(db,foundCommands,"showMap");
+	        			break;
+	        			case "mirrorEasterEgg":
+	        				EntityInventory inv = db.GetPlayerInventory(); //Get player inventory
+	        				
+	        				boolean hasMirror = (inv.GetItemByName("mirror") != null);
+	        				boolean hasCamera = (inv.GetItemByName("camera") != null);
+	        				
+	        				System.out.println(hasMirror + ", " + hasCamera);
+	        				
+	        				String output = "You do not have the required items.";
+	        				if (hasMirror && hasCamera) {
+	        					output = ASCIIOutput.profAsciiEasterEgg(this, "hake");
+	        					session.setAttribute("playHakeSound", true);
+	        					player.getInventory().ExtractItem(inv.GetItemByName("Mirror"));
+	        					db.UpdatePlayerInventory(player.getInventory());
+	        					//new Item(999, "Broken Mirror", "It shattered into a million teeny tiny bits...")
+	        					//code to explicitly put broken mirror in player inv through db (wait for logang)
+	        				}
+	        				systemResponse = output;
+	        				systemResponse += "Your mirror broke...";
+	        			break;
             	
-            		// TYPE 1 COMMANDS:
-            		case "move":
+	        			// TYPE 1 COMMANDS:
+	        			case "move":
+            				systemResponse = CommandsController.moveCommand(db, foundCommands, params, rooms, player, systemResponse);
+            			break;
+            		
+            			//TYPE 6 COMMANDS
+            			case "use":
+            				systemResponse = CommandsController.useCommand(db, foundCommands, params, rooms, systemResponse, player);
+            			break;
+            		
+            			// TYPE 3 COMMANDS
+            			case "pickup":
+            				systemResponse = CommandsController.pickupCommand(this, db, rooms, foundCommands, params, gameHistory, player, systemResponse);
+            			break;
+            		
+            			case "drop":
+            				systemResponse = CommandsController.dropCommand(db, foundCommands, params, connections, player, systemResponse);
+            			break;
+            		
+            			case "equip":
+            				systemResponse = CommandsController.equipCommand(db, foundCommands, params, player, systemResponse);
+            			break;
+            		
+            			case "unequip":
+            				weaponSlots = player.getInventory().GetWeaponsAsSlots();
+            				systemResponse = CommandsController.unequipCommand(db, player, foundCommands, params, weaponSlots, systemResponse);
+            			break;
+            		
+            			// DESCRIBE COMMANDS
+            			case "describe":
+            				systemResponse = CommandsController.describeCommand(db, params, foundCommands, player, rooms, systemResponse);
+            			break;
+            		
+            			// TYPE 3 COMMANDS
+            			case "attack":
+            				systemResponse = CommandsController.attackCommand(db, userAction, foundCommands, params, weaponSlots, rooms, player, systemResponse);
+            				combatLocked = !CommandsController.allEnemiesAreDead(db, rooms, player);
+            			break;
 
-            			systemResponse = CommandsController.moveCommand(db, foundCommands, params, rooms, player, systemResponse);
-//            			if (!foundCommands.contains("move")) addToFoundCommands(db,foundCommands,"move");
-//            			
-//            			//Integer nextRoom = rooms.nextConnection(player.getCurrentRoomIndex(),
-//            					//params.get(0));
-//            			//System.out.println(player.getCurrentRoomIndex());
-//            			//boolean doesconnectionexist = rooms.get(player.getCurrentRoomIndex()).doesKeyExist(params.get(0));
-//            			Integer nextRoom = null;
-//            			
-//            			
-//            				nextRoom = rooms.get(player.getCurrentRoomIndex() - 1).getConnectedRoom(params.get(0));
-//            				//for now the room will be null if it doesn't exist or is locked
-//            				if(nextRoom <= 0) {
-//            					nextRoom = null;
-//            				}
-//            			
-//            			if (nextRoom == null) {
-//            				systemResponse = String.format("The current room doesn't have a room %s of it.",
-//            						params.get(0));
-//            				break;
-//            			}
-//            			
-//            			player.setCurrentRoomIndex(nextRoom);
-//            			db.UpdatePlayerRoom(player.getCurrentRoomIndex());
-//            			
-//            			//These used to be offset by 1
-//            			String short_description = rooms.get(nextRoom - 1).getShortRoomDescription();
-//            			String long_description = rooms.get(nextRoom - 1).getLongRoomDescription();
-//            			systemResponse = String.format("Moving %s...<br><br>Entered %s.<br>%s",
-//            					params.get(0),
-//            					short_description,
-//            					long_description);
-
-            		break;
-            		
-            		//TYPE 6 COMMANDS
-            		case "use":
-
-            			systemResponse = CommandsController.useCommand(db, foundCommands, params, rooms, systemResponse, player);
-//            			if (!foundCommands.contains("use")) LogsController.addToFoundCommands(db,foundCommands,"use");
-//            			
-//            			systemResponse = String.format("Used %s...", params.get(0));
-
-            		break;
-            		
-            		// TYPE 3 COMMANDS
-            		case "pickup":
-
-            			systemResponse = CommandsController.pickupCommand(this, db, rooms, foundCommands, params, gameHistory, player, systemResponse);
-//            			
-//            			if (!foundCommands.contains("pickup")) addToFoundCommands(db,foundCommands,"pickup");
-//            			
-//            			systemResponse = String.format("Picking up %s...<br><br>", params.get(1));
-//            			
-//            			Integer pickupQuantity;
-//            			if (params.get(0).equals("all")) pickupQuantity = Integer.MAX_VALUE;
-//            			else pickupQuantity = Integer.parseInt(params.get(0));
-//            			
-//            			// pickup all items
-//            			if (params.get(0).equals("all") && params.get(1).equals("items")) {
-//            				
-//            				
-//            				Set<Item> roomInventoryKeys = new HashSet<Item>();
-//            				roomInventoryKeys.addAll(rooms.get(player.getCurrentRoomIndex() - 1).getItems().keySet());            			
-//            				if (roomInventoryKeys.isEmpty()){
-//                				systemResponse = String.format("This room does not contain any items to pickup.<br>");
-//                				break;
-//                			}
-//            				
-//            				for (Item roomItem : roomInventoryKeys) {
-//            					Integer itemQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex() - 1), roomItem, pickupQuantity);
-//                    			systemResponse += String.format("Picked up %d %s<br>",
-//                    					itemQuantity, roomItem.GetName());
-//            				}
-//            				
-//            				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
-//            				db.UpdatePlayerInventory(player.getInventory());
-//            				break;
-//            			}
-//            			
-//            			Item pickupItem = db.ItemsByNameQuery(params.get(1));
-//            			if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
-//            				systemResponse = String.format("This room does not contain an item named %s.<br>",
-//            						params.get(1));
-//            				break;
-//            			}
-//            			
-//            			Integer roomQuantity = player.PickUp(rooms.get(player.getCurrentRoomIndex() - 1), pickupItem, pickupQuantity);
-//            			systemResponse += String.format("Picked up %d %s<br>",
-//            					roomQuantity, params.get(1));
-//            			
-//        				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
-//        				db.UpdatePlayerInventory(player.getInventory());
-
-            		break;
-            		
-            		case "drop":
-            			systemResponse = CommandsController.dropCommand(db, foundCommands, params, connections, player, systemResponse);
-//            			
-//            			if (!foundCommands.contains("drop")) addToFoundCommands(db,foundCommands,"drop");
-//            			
-//            			systemResponse = String.format("Dropping %s...<br><br>", params.get(1));
-//            			
-//            			Integer dropQuantity;
-//            			if (params.get(0).equals("all")) dropQuantity = Integer.MAX_VALUE;
-//            			else dropQuantity = Integer.parseInt(params.get(0));
-//            			
-//            			// pickup all items
-//            			if (params.get(0).equals("all") && params.get(1).equals("items")) {
-//            				
-//            				Set<Item> playerInventoryKeys = new HashSet<Item>();
-//            				playerInventoryKeys.addAll(player.getInventory().GetItems().keySet());
-//            				
-//            				if (playerInventoryKeys.isEmpty()){
-//                				systemResponse = String.format("The player does not have any items to drop.<br>");
-//                				break;
-//                			}
-//            				
-//            				for (Item playerItem : playerInventoryKeys) {
-//            					Integer itemQuantity = player.Drop(
-//            							rooms.get(player.getCurrentRoomIndex() - 1),
-//            							playerItem, dropQuantity);
-//            					
-//                    			systemResponse += String.format("Dropped %d %s<br>",
-//                    					itemQuantity, playerItem.GetName());
-//            				}
-//            				
-//            				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
-//            				db.UpdatePlayerInventory(player.getInventory());
-//            				break;
-//            			}
-//            			
-//            			Item dropItem = player.getInventory().GetItemByName(params.get(1));
-//            			if (dropItem == null) {
-//            				systemResponse = String.format("Your inventory does not contain an item named %s.<br>",
-//            						params.get(1));
-//            				break;
-//            			}
-//            			
-//            			Integer playerQuantity = player.Drop(
-//            					rooms.get(player.getCurrentRoomIndex() - 1),
-//            					dropItem, dropQuantity);
-//            			
-//            			systemResponse += String.format("Dropped %d %s<br>",
-//            					playerQuantity, params.get(1));
-//            			
-//        				db.UpdateRoomInventory(player.getCurrentRoomIndex(), rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory());
-//        				db.UpdatePlayerInventory(player.getInventory());
-            		break;
-            		
-            		case "equip":
-            			systemResponse = CommandsController.equipCommand(db, foundCommands, params, player, systemResponse);
-//            			
-//            			if (!foundCommands.contains("equip")) addToFoundCommands(db,foundCommands,"equip");
-//            			
-//            			systemResponse = String.format("Equipping %s...<br><br>", params.get(0));
-//            			
-//            			
-//            			Weapon equipItem = (Weapon) player.getInventory().GetWeaponByName(params.get(0));
-//            			if (equipItem == null) {
-//            				systemResponse = String.format("The player does not have a weapon named %s.<br>",
-//            						params.get(0));
-//            				break;
-//            			}
-//            			
-//            			String weaponSlot = "";
-//               			for (String word : params.get(1).split(" "))
-//               				weaponSlot += word.substring(0, 1).toUpperCase() + word.substring(1) + " ";
-//               			weaponSlot = weaponSlot.trim();
-//            			
-//            			if (!EntityInventory.WeaponSlots.contains(weaponSlot)) {
-//            				systemResponse = String.format("The player does not have a weapon slot named %s.<br>",
-//            						params.get(1));
-//            				break;
-//            			}
-//            			
-//            			player.getInventory().ExtractItem(equipItem);
-//            			player.getInventory().EquipWeapon(weaponSlot, equipItem);
-//            			
-//            			systemResponse += String.format("Equipped %s into %s.<br>",
-//            					params.get(0), weaponSlot);
-//            			
-//            			for (Item i : player.getInventory().GetAllItems().keySet()) {
-//            				System.out.println(i.GetName());
-//            			}
-//            			
-//            			db.UpdatePlayerInventory(player.getInventory());
-            		break;
-            		
-            		case "unequip":
-            			weaponSlots = player.getInventory().GetWeaponsAsSlots();
-            			systemResponse = CommandsController.unequipCommand(db, player, foundCommands, params, weaponSlots, systemResponse);
-//            			String unequipName = "";
-//            			
-//            			// make camel case
-//            			for (String word : params.get(0).split(" "))
-//            				unequipName += word.substring(0, 1).toUpperCase() + word.substring(1) + " ";
-//            			unequipName = unequipName.trim();
-//            			
-//            			// using slot name
-//            			if (weaponSlots.containsKey(unequipName)) {
-//            				if (!foundCommands.contains("unequip")) LogsController.addToFoundCommands(db,foundCommands,"unequip");
-//            				if (!foundCommands.contains("unequip_slot")) LogsController.addToFoundCommands(db,foundCommands,"unequip_slot");
-//            				
-//            				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
-//            				
-//            				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
-//            						unequippedWeapon.GetName(), params.get(0));
-//            				
-//            				db.UpdatePlayerInventory(player.getInventory());
-//            				break;
-//            			}
-//            			
-//            			// no weapon in slot
-//            			if (EntityInventory.WeaponSlots.contains(unequipName)) {
-//            				if (!foundCommands.contains("unequip")) LogsController.addToFoundCommands(db,foundCommands,"unequip");
-//            				if (!foundCommands.contains("unequip_slot")) LogsController.addToFoundCommands(db,foundCommands,"unequip_slot");
-//            				
-//            				systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
-//            						params.get(0));
-//        					break;
-//            			}
-//            			
-//            			// name could be the name of a weapon
-//        				for (String slotName : weaponSlots.keySet()) {
-//        					if (weaponSlots.get(slotName).GetName().toLowerCase().equals(unequipName)) {
-//        						unequipName = slotName;
-//        						break;
-//        					}
-//        				}
-//        				
-//        				// using weapon name
-//        				if (weaponSlots.containsKey(unequipName)) {
-//        					if (!foundCommands.contains("unequip")) LogsController.addToFoundCommands(db,foundCommands,"unequip");
-//        					if (!foundCommands.contains("unequip_weapon")) LogsController.addToFoundCommands(db,foundCommands,"unequip_weapon");
-//        					
-//            				Weapon unequippedWeapon = player.getInventory().UnequipWeaponInSlot(unequipName);
-//            				
-//            				systemResponse = String.format("Unequipping %s from %s...<br><br>", 
-//            						unequippedWeapon.GetName(), params.get(0));
-//            				
-//            				db.UpdatePlayerInventory(player.getInventory());
-//            				break;
-//        				}
-//            			
-//            			systemResponse = String.format("There is no weapon equipped or slot named '%s'.",
-//            					params.get(0));
-            		break;
-            		
-            		// DESCRIBE COMMANDS
-            		case "describe":
-            			systemResponse = CommandsController.describeCommand(db, params, foundCommands, player, rooms, systemResponse);
-//            			switch (params.get(0)) {
-//            				case "room":
-//            					if (!foundCommands.contains("describeGroup_room")) LogsController.addToFoundCommands(db,foundCommands,"describeGroup_room");
-//            					if (!foundCommands.contains("describe_room")) LogsController.addToFoundCommands(db,foundCommands,"describe_room");
-//            					
-////            					System.out.println(db.GetPlayer().getCurrentRoomIndex());
-//            					systemResponse = String.format("Describing room...<br><br>%s<br>%s",
-//                    					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getShortRoomDescription(),
-//                    					rooms.get(db.GetPlayer().getCurrentRoomIndex() - 1).getLongRoomDescription());
-//            				break;
-//            				
-//            				//  [######--]
-//            				
-//            				case "stats":
-//            					if (!foundCommands.contains("describeGroup_attack")) LogsController.addToFoundCommands(db,foundCommands,"attack");
-//            					if (!foundCommands.contains("describe_stats")) LogsController.addToFoundCommands(db,foundCommands,"describe_stats");
-//            					
-//            					Integer healthBarSize = 10;
-//            					Double lifeRatio = player.getHealth() / player.getMaxHealth();
-//            					Integer healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
-//            					
-//            					systemResponse = String.format("Describing stats...<br><br>Lives: %d<br>Health: [%s%s] (%.1f / %.1f)",
-//            							player.getLives(),
-//            							repeatString("#", healthBarLength),
-//										repeatString("-", healthBarSize - healthBarLength),
-//										player.getHealth(),
-//            							player.getMaxHealth());
-//            				break;
-//            				
-//            				case "enemies":
-//            					if (!foundCommands.contains("describeGroup_attack")) LogsController.addToFoundCommands(db,foundCommands,"describeGroup_attack");
-//            					if (!foundCommands.contains("describe_enemies")) LogsController.addToFoundCommands(db,foundCommands,"describe_enemies");
-//                				
-//            					//TODO: Use this method once set up
-////            					ArrayList<EnemyModel> enemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-//            					ArrayList<EnemyModel> enemies = db.GetEnemiesInRoom(DBController.getPlayerCurrentRoom(db));
-//            					systemResponse = String.format("Describing enemies...<br><br>");
-//            					
-//            					// remove dead enemies
-//            					for (int i=enemies.size()-1; i>=0; i--)
-//            						if (enemies.get(i).getHealth() == 0)
-//            							enemies.remove(i);
-//            					
-//            					// no enemies in room
-//            					if (enemies.size() == 0) {
-//            						systemResponse += String.format("There are no enemies in this room.");
-//            						break;
-//            					}
-//            					
-//            					systemResponse += String.format("Enemies in this room:");
-//            					
-//            					Integer enemyCount = 0;
-//            					for (int i=0; i<enemies.size(); i++) {
-//            						if (enemies.get(i).getHealth() == 0) continue;
-//            						enemyCount++;
-//            						
-//                					healthBarSize = 10;
-//                					lifeRatio = enemies.get(i).getHealth() / enemies.get(i).getMaxHealth();
-//                					healthBarLength = (int) Math.round(lifeRatio * healthBarSize);
-//            						
-//            						systemResponse += String.format("<br>&num;%d: %s<br> - Health: [%s%s] (%.1f / %.1f)<br> - %s<br>",
-//            								enemies.size(), enemies.get(i).getName(),
-//            								repeatString("#", healthBarLength),
-//    										repeatString("-", healthBarSize - healthBarLength),
-//    										enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
-//            								enemies.get(i).getDescription());
-//            					}
-//            					
-//            					// all enemies are dead
-//            					if (enemies.size() == 0) {
-//            						systemResponse = String.format("Describing enemies...<br><br>");
-//            						systemResponse += String.format("There are no enemies in this room.");
-//            					}
-//            				break;
-//            				
-//            				case "moves":
-//            					if (!foundCommands.contains("describeGroup_room")) LogsController.addToFoundCommands(db,foundCommands,"describeGroup_room");
-//            					if (!foundCommands.contains("describe_moves")) LogsController.addToFoundCommands(db,foundCommands,"describe_moves");
-//            					
-//            					systemResponse = String.format("Describing moves...<br><br>Possible moves:");
-//            					
-//            					List<String> roomConnections = rooms.get(player.getCurrentRoomIndex() - 1).getAllConnections();
-//            					List<String> directions = new ArrayList<String>(Arrays.asList(new String[] {
-//            							"East", "South", "North", "West"}));
-//            					
-//            					
-//            					for (int i=0; i<roomConnections.size(); i++) {
-//            						String direction = directions.get(i);
-//            						String camelCaseDirection = direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase();
-//            						Integer connectionID = Integer.parseInt(roomConnections.get(i));
-//            						
-//            						// connection doesn't exist
-//            						if (connectionID == 0) continue;
-//            						
-////            						System.out.println(String.format("%s : %d", roomConnections.get(i), connectionID));
-//            						systemResponse += String.format("<br> - %s &mdash;&mdash;&#62; %s", camelCaseDirection,
-//            								rooms.get(connectionID - 1).getShortRoomDescription());
-//            					}
-//            				break;
-//            				
-//            				case "directions":
-//            					if (!foundCommands.contains("describeGroup_room")) LogsController.addToFoundCommands(db,foundCommands,"describeGroup_room");
-//            					if (!foundCommands.contains("describe_directions")) LogsController.addToFoundCommands(db,foundCommands,"describe_directions");
-//            					
-//            					systemResponse = String.format("Describing directions...<br><br>Possible directions:<br>");
-//            				
-//            					for (String direction : ConsoleInterpreter.MOVE_DIRECTIONS)
-//            						systemResponse += String.format(" - %s<br>",
-//            								direction.substring(0, 1).toUpperCase() + direction.substring(1).toLowerCase());
-//            				break;
-//            				
-//            				case "inventory":
-//            					if (!foundCommands.contains("describeGroup_items")) LogsController.addToFoundCommands(db,foundCommands,"describeGroup_items");
-//            					if (!foundCommands.contains("describe_inventory")) LogsController.addToFoundCommands(db,foundCommands,"describe_inventory");
-//                				
-//            					EntityInventory playerInventory = db.GetPlayerInventory();
-//            					HashMap<Item, Integer> playerItems = playerInventory.GetItems();
-//            					HashMap<String, Weapon> playerEquips = playerInventory.GetWeaponsAsSlots();
-//            					systemResponse = String.format("Describing inventory...<br><br>");
-//
-//            					// no items in inventory
-//            					if (playerItems.size() == 0 && playerEquips.size() == 0) {
-//            						systemResponse += String.format("There are no items in your inventory.");
-//            						break;
-//            					}
-//            					
-//            					systemResponse += String.format("Items in your inventory:");
-//            					
-//            					for (String slot : playerEquips.keySet()) 
-//            						systemResponse += String.format("<br><br>%s: %s<br> - Damage: %.1f<br> - %s",
-//            								slot, playerEquips.get(slot).GetName(),
-//            								playerEquips.get(slot).GetDamage(),
-//            								playerEquips.get(slot).GetDescription());
-//            					
-//            					for (Item playerItem : playerItems.keySet()) {
-//            						systemResponse += String.format("<br><br>%s: %d<br> - %s",
-//            								playerItem.GetName(), playerItems.get(playerItem),
-//            								playerItem.GetDescription());
-//            						
-//            						// if item is a weapon, also display the damage
-//            						if (playerItem.getClass().equals(Weapon.class))
-//            							systemResponse += String.format("<br> - Damage: %.1f",
-//            									((Weapon) playerItem).GetDamage());
-//            					}
-//            						
-//            				break;
-//            				
-//            				case "items":
-//            					if (!foundCommands.contains("describeGroup_items")) LogsController.addToFoundCommands(db,foundCommands,"describeGroup_items");
-//            					if (!foundCommands.contains("describe_items")) LogsController.addToFoundCommands(db,foundCommands,"describe_items");
-//                				
-//            					RoomInventory roomInventory = db.GetRoomInventoryByID(player.getCurrentRoomIndex());
-//            					HashMap<Item, Integer> roomItems = roomInventory.GetItems();
-//            					systemResponse = String.format("Describing items...<br><br>");
-//            					
-//            					// no enemies in room
-//            					if (roomItems.size() == 0) {
-//            						systemResponse += String.format("There are no items in this room.");
-//            						break;
-//            					}
-//            					
-//            					systemResponse += String.format("Items in this room:");
-//            					
-//            					for (Item roomItem : roomItems.keySet()) {
-//            						systemResponse += String.format("<br><br>%s: %d<br> - %s",
-//            								roomItem.GetName(), roomItems.get(roomItem),
-//            								roomItem.GetDescription());
-//
-//            						// if item is a weapon, also display the damage
-//            						if (roomItem.getClass().equals(Weapon.class))
-//            							systemResponse += String.format("<br> - Damage: %.1f",
-//            									((Weapon) roomItem).GetDamage());
-//            					}
-//            				break;
-//            				
-//            				default:
-//            					systemResponse = String.format("Cannot describe %s.",
-//            							params.get(0));
-//            				break;
-//            			}
-            			
-            		break;
-            		
-            		// TYPE 3 COMMANDS
-            		case "attack":
-            			systemResponse = CommandsController.attackCommand(db, userAction, foundCommands, params, weaponSlots, rooms, player, systemResponse);
-//            			if (!foundCommands.contains("attack")) { 
-//            				LogsController.addToFoundCommands(db,foundCommands,"attack");
-//            			}
-//            			
-//            			EntityInventory playerInventory = db.GetPlayerInventory();
-//            			weaponSlots = playerInventory.GetWeaponsAsSlots();
-//            			String attackName = "";
-//            			
-//            			// make camel case
-//            			for (String word : params.get(1).split(" "))
-//            				attackName += word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase() + " ";
-//            			attackName = attackName.trim();
-//            			
-//            			
-//            			// get weapon slot
-//            			if (!weaponSlots.containsKey(attackName)) {
-//            				if (EntityInventory.WeaponSlots.contains(attackName.toLowerCase())) {
-//            					systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
-//            						attackName);
-//        						break;
-//            				}
-//            				
-//            				// name could be the name of a weapon
-//            				for (String slotName : weaponSlots.keySet()) {
-//            					if (weaponSlots.get(slotName).GetName().toLowerCase().equals(attackName.toLowerCase())) {
-//            						attackName = slotName;
-//            						break;
-//            					}
-//            				}
-//            			}
-//            			
-//            			if (!weaponSlots.containsKey(attackName)) {
-//        					systemResponse = String.format("There is no weapon equipped in the %s.<br>", 
-//            						attackName);
-//        						break;
-//            			}
-//            			
-//            			//TODO: Use this method once set up
-////            			ArrayList<EnemyModel> roomEnemies = DBController.getEnemiesByRoomId(db, DBController.getPlayerCurrentRoom(db));
-//            			ArrayList<EnemyModel> roomEnemies = db.GetEnemiesInRoom(player.getCurrentRoomIndex());
-//            			ArrayList<EntityModel> fighters = new ArrayList<EntityModel>();
-//            			fighters.add(db.GetPlayer());
-//            			fighters.addAll(roomEnemies);
-//
-//            			Integer attackIndex = -1;         			
-//            			try {
-//            				attackIndex = Integer.parseInt(params.get(0));
-//            			} catch (Exception e) {
-//            				
-//            				// index might be the name of an enemy
-//            				for (EnemyModel enemy : roomEnemies) 
-//            					if (enemy.getName().toLowerCase().equals(params.get(0).toLowerCase()))
-//            						attackIndex = fighters.indexOf(enemy);
-//            			}
-//            			
-//            			if (attackIndex == -1) {
-//        					systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
-//            						params.get(0));
-//            				break;
-//            			}
-//            			
-//            			
-//            			FightController fightController = new FightController(fighters, db);
-//            			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
-//        					systemResponse = String.format("There is no enemy with index or name of %s.<br>", 
-//            						params.get(0));
-//            				break;
-//            			}
-//
-//            			String attackedName = ((EnemyModel) fightController.GetFighter(attackIndex)).getName();
-//            			
-//            			Double attackDamage = fightController.TakePlayerTurn(0, attackIndex, attackName);
-//            			systemResponse = String.format("Attacked %s with %s.<br><br>%s took %.1f damage.<br>",
-//            					attackedName,
-//            					userAction.GetParams().get(1),
-//            					attackedName,
-//            					attackDamage
-//            					);
-//            			
-//            			if (fightController.GetFighter(attackIndex).getHealth() == 0) {
-//            				new EntityController(fightController.GetFighter(attackIndex)).Die(
-//            						db, rooms.get(player.getCurrentRoomIndex() - 1));
-//            				
-//            				systemResponse += String.format("%s has died.<br>",
-//            						attackedName);
-//            			}
-//            			
-//            			for (int i=0; i<roomEnemies.size(); i++) {
-//            				if (i != 0) systemResponse += "<br>";
-//            				
-//            				if (player.getHealth() == 0) {
-//            					player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1));
-//            					break;
-//            				}
-//            				
-//            				if (roomEnemies.get(i).getHealth() == 0) continue;
-//            				Double enemyDamage = fightController.TakeEnemyTurn(i + 1);
-//            				
-//            				if (enemyDamage == 0) continue;
-//            				systemResponse += String.format("%s attacked. You took %.1f damage.",
-//            						((EnemyModel) fightController.GetFighter(i + 1)).getName(),
-//            						enemyDamage);
-//            			}
-//            		break;
-//            		
-//            		default:
-//            			systemResponse = String.format("User inputted valid command of type: %s<br>", userAction.GetMethod());
-//            		break;
+            			default:
+            				systemResponse = String.format("User inputted valid command of type: %s<br>", userAction.GetMethod());
+            			break;
+            		}
             	}
             }
 
@@ -836,7 +349,9 @@ public class GameEngineServlet extends HttpServlet {
             }
         }
 
+        System.out.println(String.format("The player is%s combat locked.", combatLocked? "" : "n't"));
         // Set the game history as a request attribute for the JSP
+        session.setAttribute("combatLock", combatLocked);
         session.setAttribute("player", playerModel);
         session.setAttribute("rooms", rooms);
         req.setAttribute("gameHistory", gameHistory);

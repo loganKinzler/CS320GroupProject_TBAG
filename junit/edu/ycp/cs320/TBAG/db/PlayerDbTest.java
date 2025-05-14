@@ -67,4 +67,6 @@ public class PlayerDbTest {
 		DBController.decrementPlayerLives(db);
 		assertEquals(db.GetPlayer().getLives(), 2);
 	}
+	
+	
 }

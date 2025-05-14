@@ -15,6 +15,7 @@ import edu.ycp.cs320.TBAG.model.Room;
 import edu.ycp.cs320.TBAG.model.Weapon;
 import edu.ycp.cs320.TBAG.model.Inventory;
 import edu.ycp.cs320.TBAG.model.RoomInventory;
+import edu.ycp.cs320.TBAG.model.StatusEffect;
 import edu.ycp.cs320.TBAG.model.EntityInventory;
 
 import edu.ycp.cs320.TBAG.comparator.ItemByIDComparator;
@@ -39,7 +40,7 @@ public class InitialData {
 				
 				Iterator<String> i = tuple.iterator();
 				
-				Item item = new Item(itemID, i.next(),i.next());
+				Item item = new Item(itemID, i.next(), i.next());
 				InitialData.itemTypes.add(item);
 			}
 		} finally {
@@ -65,15 +66,21 @@ public class InitialData {
 				Iterator<String> i = tuple.iterator();
 				
 				Integer weaponID = Integer.parseInt(i.next());
-
 				Item weaponItem = InitialData.itemTypes.get(weaponID - 1);
-
 				
+				Double damageAmt = Double.parseDouble(i.next());
+				String damageType = i.next();
+				Integer critChance = Integer.parseInt(i.next());
+				String statusEffect = i.next();
+
 				Weapon weapon = new Weapon(
 						weaponID,
 						weaponItem.GetName(),
 						weaponItem.GetDescription(),
-						Double.parseDouble(i.next()));
+						damageAmt,
+						damageType,
+						critChance,
+						statusEffect);
 				
 
 				InitialData.weaponTypes.add(weapon);
@@ -337,5 +344,29 @@ public class InitialData {
 		
 		return rooms;
 	}
-		
+	
+	public static List<StatusEffect> getStatusEffects() throws IOException {
+	    List<StatusEffect> statusEffects = new ArrayList<>();
+	    ReadCSV readStatusEffects = new ReadCSV("statusEffects.csv");
+	    
+	    try {
+	        while (true) {
+	            List<String> tuple = readStatusEffects.next();
+	            if (tuple == null) break;
+	            
+	            Iterator<String> i = tuple.iterator();
+	            
+	            String name = i.next();
+	            int duration = Integer.parseInt(i.next());
+	            double damage = Double.parseDouble(i.next());
+	            
+	            StatusEffect effect = new StatusEffect(name, duration, damage);
+	            statusEffects.add(effect);
+	        }
+	    } finally {
+	        readStatusEffects.close();
+	    }
+	    
+	    return statusEffects;
+	}
 }

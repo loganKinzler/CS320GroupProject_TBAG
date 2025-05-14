@@ -116,8 +116,7 @@ public class CommandsController {
 		
 		
 			Integer nextRoom = rooms.get(player.getCurrentRoomIndex() - 1).getConnectedRoom(params.get(0));
-			System.out.print(nextRoom);
-			System.out.printf("%s", rooms.get(nextRoom).getRoom_key());
+
 			//This is a room that doesn't exist
 			if(nextRoom == 0) {
 				systemResponse = String.format("The current room doesn't have a room %s of it.",params.get(0));
@@ -232,7 +231,7 @@ public class CommandsController {
 			return responseOut;
 		}
 		
-		Item pickupItem = db.ItemByNameQuery(toTitleCase(params.get(1)));
+		Item pickupItem = db.ItemByNameQuery(params.get(1));
 		if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
 			responseOut = String.format("This room does not contain an item named %s.<br>",
 					params.get(1));
@@ -349,7 +348,7 @@ public class CommandsController {
 			
 			responseOut = String.format("Describing stats...<br><br>Lives: %d<br>Health: [%s%s] (%.1f / %.1f)",
 					player.getLives(),
-					"#".repeat(healthBarLength),
+					"&#x2661;".repeat(healthBarLength),
 					"-".repeat(healthBarSize - healthBarLength),
 					player.getHealth(),
 					player.getMaxHealth());
@@ -388,7 +387,7 @@ public class CommandsController {
 				
 				responseOut += String.format("<br>&num;%d: %s<br> - Health: [%s%s] (%.1f / %.1f)<br> - %s<br>",
 						enemyCount, enemies.get(i).getName(),
-						"#".repeat(healthBarLength),
+						"&#x2661;".repeat(healthBarLength),
 						"-".repeat(healthBarSize - healthBarLength),
 						enemies.get(i).getHealth(), enemies.get(i).getMaxHealth(),
 						enemies.get(i).getDescription());
@@ -455,10 +454,13 @@ public class CommandsController {
 			responseOut += String.format("Items in your inventory:");
 			
 			for (String slot : playerEquips.keySet()) 
-				responseOut += String.format("<br><br>%s: %s<br> - Damage: %.1f<br> - %s",
+				responseOut += String.format("<br><br>%s: %s<br> - Damage: %.1f<br> - Type: %s<br> - Crit Chance: %d&percnt;<br> - Effect: %s",
 						slot, playerEquips.get(slot).GetName(),
+						playerEquips.get(slot).GetDescription(),
 						playerEquips.get(slot).GetDamage(),
-						playerEquips.get(slot).GetDescription());
+						playerEquips.get(slot).GetDamageType(),
+						playerEquips.get(slot).GetCritChance(),
+						playerEquips.get(slot).GetStatusEffect());
 			
 			for (Item playerItem : playerItems.keySet()) {
 				responseOut += String.format("<br><br>%s: %d<br> - %s",
@@ -467,8 +469,11 @@ public class CommandsController {
 				
 				// if item is a weapon, also display the damage
 				if (playerItem.getClass().equals(Weapon.class))
-					responseOut += String.format("<br> - Damage: %.1f",
-							((Weapon) playerItem).GetDamage());
+					responseOut += String.format("<br> - Damage: %.1f<br> - Type: %s<br> - Crit Chance: %d&percnt;<br> - Effect: %s",
+							((Weapon) playerItem).GetDamage(),
+							((Weapon) playerItem).GetDamageType(),
+							((Weapon) playerItem).GetCritChance(),
+							((Weapon) playerItem).GetStatusEffect());
 			}
 				
 		break;
@@ -496,8 +501,11 @@ public class CommandsController {
 
 				// if item is a weapon, also display the damage
 				if (roomItem.getClass().equals(Weapon.class))
-					responseOut += String.format("<br> - Damage: %.1f",
-							((Weapon) roomItem).GetDamage());
+					responseOut += String.format("<br> - Damage: %.1f<br> - Type: %s<br> - Crit Chance: %d&percnt;<br> - Effect: %s",
+							((Weapon) roomItem).GetDamage(),
+							((Weapon) roomItem).GetDamageType(),
+							((Weapon) roomItem).GetCritChance(),
+							((Weapon) roomItem).GetStatusEffect());
 			}
 		break;
 		
@@ -707,7 +715,7 @@ public class CommandsController {
 
 		String attackedName = ((EnemyModel) fightController.GetFighter(attackIndex)).getName();
 		
-		Double attackDamage = fightController.TakePlayerTurn(0, attackIndex, attackName);
+		Double attackDamage = fightController.takePlayerTurn(0, attackIndex, attackName);
 		responseOut = String.format("Attacked %s with %s.<br><br>%s took %.1f damage.<br>",
 				attackedName,
 				userAction.GetParams().get(1),
@@ -732,7 +740,7 @@ public class CommandsController {
 			}
 			
 			if (roomEnemies.get(i).getHealth() == 0) continue;
-			Double enemyDamage = fightController.TakeEnemyTurn(i + 1);
+			Double enemyDamage = fightController.takeEnemyTurn(i + 1, 0);
 			
 			if (enemyDamage == 0) continue;
 			responseOut += String.format("%s attacked. You took %.1f damage.",
@@ -743,24 +751,18 @@ public class CommandsController {
 		return responseOut;
 	}
 	
-	public static String toTitleCase(String input) {
-	    if (input == null || input.isEmpty()) {
-	        return input;
-	    }
-
-	    String[] words = input.toLowerCase().split(" ");
-	    StringBuilder titleCase = new StringBuilder();
-
-	    for (String word : words) {
-	        if (word.length() > 0) {
-	            titleCase.append(Character.toUpperCase(word.charAt(0)))
-	                     .append(word.substring(1))
-	                     .append(" ");
-	        }
-	    }
-	    
-	    String toOut = titleCase.toString().trim();
-
-	    return toOut;
+	public static Boolean allEnemiesAreDead(
+			IDatabase db,
+			List<Room> rooms,
+			PlayerController player
+			) {
+		
+		ArrayList<EnemyModel> roomEnemies = db.GetEnemiesInRoom(player.getCurrentRoomIndex());
+		
+		for (EnemyModel enemy : roomEnemies)
+			if (enemy.getHealth() != 0)
+				return false;
+		
+		return true;
 	}
 }

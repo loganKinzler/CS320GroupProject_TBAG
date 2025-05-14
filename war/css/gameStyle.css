@@ -317,11 +317,7 @@ button {
 	
 }
 
-.item-ascii-art{
-	font-size: var(--item-ascii-font-size) !important;
-	white-space: pre;
-	line-height: 1;
-}
+
 
 .ipear_img {
 	position: absolute;

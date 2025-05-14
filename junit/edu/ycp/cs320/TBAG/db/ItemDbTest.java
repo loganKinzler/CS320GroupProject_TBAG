@@ -37,14 +37,14 @@ public class ItemDbTest {
 	
 	@Test
 	public void getWeaponByNameTest() {
-		assertEquals(db.ItemByNameQuery("Flint & Steel"), new Weapon(2, "Flint & Steel", "I... am Steve!", 5.0));
+		assertEquals(db.ItemByNameQuery("Shovel"), new Weapon(1, "Shovel", "Don't dig straight down", 12.5));
 		assertEquals(db.ItemByNameQuery("I don't exist"), null);
 	}
 	
 	@Test
 	public void getItemIDTest() {
-		assertTrue(db.GetItemIDQuery("Flint & Steel", "I... am Steve!") == 2);
-		assertTrue(db.ItemByNameQuery("I don't exist") == null);
+		assertTrue(db.GetItemIDQuery("Ballpoint Pen", "It uses blue ink") == 3);
+		assertTrue(db.GetItemIDQuery("Nonexistent Item", "I don't exist") == -1);
 	}
 	
 	@Test
@@ -61,6 +61,7 @@ public class ItemDbTest {
 	@Test
 	public void getPlayerInventoryTest() {
 		EntityInventory testPlayerInv = new EntityInventory();
+		testPlayerInv.AddItems(new Item(5, "Mirror", "Its covered in dirt, but still usable."), 1);
 		testPlayerInv.AddItems(new Item(6, "Camera", "It lets you see things"), 1);
 		
 		EntityInventory dbPlayerInv = db.GetPlayerInventory();
@@ -70,8 +71,7 @@ public class ItemDbTest {
 	@Test
 	public void getEntityInventoryTest() {
 		EntityInventory testEntityInv = new EntityInventory();
-		
-		EntityInventory dbEntityInv = db.GetEnemyInventoryByID(3);
+		EntityInventory dbEntityInv = db.GetEnemyInventoryByID(7);
 		assertEquals(testEntityInv, dbEntityInv);
 	}
 	

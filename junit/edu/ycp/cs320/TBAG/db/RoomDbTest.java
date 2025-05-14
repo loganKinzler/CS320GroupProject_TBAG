@@ -53,7 +53,7 @@ public class RoomDbTest {
 	@Test
 	public void getLongDescription() {
 		setup();
-		assertEquals(rooms.get(0).getLongRoomDescription(), "There are two other robots hooked onto charging beds.");
+		assertEquals(rooms.get(0).getLongRoomDescription(), "There are more robots hooked up to the wall...");
 	}
 	
 	@Test

@@ -78,10 +78,13 @@ public class EntityController {
 		Set<Item> items = new HashSet( this.model.getInventory().GetItems().keySet() );
 		
 		// drop all enemy items
-		for (Item item : items)
-			this.Drop(room, item, Integer.MAX_VALUE);
+		for (Item item : items) this.Drop(room, item, Integer.MAX_VALUE);
+		db.UpdateRoomInventory(room.getRoomId(), room.getRoomInventory());
+		db.UpdateEnemyInventory(this.model.getId(), this.getInventory());
 		
-		this.model.setLives( Math.min(0, this.model.getLives() - 1) );
+		// remove 1 life
+		this.model.setLives( Math.max(0, this.model.getLives() - 1) );
+		db.UpdateEnemyLivesById(this.model.getId(), this.getLives());
 		
 		return this.model.getLives() == 0;
 	}

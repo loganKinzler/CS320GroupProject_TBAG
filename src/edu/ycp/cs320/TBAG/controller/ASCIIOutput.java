@@ -42,6 +42,25 @@ public class ASCIIOutput {
 			Scanner reader = new Scanner(in);
 			
 			if (shovel.equals("biiig shovel")) toOut += "<p class=\"item-ascii-art\">";
+			
+			else if(shovel.equals("flimsy orange key")) {
+				in = servlet.getServletContext().getResourceAsStream("/recs/flimsy orange key.txt");
+				reader = new Scanner(in);
+				toOut += "<p class=\"item-ascii-art\">";
+			}
+			
+			else if(shovel.equals("soldering iron")) {
+				in = servlet.getServletContext().getResourceAsStream("/recs/iron.txt");
+				reader = new Scanner(in);
+				toOut += "<p class=\"item-ascii-art\">";
+			}
+			
+			else if(shovel.equals("lead pipe")) {
+				in = servlet.getServletContext().getResourceAsStream("/recs/lead_pipe.txt");
+				reader = new Scanner(in);
+				toOut += "<p class=\"item-ascii-art\">";
+			}
+			
 			else {
 				reader.close();
 				return "<p>";

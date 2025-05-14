@@ -232,7 +232,7 @@ public class CommandsController {
 			return responseOut;
 		}
 		
-		Item pickupItem = db.ItemByNameQuery(toTitleCase(params.get(1)));
+		Item pickupItem = db.ItemByNameQuery(params.get(1));
 		if (pickupItem == null || !rooms.get(player.getCurrentRoomIndex() - 1).getRoomInventory().ContainsItem(pickupItem)) {
 			responseOut = String.format("This room does not contain an item named %s.<br>",
 					params.get(1));
@@ -727,7 +727,18 @@ public class CommandsController {
 			if (i != 0) responseOut += "<br>";
 			
 			if (player.getHealth() == 0) {
-				player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1));
+				if (player.Die(db, rooms.get(player.getCurrentRoomIndex() - 1))) {
+					responseOut += String.format("You have died!<br>You have %d lives left.<br>Respawning...",
+							player.getLives());
+					db.UpdateEnemyRoomById(1, 1);
+					
+				// player has lives left
+				} else {
+					responseOut += String.format("You have died!<br>You have no lives left.<br>GAME OVER!",
+							player.getLives());
+					db.create();
+				}
+				
 				break;
 			}
 			
@@ -741,26 +752,5 @@ public class CommandsController {
 		}
 		
 		return responseOut;
-	}
-	
-	public static String toTitleCase(String input) {
-	    if (input == null || input.isEmpty()) {
-	        return input;
-	    }
-
-	    String[] words = input.toLowerCase().split(" ");
-	    StringBuilder titleCase = new StringBuilder();
-
-	    for (String word : words) {
-	        if (word.length() > 0) {
-	            titleCase.append(Character.toUpperCase(word.charAt(0)))
-	                     .append(word.substring(1))
-	                     .append(" ");
-	        }
-	    }
-	    
-	    String toOut = titleCase.toString().trim();
-
-	    return toOut;
 	}
 }

@@ -221,7 +221,7 @@ public class GameEngineServlet extends HttpServlet {
             		LogsController.addToGameHistory(db, gameHistory, systemResponse);
             systemResponse = "";
             
-            Map<String, Weapon> weaponSlots = player.getInventory().GetWeaponsAsSlots();
+            Map<String, Weapon> weaponSlots = db.GetPlayerInventory().GetWeaponsAsSlots();
             
             // action details here (strings for now, need more structure for true game)
             if (userAction.IsValid()) {
